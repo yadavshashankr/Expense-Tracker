@@ -68,6 +68,7 @@ export async function ensureUserSheet({ appName, userName, accessToken }) {
     
     if (searchRes.files?.length) {
       console.log('Found existing sheet:', searchRes.files[0].id);
+      await setTextWrapping(searchRes.files[0].id, accessToken);
       return searchRes.files[0].id;
     }
 
@@ -99,13 +100,16 @@ export async function ensureUserSheet({ appName, userName, accessToken }) {
 
     // Add headers
     console.log('Adding headers to new sheet...');
-    const headers = [['ID', 'Timestamp', 'User Email', 'Counterparty Email', 'Type', 'Amount', 'Description', 'Group ID']];
+    const headers = [['ID', 'Timestamp', 'User Email', 'Name', 'Type', 'Amount', 'Description', 'Group ID']];
     await gFetch(
       `${SHEETS_URL}/${createRes.spreadsheetId}/values/A1:H1?valueInputOption=RAW`,
       accessToken,
       'PUT',
       { values: headers }
     );
+
+    // Set text wrapping for all cells
+    await setTextWrapping(createRes.spreadsheetId, accessToken);
 
     return createRes.spreadsheetId;
   } catch (error) {
@@ -114,12 +118,41 @@ export async function ensureUserSheet({ appName, userName, accessToken }) {
   }
 }
 
+async function setTextWrapping(spreadsheetId, accessToken) {
+  const request = {
+    requests: [{
+      repeatCell: {
+        range: {
+          sheetId: 0,
+          startRowIndex: 0,
+          endRowIndex: 1000,
+          startColumnIndex: 0,
+          endColumnIndex: 8
+        },
+        cell: {
+          userEnteredFormat: {
+            wrapStrategy: 'WRAP'
+          }
+        },
+        fields: 'userEnteredFormat.wrapStrategy'
+      }
+    }]
+  };
+
+  return gFetch(
+    `${SHEETS_URL}/${spreadsheetId}:batchUpdate`,
+    accessToken,
+    'POST',
+    request
+  );
+}
+
 export async function appendExpense({ spreadsheetId, accessToken, entry }) {
   const values = [[
     entry.id,
     entry.timestamp,
     entry.userEmail,
-    entry.counterparty,
+    entry.name,  // Changed from counterparty to name
     entry.type,
     entry.amount,
     entry.description,
@@ -142,11 +175,11 @@ export async function fetchAllRows({ spreadsheetId, accessToken }) {
 
   if (!res.values) return [];
 
-  return res.values.map(([id, timestamp, userEmail, counterparty, type, amount, description], i) => ({
+  return res.values.map(([id, timestamp, userEmail, name, type, amount, description], i) => ({
     id,
     timestamp,
     userEmail,
-    counterparty,
+    name,  // Changed from counterparty to name
     type,
     amount,
     description,
@@ -160,7 +193,7 @@ export async function updateExpenseRow({ spreadsheetId, accessToken, rowIndex, e
     entry.id,
     entry.timestamp,
     entry.userEmail,
-    entry.counterparty,
+    entry.name,  // Changed from counterparty to name
     entry.type,
     entry.amount,
     entry.description,
