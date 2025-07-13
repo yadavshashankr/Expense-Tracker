@@ -8,8 +8,11 @@ export default function LoginButton({ onLogin }) {
 
   // Function to get the exact redirect URI that matches what's registered
   const getRedirectUri = () => {
-    // Ensure we use exactly http://localhost:5173 (no trailing slash)
-    return 'http://localhost:5173';
+    // Use the deployed URL in production, localhost in development
+    if (import.meta.env.DEV) {
+      return 'http://localhost:5173';
+    }
+    return 'https://yadavshashankr.github.io/Expense-Tracker';
   };
 
   useEffect(() => {
@@ -19,6 +22,7 @@ export default function LoginButton({ onLogin }) {
       currentUrl: window.location.href,
       redirectUri: currentUri,
       hash: window.location.hash,
+      isDev: import.meta.env.DEV
     });
 
     // Check if we have a token in the URL (after redirect)
@@ -106,6 +110,7 @@ export default function LoginButton({ onLogin }) {
       </button>
       <div className="text-xs text-gray-500 max-w-md overflow-auto">
         <div>Using redirect URI: {debugInfo?.redirectUri}</div>
+        <div>Environment: {debugInfo?.isDev ? 'Development' : 'Production'}</div>
         {error && <div>Current URL: {debugInfo?.currentUrl}</div>}
         {error && debugInfo?.hash && <div>Hash: {debugInfo?.hash}</div>}
       </div>
