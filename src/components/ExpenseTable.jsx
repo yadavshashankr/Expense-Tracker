@@ -41,7 +41,8 @@ export default function ExpenseTable({ expenses, onEdit, onDelete }) {
         <thead>
           <tr className="bg-indigo-50 text-left">
             <th className="p-3 text-sm font-semibold text-gray-600">Date</th>
-            <th className="p-3 text-sm font-semibold text-gray-600">Counterparty</th>
+            <th className="p-3 text-sm font-semibold text-gray-600">Name</th>
+            <th className="p-3 text-sm font-semibold text-gray-600">Email</th>
             <th className="p-3 text-sm font-semibold text-gray-600">Type</th>
             <th className="p-3 text-sm font-semibold text-gray-600">Amount</th>
             <th className="p-3 text-sm font-semibold text-gray-600">Description</th>
@@ -67,8 +68,16 @@ export default function ExpenseTable({ expenses, onEdit, onDelete }) {
                   <td className="p-3">
                     <input
                       className="w-full border rounded px-2 py-1"
-                      value={draft.counterparty}
-                      onChange={change('counterparty')}
+                      value={draft.name}
+                      onChange={change('name')}
+                    />
+                  </td>
+                  <td className="p-3">
+                    <input
+                      type="email"
+                      className="w-full border rounded px-2 py-1"
+                      value={draft.email}
+                      onChange={change('email')}
                     />
                   </td>
                   <td className="p-3">
@@ -120,7 +129,8 @@ export default function ExpenseTable({ expenses, onEdit, onDelete }) {
                   <td className="p-3 whitespace-nowrap">
                     {new Date(expense.timestamp).toLocaleString()}
                   </td>
-                  <td className="p-3">{expense.counterparty}</td>
+                  <td className="p-3">{expense.name}</td>
+                  <td className="p-3">{expense.email}</td>
                   <td className="p-3">
                     <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
                       expense.type === 'credit' 

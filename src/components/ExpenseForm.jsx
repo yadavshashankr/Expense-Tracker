@@ -2,7 +2,7 @@
 import { useState } from 'react';
 
 export default function ExpenseForm({ user, onSubmit }) {
-  const [form, setForm] = useState({ counterparty: '', type: 'debit', amount: '', description: '' });
+  const [form, setForm] = useState({ name: '', email: '', type: 'debit', amount: '', description: '' });
   const [error, setError] = useState(null);
 
   const change = k => e => setForm({ ...form, [k]: e.target.value });
@@ -23,7 +23,7 @@ export default function ExpenseForm({ user, onSubmit }) {
       };
 
       onSubmit(entry);
-      setForm({ counterparty: '', type: 'debit', amount: '', description: '' });
+      setForm({ name: '', email: '', type: 'debit', amount: '', description: '' });
       setError(null);
     } catch (err) {
       console.error('Error submitting expense:', err);
@@ -42,9 +42,17 @@ export default function ExpenseForm({ user, onSubmit }) {
         <div className="grid grid-cols-2 gap-3">
           <input 
             className="border p-2 rounded" 
-            placeholder="Counterparty" 
-            value={form.counterparty} 
-            onChange={change('counterparty')} 
+            placeholder="Name" 
+            value={form.name} 
+            onChange={change('name')} 
+            required 
+          />
+          <input 
+            type="email"
+            className="border p-2 rounded" 
+            placeholder="Email" 
+            value={form.email} 
+            onChange={change('email')} 
             required 
           />
           <select 
