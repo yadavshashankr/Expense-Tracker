@@ -5,7 +5,7 @@ export default function LoginButton({ onLogin }) {
   useEffect(() => {
     /* global google */
     window.google.accounts.id.initialize({
-      client_id: '<YOUR_GOOGLE_CLIENT_ID>',
+      client_id: '1031633259679-di32f4288k7vdh4juuhveeahoqd0ogvt.apps.googleusercontent.com',
       callback: (res) => {
         const profile = jwt_decode(res.credential);
         onLogin({ profile, credential: res.credential });

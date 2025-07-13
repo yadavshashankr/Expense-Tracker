@@ -5,7 +5,7 @@ import ExpenseForm from './components/ExpenseForm';
 import ExpenseTable from './components/ExpenseTable';
 import { ensureUserSheet, appendExpense, fetchAllRows, updateExpenseRow, deleteExpenseRow } from './services/sheets';
 
-const APP_NAME = '<YOUR_APP_NAME>';
+const APP_NAME = 'Expense-Tracker';
 const POLL_INTERVAL = 10000;
 
 export default function App() {
