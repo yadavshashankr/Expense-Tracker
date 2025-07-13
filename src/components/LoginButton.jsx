@@ -78,7 +78,6 @@ export default function LoginButton({ onLogin }) {
       `&response_type=token` +
       `&scope=${scope}` +
       `&include_granted_scopes=true` +
-      `&access_type=offline` +
       `&prompt=consent`;
 
     console.log('Auth URL:', authUrl);
