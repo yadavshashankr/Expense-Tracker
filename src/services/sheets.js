@@ -68,7 +68,12 @@ export async function ensureUserSheet({ appName, userName, accessToken }) {
     
     if (searchRes.files?.length) {
       console.log('Found existing sheet:', searchRes.files[0].id);
-      await setTextWrapping(searchRes.files[0].id, accessToken);
+      try {
+        await setTextWrapping(searchRes.files[0].id, accessToken);
+      } catch (error) {
+        console.warn('Failed to set text wrapping on existing sheet:', error);
+        // Continue anyway since this is not critical
+      }
       return searchRes.files[0].id;
     }
 
@@ -109,7 +114,12 @@ export async function ensureUserSheet({ appName, userName, accessToken }) {
     );
 
     // Set text wrapping for all cells
-    await setTextWrapping(createRes.spreadsheetId, accessToken);
+    try {
+      await setTextWrapping(createRes.spreadsheetId, accessToken);
+    } catch (error) {
+      console.warn('Failed to set text wrapping on new sheet:', error);
+      // Continue anyway since this is not critical
+    }
 
     return createRes.spreadsheetId;
   } catch (error) {
@@ -119,11 +129,24 @@ export async function ensureUserSheet({ appName, userName, accessToken }) {
 }
 
 async function setTextWrapping(spreadsheetId, accessToken) {
+  // First get the sheet ID
+  const metadata = await gFetch(
+    `${SHEETS_URL}/${spreadsheetId}?fields=sheets.properties.sheetId`,
+    accessToken
+  );
+
+  if (!metadata.sheets?.[0]?.properties?.sheetId) {
+    console.warn('Could not find sheet ID for text wrapping');
+    return;
+  }
+
+  const sheetId = metadata.sheets[0].properties.sheetId;
+
   const request = {
     requests: [{
       repeatCell: {
         range: {
-          sheetId: 0,
+          sheetId: sheetId,
           startRowIndex: 0,
           endRowIndex: 1000,
           startColumnIndex: 0,
@@ -168,23 +191,29 @@ export async function appendExpense({ spreadsheetId, accessToken, entry }) {
 }
 
 export async function fetchAllRows({ spreadsheetId, accessToken }) {
-  const res = await gFetch(
-    `${SHEETS_URL}/${spreadsheetId}/values/Expenses!A2:H10000`,
-    accessToken
-  );
+  try {
+    const res = await gFetch(
+      `${SHEETS_URL}/${spreadsheetId}/values/Expenses!A2:H10000`,
+      accessToken
+    );
 
-  if (!res.values) return [];
+    if (!res.values) return [];
 
-  return res.values.map(([id, timestamp, userEmail, name, type, amount, description], i) => ({
-    id,
-    timestamp,
-    userEmail,
-    name,  // Changed from counterparty to name
-    type,
-    amount,
-    description,
-    rowIndex: i + 2
-  }));
+    return res.values.map(([id, timestamp, userEmail, name, type, amount, description], i) => ({
+      id,
+      timestamp,
+      userEmail,
+      name,
+      type,
+      amount,
+      description,
+      rowIndex: i + 2
+    }));
+  } catch (error) {
+    console.error('Error fetching rows:', error);
+    // Return empty array if there's any error (file not found, permissions, etc)
+    return [];
+  }
 }
 
 export async function updateExpenseRow({ spreadsheetId, accessToken, rowIndex, entry }) {
