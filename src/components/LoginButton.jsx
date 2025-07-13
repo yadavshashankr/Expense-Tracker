@@ -10,7 +10,7 @@ export default function LoginButton({ onLogin }) {
   const getRedirectUri = () => {
     // Use the deployed URL in production, localhost in development
     if (import.meta.env.DEV) {
-      return 'http://localhost:5173';
+      return 'http://localhost:5173/';
     }
     return 'https://yadavshashankr.github.io/Expense-Tracker/';
   };
@@ -78,6 +78,7 @@ export default function LoginButton({ onLogin }) {
       `&response_type=token` +
       `&scope=${scope}` +
       `&include_granted_scopes=true` +
+      `&access_type=offline` +
       `&prompt=consent`;
 
     console.log('Auth URL:', authUrl);
