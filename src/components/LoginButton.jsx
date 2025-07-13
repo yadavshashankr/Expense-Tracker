@@ -12,7 +12,7 @@ export default function LoginButton({ onLogin }) {
     if (import.meta.env.DEV) {
       return 'http://localhost:5173';
     }
-    return 'https://yadavshashankr.github.io/Expense-Tracker';
+    return 'https://yadavshashankr.github.io/Expense-Tracker/';
   };
 
   useEffect(() => {
