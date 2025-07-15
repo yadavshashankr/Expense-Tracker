@@ -84,7 +84,8 @@ function App() {
       await appendExpense({
         spreadsheetId,
         accessToken: user.accessToken,
-        entry: expense
+        entry: expense,
+        currentUserEmail: user.profile.email
       });
       
       // Refresh expenses
@@ -102,7 +103,8 @@ function App() {
         spreadsheetId,
         accessToken: user.accessToken,
         rowIndex,
-        entry: expense
+        entry: expense,
+        currentUserEmail: user.profile.email
       });
       
       // Refresh expenses

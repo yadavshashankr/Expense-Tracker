@@ -60,6 +60,30 @@ async function gFetch(url, accessToken, method='GET', body) {
   }
 }
 
+// Add balance calculation function
+const calculateBalance = (transactions, currentUserEmail, otherUserEmail) => {
+  return transactions.reduce((balance, transaction) => {
+    const amount = parseFloat(transaction.amount);
+    // If current user received money (credit)
+    if (transaction.userEmail === currentUserEmail && transaction.type === 'credit') {
+      return balance + amount;
+    }
+    // If current user paid money (debit)
+    if (transaction.userEmail === currentUserEmail && transaction.type === 'debit') {
+      return balance - amount;
+    }
+    // If other user paid money (their debit is our credit)
+    if (transaction.userEmail === otherUserEmail && transaction.type === 'debit') {
+      return balance + amount;
+    }
+    // If other user received money (their credit is our debit)
+    if (transaction.userEmail === otherUserEmail && transaction.type === 'credit') {
+      return balance - amount;
+    }
+    return balance;
+  }, 0);
+};
+
 export async function ensureUserSheet({ appName, userName, accessToken }) {
   try {
     // First, search for existing folder
@@ -114,7 +138,7 @@ export async function ensureUserSheet({ appName, userName, accessToken }) {
             title: 'Expenses',
             gridProperties: {
               rowCount: 1000,
-              columnCount: 8
+              columnCount: 9 // Added one more column for balance
             }
           }
         }]
@@ -134,9 +158,9 @@ export async function ensureUserSheet({ appName, userName, accessToken }) {
 
     // Add headers
     console.log('Adding headers to new sheet...');
-    const headers = [['ID', 'Timestamp', 'User Email', 'Name', 'Type', 'Amount', 'Description', 'Group ID']];
+    const headers = [['ID', 'Timestamp', 'User Email', 'Name', 'Type', 'Amount', 'Description', 'Group ID', 'Balance']];
     await gFetch(
-      `${SHEETS_URL}/${createRes.spreadsheetId}/values/A1:H1?valueInputOption=RAW`,
+      `${SHEETS_URL}/${createRes.spreadsheetId}/values/A1:I1?valueInputOption=RAW`,
       accessToken,
       'PUT',
       { values: headers }
@@ -198,20 +222,25 @@ async function setTextWrapping(spreadsheetId, accessToken) {
   );
 }
 
-export async function appendExpense({ spreadsheetId, accessToken, entry }) {
+export async function appendExpense({ spreadsheetId, accessToken, entry, currentUserEmail }) {
+  // First get all existing transactions to calculate the new balance
+  const existingTransactions = await fetchAllRows({ spreadsheetId, accessToken });
+  const balance = calculateBalance([...existingTransactions, entry], currentUserEmail, entry.userEmail);
+
   const values = [[
     entry.id,
     entry.timestamp,
     entry.userEmail,
-    entry.name,  // Changed from counterparty to name
+    entry.name,
     entry.type,
     entry.amount,
     entry.description,
-    ''
+    '',  // Group ID
+    balance.toFixed(2) // Add balance
   ]];
 
   return gFetch(
-    `${SHEETS_URL}/${spreadsheetId}/values/A2:H2:append?valueInputOption=USER_ENTERED`,
+    `${SHEETS_URL}/${spreadsheetId}/values/A2:I2:append?valueInputOption=USER_ENTERED`,
     accessToken,
     'POST',
     { values }
@@ -221,40 +250,48 @@ export async function appendExpense({ spreadsheetId, accessToken, entry }) {
 export async function fetchAllRows({ spreadsheetId, accessToken }) {
   try {
     const res = await gFetch(
-      `${SHEETS_URL}/${spreadsheetId}/values/Expenses!A2:H10000`,
+      `${SHEETS_URL}/${spreadsheetId}/values/Expenses!A2:I10000`,
       accessToken
     );
 
     if (!res.values) return [];
 
-    return res.values.map(([id, timestamp, userEmail, name, type, amount, description], i) => ({
+    return res.values.map(([id, timestamp, userEmail, name, type, amount, description, groupId, balance], i) => ({
       id,
       timestamp,
-      email: userEmail,  // Map userEmail to email
+      userEmail,
       name,
       type,
       amount,
       description,
+      balance: balance || '0.00',
       rowIndex: i + 2
     }));
   } catch (error) {
     console.error('Error fetching rows:', error);
-    // Return empty array if there's any error (file not found, permissions, etc)
     return [];
   }
 }
 
-export async function updateExpenseRow({ spreadsheetId, accessToken, rowIndex, entry }) {
-  const range = `Expenses!A${rowIndex}:H${rowIndex}`;
+export async function updateExpenseRow({ spreadsheetId, accessToken, rowIndex, entry, currentUserEmail }) {
+  // Get all transactions to recalculate balance
+  const allTransactions = await fetchAllRows({ spreadsheetId, accessToken });
+  // Replace the transaction at rowIndex with the new entry
+  allTransactions[rowIndex - 2] = { ...entry, rowIndex };
+  // Calculate new balance
+  const balance = calculateBalance(allTransactions.slice(0, rowIndex - 1), currentUserEmail, entry.userEmail);
+
+  const range = `Expenses!A${rowIndex}:I${rowIndex}`;
   const values = [[
     entry.id,
     entry.timestamp,
     entry.userEmail,
-    entry.name,  // Changed from counterparty to name
+    entry.name,
     entry.type,
     entry.amount,
     entry.description,
-    ''
+    '',  // Group ID
+    balance.toFixed(2) // Add balance
   ]];
 
   return gFetch(
