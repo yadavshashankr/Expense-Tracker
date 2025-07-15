@@ -71,22 +71,8 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
     const isPositive = balance >= 0;
     return (
       <div className="flex items-center gap-1">
-        <span className={`${isPositive ? 'text-blue-600' : 'text-orange-600'} font-medium`}>
-          ₹{Math.abs(balance).toFixed(2)}
-        </span>
-        <span className="flex items-center">
-          {isPositive ? (
-            <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
-            </svg>
-          ) : (
-            <svg className="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-            </svg>
-          )}
-        </span>
-        <span className={`text-xs ${isPositive ? 'text-blue-600' : 'text-orange-600'}`}>
-          {isPositive ? 'Leading' : 'Trailing'}
+        <span className={`${isPositive ? 'text-green-600' : 'text-red-600'} font-medium`}>
+          {isPositive ? '+' : '-'}₹{Math.abs(balance).toFixed(2)}
         </span>
       </div>
     );
@@ -156,7 +142,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
         </div>
 
         <div className="flex justify-between items-center pt-2 border-t border-gray-100">
-          <div className="text-sm text-gray-600">Balance with user:</div>
+          <div className="text-sm text-gray-600">Balance:</div>
           <BalanceDisplay balance={balance} />
         </div>
         
@@ -291,7 +277,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
               <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Email</th>
               <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Type</th>
               <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Amount</th>
-              <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Balance with User</th>
+              <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Balance</th>
               <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap min-w-[200px]">Description</th>
               <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Actions</th>
             </tr>
