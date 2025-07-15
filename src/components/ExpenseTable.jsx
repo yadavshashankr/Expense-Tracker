@@ -37,16 +37,16 @@ export default function ExpenseTable({ expenses, onEdit, onDelete }) {
 
   return (
     <div className="w-full overflow-x-auto bg-white shadow rounded-2xl">
-      <table className="min-w-full">
+      <table className="min-w-full table-auto">
         <thead>
           <tr className="bg-indigo-50 text-left">
-            <th className="p-3 text-sm font-semibold text-gray-600">Date</th>
-            <th className="p-3 text-sm font-semibold text-gray-600">Name</th>
-            <th className="p-3 text-sm font-semibold text-gray-600">Email</th>
-            <th className="p-3 text-sm font-semibold text-gray-600">Type</th>
-            <th className="p-3 text-sm font-semibold text-gray-600">Amount</th>
-            <th className="p-3 text-sm font-semibold text-gray-600">Description</th>
-            <th className="p-3 text-sm font-semibold text-gray-600">Actions</th>
+            <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Date</th>
+            <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Name</th>
+            <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Email</th>
+            <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Type</th>
+            <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Amount</th>
+            <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap min-w-[200px]">Description</th>
+            <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Actions</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-100">
@@ -54,10 +54,10 @@ export default function ExpenseTable({ expenses, onEdit, onDelete }) {
             <tr key={expense.id} className="hover:bg-gray-50 transition-colors">
               {editingId === expense.id ? (
                 <>
-                  <td className="p-3">
+                  <td className="p-3 whitespace-nowrap">
                     <input
                       type="datetime-local"
-                      className="w-full border rounded px-2 py-1"
+                      className="w-full border rounded px-2 py-1 text-sm"
                       value={draft.timestamp.slice(0, 16)}
                       onChange={e => setDraft({
                         ...draft,
@@ -65,24 +65,24 @@ export default function ExpenseTable({ expenses, onEdit, onDelete }) {
                       })}
                     />
                   </td>
-                  <td className="p-3">
+                  <td className="p-3 whitespace-nowrap">
                     <input
-                      className="w-full border rounded px-2 py-1"
+                      className="w-full border rounded px-2 py-1 text-sm"
                       value={draft.name}
                       onChange={change('name')}
                     />
                   </td>
-                  <td className="p-3">
+                  <td className="p-3 whitespace-nowrap">
                     <input
                       type="email"
-                      className="w-full border rounded px-2 py-1"
+                      className="w-full border rounded px-2 py-1 text-sm"
                       value={draft.email}
                       onChange={change('email')}
                     />
                   </td>
-                  <td className="p-3">
+                  <td className="p-3 whitespace-nowrap">
                     <select
-                      className="w-full border rounded px-2 py-1"
+                      className="w-full border rounded px-2 py-1 text-sm"
                       value={draft.type}
                       onChange={change('type')}
                     >
@@ -90,34 +90,34 @@ export default function ExpenseTable({ expenses, onEdit, onDelete }) {
                       <option value="credit">Credit</option>
                     </select>
                   </td>
-                  <td className="p-3">
+                  <td className="p-3 whitespace-nowrap">
                     <input
                       type="number"
                       step="0.01"
                       min="0"
-                      className="w-full border rounded px-2 py-1"
+                      className="w-full border rounded px-2 py-1 text-sm"
                       value={draft.amount}
                       onChange={change('amount')}
                     />
                   </td>
                   <td className="p-3">
                     <input
-                      className="w-full border rounded px-2 py-1"
+                      className="w-full border rounded px-2 py-1 text-sm"
                       value={draft.description}
                       onChange={change('description')}
                     />
                   </td>
-                  <td className="p-3">
+                  <td className="p-3 whitespace-nowrap">
                     <div className="flex gap-2">
                       <button
                         onClick={save}
-                        className="text-green-600 hover:text-green-800"
+                        className="text-green-600 hover:text-green-800 text-sm"
                       >
                         Save
                       </button>
                       <button
                         onClick={cancel}
-                        className="text-gray-600 hover:text-gray-800"
+                        className="text-gray-600 hover:text-gray-800 text-sm"
                       >
                         Cancel
                       </button>
@@ -126,12 +126,12 @@ export default function ExpenseTable({ expenses, onEdit, onDelete }) {
                 </>
               ) : (
                 <>
-                  <td className="p-3 whitespace-nowrap">
+                  <td className="p-3 whitespace-nowrap text-sm">
                     {new Date(expense.timestamp).toLocaleString()}
                   </td>
-                  <td className="p-3">{expense.name}</td>
-                  <td className="p-3">{expense.email}</td>
-                  <td className="p-3">
+                  <td className="p-3 whitespace-nowrap text-sm">{expense.name}</td>
+                  <td className="p-3 whitespace-nowrap text-sm">{expense.email}</td>
+                  <td className="p-3 whitespace-nowrap">
                     <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
                       expense.type === 'credit' 
                         ? 'bg-green-100 text-green-800'
@@ -140,23 +140,23 @@ export default function ExpenseTable({ expenses, onEdit, onDelete }) {
                       {expense.type}
                     </span>
                   </td>
-                  <td className="p-3">
+                  <td className="p-3 whitespace-nowrap text-sm">
                     <span className={expense.type === 'credit' ? 'text-green-600' : 'text-red-600'}>
                       ₹{parseFloat(expense.amount).toFixed(2)}
                     </span>
                   </td>
-                  <td className="p-3">{expense.description}</td>
-                  <td className="p-3">
+                  <td className="p-3 text-sm break-words">{expense.description}</td>
+                  <td className="p-3 whitespace-nowrap">
                     <div className="flex gap-2">
                       <button
                         onClick={() => startEdit(expense)}
-                        className="text-blue-600 hover:text-blue-800"
+                        className="text-blue-600 hover:text-blue-800 text-sm"
                       >
                         Edit
                       </button>
                       <button
                         onClick={() => onDelete(expense.rowIndex)}
-                        className="text-red-600 hover:text-red-800"
+                        className="text-red-600 hover:text-red-800 text-sm"
                       >
                         Delete
                       </button>

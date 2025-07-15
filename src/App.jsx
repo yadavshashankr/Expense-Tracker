@@ -130,27 +130,27 @@ function App() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
       {!user ? (
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
-          <h1 className="text-4xl font-bold mb-8">Expense Tracker</h1>
+          <h1 className="text-3xl sm:text-4xl font-bold mb-8 text-center">Expense Tracker</h1>
           <LoginButton onLogin={setUser} />
         </div>
       ) : (
-        <div className="space-y-8">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold">Expense Tracker</h1>
+        <div className="space-y-4 sm:space-y-8">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+            <h1 className="text-xl sm:text-2xl font-bold">Expense Tracker</h1>
             <div className="flex items-center gap-4">
               <button
                 onClick={fetchExpenses}
                 disabled={isRefreshing}
-                className="text-gray-600 hover:text-gray-800 disabled:opacity-50"
+                className="text-gray-600 hover:text-gray-800 disabled:opacity-50 text-sm sm:text-base"
               >
                 {isRefreshing ? 'Refreshing...' : 'Refresh'}
               </button>
               <button
                 onClick={() => setUser(null)}
-                className="text-gray-600 hover:text-gray-800"
+                className="text-gray-600 hover:text-gray-800 text-sm sm:text-base"
               >
                 Sign Out
               </button>

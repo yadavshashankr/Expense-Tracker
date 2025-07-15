@@ -62,19 +62,41 @@ async function gFetch(url, accessToken, method='GET', body) {
 
 export async function ensureUserSheet({ appName, userName, accessToken }) {
   try {
-    // First, search for existing sheet
-    const query = encodeURIComponent(`name='${appName}/${userName}' and mimeType='application/vnd.google-apps.spreadsheet' and trashed=false`);
-    const searchRes = await gFetch(`${DRIVE_FILES_URL}?q=${query}&fields=files(id,name)`, accessToken);
+    // First, search for existing folder
+    const folderQuery = encodeURIComponent(`name='${appName}' and mimeType='application/vnd.google-apps.folder' and trashed=false`);
+    const folderSearchRes = await gFetch(`${DRIVE_FILES_URL}?q=${folderQuery}&fields=files(id,name)`, accessToken);
     
-    if (searchRes.files?.length) {
-      console.log('Found existing sheet:', searchRes.files[0].id);
+    let folderId;
+    
+    // Create folder if it doesn't exist
+    if (!folderSearchRes.files?.length) {
+      console.log('Creating new folder...');
+      const createFolderRes = await gFetch(
+        DRIVE_FILES_URL,
+        accessToken,
+        'POST',
+        {
+          name: appName,
+          mimeType: 'application/vnd.google-apps.folder'
+        }
+      );
+      folderId = createFolderRes.id;
+    } else {
+      folderId = folderSearchRes.files[0].id;
+    }
+
+    // Search for existing sheet in the folder
+    const sheetQuery = encodeURIComponent(`name='${userName}' and mimeType='application/vnd.google-apps.spreadsheet' and '${folderId}' in parents and trashed=false`);
+    const sheetSearchRes = await gFetch(`${DRIVE_FILES_URL}?q=${sheetQuery}&fields=files(id,name)`, accessToken);
+    
+    if (sheetSearchRes.files?.length) {
+      console.log('Found existing sheet:', sheetSearchRes.files[0].id);
       try {
-        await setTextWrapping(searchRes.files[0].id, accessToken);
+        await setTextWrapping(sheetSearchRes.files[0].id, accessToken);
       } catch (error) {
         console.warn('Failed to set text wrapping on existing sheet:', error);
-        // Continue anyway since this is not critical
       }
-      return searchRes.files[0].id;
+      return sheetSearchRes.files[0].id;
     }
 
     // Create new spreadsheet
@@ -85,7 +107,7 @@ export async function ensureUserSheet({ appName, userName, accessToken }) {
       'POST',
       {
         properties: {
-          title: `${appName}/${userName}`,
+          title: userName,
         },
         sheets: [{
           properties: {
@@ -103,6 +125,13 @@ export async function ensureUserSheet({ appName, userName, accessToken }) {
       throw new Error('Failed to create spreadsheet: No ID returned');
     }
 
+    // Move the sheet to the folder
+    await gFetch(
+      `${DRIVE_FILES_URL}/${createRes.spreadsheetId}?addParents=${folderId}&removeParents=root`,
+      accessToken,
+      'PATCH'
+    );
+
     // Add headers
     console.log('Adding headers to new sheet...');
     const headers = [['ID', 'Timestamp', 'User Email', 'Name', 'Type', 'Amount', 'Description', 'Group ID']];
@@ -118,7 +147,6 @@ export async function ensureUserSheet({ appName, userName, accessToken }) {
       await setTextWrapping(createRes.spreadsheetId, accessToken);
     } catch (error) {
       console.warn('Failed to set text wrapping on new sheet:', error);
-      // Continue anyway since this is not critical
     }
 
     return createRes.spreadsheetId;
@@ -202,7 +230,7 @@ export async function fetchAllRows({ spreadsheetId, accessToken }) {
     return res.values.map(([id, timestamp, userEmail, name, type, amount, description], i) => ({
       id,
       timestamp,
-      userEmail,
+      email: userEmail,  // Map userEmail to email
       name,
       type,
       amount,
