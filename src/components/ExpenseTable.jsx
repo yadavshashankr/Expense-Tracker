@@ -154,7 +154,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
               ? 'bg-green-100 text-green-800'
               : 'bg-red-100 text-red-800'
           }`}>
-            {expense.type === 'lend' ? '+' : '-'}
+            {expense.type === 'lend' ? 'Lend' : 'Debt'}
           </span>
         </div>
         
@@ -306,7 +306,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
                         ? 'bg-green-100 text-green-800'
                         : 'bg-red-100 text-red-800'
                     }`}>
-                      {expense.type === 'lend' ? '+' : '-'}
+                      {expense.type === 'lend' ? 'Lend' : 'Debt'}
                     </span>
                   </td>
                   <td className="p-3 whitespace-nowrap text-sm">

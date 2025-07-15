@@ -49,7 +49,7 @@ export default function TotalSection({ expenses }) {
           </div>
           <p className={`text-2xl font-bold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
             ₹{Math.abs(balance).toFixed(2)}
-            <span className="text-sm font-normal ml-2">
+            <span className="text-2xl font-bold ml-1">
               {isPositive ? '+' : '-'}
             </span>
           </p>
