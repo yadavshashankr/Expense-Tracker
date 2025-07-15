@@ -23,47 +23,43 @@ const formatDateTime = (timestamp) => {
   return { dateStr, timeStr };
 };
 
-// New utility function to calculate balance with other users
-const calculateUserBalance = (expenses, currentUserEmail, otherUserEmail) => {
-  const relevantTransactions = expenses.filter(expense => 
-    expense.userEmail === otherUserEmail || expense.userEmail === currentUserEmail
-  );
+// Calculate running balance up to a specific transaction
+const calculateRunningBalance = (expenses, currentUserEmail, targetEmail, upToIndex) => {
+  return expenses
+    .slice(0, upToIndex + 1)
+    .reduce((balance, expense) => {
+      if (expense.userEmail !== targetEmail && expense.userEmail !== currentUserEmail) {
+        return balance;
+      }
 
-  return relevantTransactions.reduce((balance, expense) => {
-    const amount = parseFloat(expense.amount);
-    // If current user received money (credit)
-    if (expense.userEmail === currentUserEmail && expense.type === 'credit') {
-      return balance + amount;
-    }
-    // If current user paid money (debit)
-    if (expense.userEmail === currentUserEmail && expense.type === 'debit') {
-      return balance - amount;
-    }
-    // If other user paid money (their debit is our credit)
-    if (expense.userEmail === otherUserEmail && expense.type === 'debit') {
-      return balance + amount;
-    }
-    // If other user received money (their credit is our debit)
-    if (expense.userEmail === otherUserEmail && expense.type === 'credit') {
-      return balance - amount;
-    }
-    return balance;
-  }, 0);
+      const amount = parseFloat(expense.amount);
+      
+      // From logged-in user's perspective:
+      if (expense.userEmail === currentUserEmail) {
+        // When I pay (debit), my balance with them decreases
+        if (expense.type === 'debit') return balance - amount;
+        // When I receive (credit), my balance with them increases
+        if (expense.type === 'credit') return balance + amount;
+      } else {
+        // When they pay (debit), my balance with them increases
+        if (expense.type === 'debit') return balance + amount;
+        // When they receive (credit), my balance with them decreases
+        if (expense.type === 'credit') return balance - amount;
+      }
+      return balance;
+    }, 0);
 };
 
 export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEmail }) {
   const [editingId, setEditingId] = useState(null);
   const [draft, setDraft] = useState({});
 
-  // Calculate balances for all users
-  const userBalances = useMemo(() => {
-    const uniqueEmails = [...new Set(expenses.map(expense => expense.userEmail))];
-    return uniqueEmails.reduce((acc, email) => {
-      if (email !== currentUserEmail) {
-        acc[email] = calculateUserBalance(expenses, currentUserEmail, email);
-      }
-      return acc;
-    }, {});
+  // Calculate running balances for each transaction
+  const runningBalances = useMemo(() => {
+    return expenses.map((expense, index) => ({
+      ...expense,
+      runningBalance: calculateRunningBalance(expenses, currentUserEmail, expense.userEmail, index)
+    }));
   }, [expenses, currentUserEmail]);
 
   // Balance display component
@@ -109,9 +105,9 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
   }
 
   // Mobile Card View Component
-  const MobileExpenseCard = ({ expense }) => {
+  const MobileExpenseCard = ({ expense, index }) => {
     const { dateStr, timeStr } = formatDateTime(expense.timestamp);
-    const balance = userBalances[expense.userEmail] || 0;
+    const runningBalance = runningBalances[index].runningBalance;
     
     return (
       <div className="bg-white rounded-lg shadow p-4 space-y-3">
@@ -142,8 +138,8 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
         </div>
 
         <div className="flex justify-between items-center pt-2 border-t border-gray-100">
-          <div className="text-sm text-gray-600">Balance:</div>
-          <BalanceDisplay balance={balance} />
+          <div className="text-sm text-gray-600">Running Balance:</div>
+          <BalanceDisplay balance={runningBalance} />
         </div>
         
         {expense.description && (
@@ -199,8 +195,8 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
           <input
             type="email"
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-            value={draft.email}
-            onChange={change('email')}
+            value={draft.userEmail}
+            onChange={change('userEmail')}
           />
         </div>
         <div>
@@ -255,12 +251,12 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
     <div>
       {/* Mobile List View */}
       <div className="space-y-4 md:hidden">
-        {expenses.map(expense => (
+        {runningBalances.map((expense, index) => (
           <div key={expense.id}>
             {editingId === expense.id ? (
               <EditForm expense={expense} />
             ) : (
-              <MobileExpenseCard expense={expense} />
+              <MobileExpenseCard expense={expense} index={index} />
             )}
           </div>
         ))}
@@ -277,15 +273,14 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
               <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Email</th>
               <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Type</th>
               <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Amount</th>
-              <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Balance</th>
+              <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Running Balance</th>
               <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap min-w-[200px]">Description</th>
               <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {expenses.map(expense => {
+            {runningBalances.map((expense, index) => {
               const { dateStr, timeStr } = formatDateTime(expense.timestamp);
-              const balance = userBalances[expense.userEmail] || 0;
               
               return (
                 <tr key={expense.id} className="hover:bg-gray-50 transition-colors">
@@ -308,7 +303,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
                     </span>
                   </td>
                   <td className="p-3 whitespace-nowrap">
-                    <BalanceDisplay balance={balance} />
+                    <BalanceDisplay balance={expense.runningBalance} />
                   </td>
                   <td className="p-3 text-sm break-words">{expense.description}</td>
                   <td className="p-3 whitespace-nowrap">

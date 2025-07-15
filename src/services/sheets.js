@@ -61,24 +61,25 @@ async function gFetch(url, accessToken, method='GET', body) {
 }
 
 // Add balance calculation function
-const calculateBalance = (transactions, currentUserEmail, otherUserEmail) => {
+const calculateBalance = (transactions, currentUserEmail, targetEmail) => {
   return transactions.reduce((balance, transaction) => {
+    if (transaction.userEmail !== targetEmail && transaction.userEmail !== currentUserEmail) {
+      return balance;
+    }
+
     const amount = parseFloat(transaction.amount);
-    // If current user received money (credit)
-    if (transaction.userEmail === currentUserEmail && transaction.type === 'credit') {
-      return balance + amount;
-    }
-    // If current user paid money (debit)
-    if (transaction.userEmail === currentUserEmail && transaction.type === 'debit') {
-      return balance - amount;
-    }
-    // If other user paid money (their debit is our credit)
-    if (transaction.userEmail === otherUserEmail && transaction.type === 'debit') {
-      return balance + amount;
-    }
-    // If other user received money (their credit is our debit)
-    if (transaction.userEmail === otherUserEmail && transaction.type === 'credit') {
-      return balance - amount;
+    
+    // From logged-in user's perspective:
+    if (transaction.userEmail === currentUserEmail) {
+      // When I pay (debit), my balance with them decreases
+      if (transaction.type === 'debit') return balance - amount;
+      // When I receive (credit), my balance with them increases
+      if (transaction.type === 'credit') return balance + amount;
+    } else {
+      // When they pay (debit), my balance with them increases
+      if (transaction.type === 'debit') return balance + amount;
+      // When they receive (credit), my balance with them decreases
+      if (transaction.type === 'credit') return balance - amount;
     }
     return balance;
   }, 0);
