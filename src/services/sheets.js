@@ -81,6 +81,7 @@ const calculateBalance = (transactions, currentUserEmail, targetEmail) => {
       // If they're receiving (credit), I should pay (negative)
       if (firstTransaction.type === 'credit') return -amount;
     }
+    return 0;
   }
 
   // For multiple transactions, calculate total balance

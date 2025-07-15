@@ -42,6 +42,7 @@ const calculateRunningBalance = (expenses, currentUserEmail, targetEmail, upToIn
       // If they're receiving (credit), I should pay (negative)
       if (firstTransaction.type === 'credit') return -amount;
     }
+    return 0;
   }
 
   // For subsequent transactions, calculate running balance
