@@ -1,6 +1,28 @@
 
 import { useState } from 'react';
 
+// Utility function for date formatting
+const formatDateTime = (timestamp) => {
+  const date = new Date(timestamp);
+  
+  // Format date as dd-mmm-yyyy
+  const dateStr = date.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric'
+  }).replace(/ /g, '-');
+
+  // Format time as HH:MM:SS
+  const timeStr = date.toLocaleTimeString('en-GB', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  });
+
+  return { dateStr, timeStr };
+};
+
 export default function ExpenseTable({ expenses, onEdit, onDelete }) {
   const [editingId, setEditingId] = useState(null);
   const [draft, setDraft] = useState({});
@@ -36,55 +58,59 @@ export default function ExpenseTable({ expenses, onEdit, onDelete }) {
   }
 
   // Mobile Card View Component
-  const MobileExpenseCard = ({ expense }) => (
-    <div className="bg-white rounded-lg shadow p-4 space-y-3">
-      <div className="flex justify-between items-start">
-        <div>
-          <h3 className="font-medium text-gray-900">{expense.name}</h3>
-          <p className="text-sm text-gray-500">{expense.email}</p>
+  const MobileExpenseCard = ({ expense }) => {
+    const { dateStr, timeStr } = formatDateTime(expense.timestamp);
+    return (
+      <div className="bg-white rounded-lg shadow p-4 space-y-3">
+        <div className="flex justify-between items-start">
+          <div>
+            <h3 className="font-medium text-gray-900">{expense.name}</h3>
+            <p className="text-sm text-gray-500">{expense.email}</p>
+          </div>
+          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+            expense.type === 'credit' 
+              ? 'bg-green-100 text-green-800'
+              : 'bg-red-100 text-red-800'
+          }`}>
+            {expense.type}
+          </span>
         </div>
-        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-          expense.type === 'credit' 
-            ? 'bg-green-100 text-green-800'
-            : 'bg-red-100 text-red-800'
-        }`}>
-          {expense.type}
-        </span>
+        
+        <div className="flex justify-between items-center">
+          <span className={`text-lg font-semibold ${
+            expense.type === 'credit' ? 'text-green-600' : 'text-red-600'
+          }`}>
+            ₹{parseFloat(expense.amount).toFixed(2)}
+          </span>
+          <div className="text-right">
+            <div className="text-sm text-gray-500">{dateStr}</div>
+            <div className="text-xs text-gray-400">{timeStr}</div>
+          </div>
+        </div>
+        
+        {expense.description && (
+          <p className="text-sm text-gray-600 break-words">
+            {expense.description}
+          </p>
+        )}
+        
+        <div className="flex justify-end gap-3 pt-2 border-t border-gray-100">
+          <button
+            onClick={() => startEdit(expense)}
+            className="text-sm text-blue-600 hover:text-blue-800"
+          >
+            Edit
+          </button>
+          <button
+            onClick={() => onDelete(expense.rowIndex)}
+            className="text-sm text-red-600 hover:text-red-800"
+          >
+            Delete
+          </button>
+        </div>
       </div>
-      
-      <div className="flex justify-between items-center">
-        <span className={`text-lg font-semibold ${
-          expense.type === 'credit' ? 'text-green-600' : 'text-red-600'
-        }`}>
-          ₹{parseFloat(expense.amount).toFixed(2)}
-        </span>
-        <span className="text-sm text-gray-500">
-          {new Date(expense.timestamp).toLocaleDateString()}
-        </span>
-      </div>
-      
-      {expense.description && (
-        <p className="text-sm text-gray-600 break-words">
-          {expense.description}
-        </p>
-      )}
-      
-      <div className="flex justify-end gap-3 pt-2 border-t border-gray-100">
-        <button
-          onClick={() => startEdit(expense)}
-          className="text-sm text-blue-600 hover:text-blue-800"
-        >
-          Edit
-        </button>
-        <button
-          onClick={() => onDelete(expense.rowIndex)}
-          className="text-sm text-red-600 hover:text-red-800"
-        >
-          Delete
-        </button>
-      </div>
-    </div>
-  );
+    );
+  };
 
   // Edit Form Component
   const EditForm = ({ expense }) => (
@@ -188,6 +214,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete }) {
           <thead>
             <tr className="bg-indigo-50 text-left">
               <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Date</th>
+              <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Time</th>
               <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Name</th>
               <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Email</th>
               <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Type</th>
@@ -197,46 +224,48 @@ export default function ExpenseTable({ expenses, onEdit, onDelete }) {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {expenses.map(expense => (
-              <tr key={expense.id} className="hover:bg-gray-50 transition-colors">
-                <td className="p-3 whitespace-nowrap text-sm">
-                  {new Date(expense.timestamp).toLocaleString()}
-                </td>
-                <td className="p-3 whitespace-nowrap text-sm">{expense.name}</td>
-                <td className="p-3 whitespace-nowrap text-sm">{expense.email}</td>
-                <td className="p-3 whitespace-nowrap">
-                  <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                    expense.type === 'credit' 
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-red-100 text-red-800'
-                  }`}>
-                    {expense.type}
-                  </span>
-                </td>
-                <td className="p-3 whitespace-nowrap text-sm">
-                  <span className={expense.type === 'credit' ? 'text-green-600' : 'text-red-600'}>
-                    ₹{parseFloat(expense.amount).toFixed(2)}
-                  </span>
-                </td>
-                <td className="p-3 text-sm break-words">{expense.description}</td>
-                <td className="p-3 whitespace-nowrap">
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => startEdit(expense)}
-                      className="text-blue-600 hover:text-blue-800 text-sm"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => onDelete(expense.rowIndex)}
-                      className="text-red-600 hover:text-red-800 text-sm"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+            {expenses.map(expense => {
+              const { dateStr, timeStr } = formatDateTime(expense.timestamp);
+              return (
+                <tr key={expense.id} className="hover:bg-gray-50 transition-colors">
+                  <td className="p-3 whitespace-nowrap text-sm">{dateStr}</td>
+                  <td className="p-3 whitespace-nowrap text-sm">{timeStr}</td>
+                  <td className="p-3 whitespace-nowrap text-sm">{expense.name}</td>
+                  <td className="p-3 whitespace-nowrap text-sm">{expense.email}</td>
+                  <td className="p-3 whitespace-nowrap">
+                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                      expense.type === 'credit' 
+                        ? 'bg-green-100 text-green-800'
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {expense.type}
+                    </span>
+                  </td>
+                  <td className="p-3 whitespace-nowrap text-sm">
+                    <span className={expense.type === 'credit' ? 'text-green-600' : 'text-red-600'}>
+                      ₹{parseFloat(expense.amount).toFixed(2)}
+                    </span>
+                  </td>
+                  <td className="p-3 text-sm break-words">{expense.description}</td>
+                  <td className="p-3 whitespace-nowrap">
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => startEdit(expense)}
+                        className="text-blue-600 hover:text-blue-800 text-sm"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => onDelete(expense.rowIndex)}
+                        className="text-red-600 hover:text-red-800 text-sm"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

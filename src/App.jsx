@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import LoginButton from './components/LoginButton'
 import ExpenseForm from './components/ExpenseForm'
 import ExpenseTable from './components/ExpenseTable'
+import TotalSection from './components/TotalSection'
 import { ensureUserSheet, fetchAllRows, appendExpense, updateExpenseRow, deleteExpenseRow } from './services/sheets'
 
 function App() {
@@ -178,6 +179,9 @@ function App() {
             </div>
           ) : (
             <div className="space-y-6">
+              {/* Total Section */}
+              {expenses.length > 0 && <TotalSection expenses={expenses} />}
+              
               <ExpenseForm 
                 onSubmit={handleAddExpense} 
                 user={user.profile} 
