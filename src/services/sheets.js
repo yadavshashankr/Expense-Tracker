@@ -62,11 +62,19 @@ async function gFetch(url, accessToken, method='GET', body) {
 
 // Add balance calculation function
 const calculateBalance = (transactions, currentUserEmail, targetEmail) => {
-  if (transactions.length === 0) return 0;
+  if (!transactions || transactions.length === 0) return 0;
+
+  // Filter transactions only between current user and target user
+  const relevantTransactions = transactions.filter(transaction => 
+    (transaction.userEmail === currentUserEmail && transaction.recipientEmail === targetEmail) ||
+    (transaction.userEmail === targetEmail && transaction.recipientEmail === currentUserEmail)
+  );
+
+  if (relevantTransactions.length === 0) return 0;
 
   // For the first transaction, handle it directly
-  if (transactions.length === 1) {
-    const firstTransaction = transactions[0];
+  if (relevantTransactions.length === 1) {
+    const firstTransaction = relevantTransactions[0];
     const amount = parseFloat(firstTransaction.amount);
     
     // If it's my transaction
@@ -85,11 +93,7 @@ const calculateBalance = (transactions, currentUserEmail, targetEmail) => {
   }
 
   // For multiple transactions, calculate total balance
-  return transactions.reduce((balance, transaction) => {
-    if (transaction.userEmail !== targetEmail && transaction.userEmail !== currentUserEmail) {
-      return balance;
-    }
-
+  return relevantTransactions.reduce((balance, transaction) => {
     const amount = parseFloat(transaction.amount);
     
     // From logged-in user's perspective:
@@ -133,21 +137,16 @@ export async function ensureUserSheet({ appName, userName, accessToken }) {
       folderId = folderSearchRes.files[0].id;
     }
 
-    // Search for existing sheet in the folder
-    const sheetQuery = encodeURIComponent(`name='${userName}' and mimeType='application/vnd.google-apps.spreadsheet' and '${folderId}' in parents and trashed=false`);
+    // Search for existing sheet
+    const sheetQuery = encodeURIComponent(`name='${userName}-expenses' and mimeType='application/vnd.google-apps.spreadsheet' and '${folderId}' in parents and trashed=false`);
     const sheetSearchRes = await gFetch(`${DRIVE_FILES_URL}?q=${sheetQuery}&fields=files(id,name)`, accessToken);
-    
+
+    // Return existing sheet if found
     if (sheetSearchRes.files?.length) {
-      console.log('Found existing sheet:', sheetSearchRes.files[0].id);
-      try {
-        await setTextWrapping(sheetSearchRes.files[0].id, accessToken);
-      } catch (error) {
-        console.warn('Failed to set text wrapping on existing sheet:', error);
-      }
       return sheetSearchRes.files[0].id;
     }
 
-    // Create new spreadsheet
+    // Create new sheet
     console.log('Creating new sheet...');
     const createRes = await gFetch(
       SHEETS_URL,
@@ -155,17 +154,8 @@ export async function ensureUserSheet({ appName, userName, accessToken }) {
       'POST',
       {
         properties: {
-          title: userName,
-        },
-        sheets: [{
-          properties: {
-            title: 'Expenses',
-            gridProperties: {
-              rowCount: 1000,
-              columnCount: 9 // Added one more column for balance
-            }
-          }
-        }]
+          title: `${userName}-expenses`
+        }
       }
     );
 
@@ -182,7 +172,7 @@ export async function ensureUserSheet({ appName, userName, accessToken }) {
 
     // Add headers
     console.log('Adding headers to new sheet...');
-    const headers = [['ID', 'Timestamp', 'User Email', 'Name', 'Type', 'Amount', 'Description', 'Group ID', 'Balance']];
+    const headers = [['ID', 'Timestamp', 'User Email', 'Recipient Email', 'Name', 'Type', 'Amount', 'Description', 'Balance']];
     await gFetch(
       `${SHEETS_URL}/${createRes.spreadsheetId}/values/A1:I1?valueInputOption=RAW`,
       accessToken,
@@ -250,101 +240,79 @@ export async function appendExpense({ spreadsheetId, accessToken, entry, current
   // First get all existing transactions to calculate the new balance
   const existingTransactions = await fetchAllRows({ spreadsheetId, accessToken });
   
-  // Sort transactions chronologically for balance calculation
-  const chronologicalTransactions = [...existingTransactions]
-    .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-  
-  const balance = calculateBalance([...chronologicalTransactions, entry], currentUserEmail, entry.userEmail);
+  // Calculate balance for this specific user
+  const balance = calculateBalance([...existingTransactions, entry], currentUserEmail, entry.userEmail);
 
   const values = [[
     entry.id,
     entry.timestamp,
     entry.userEmail,
+    currentUserEmail, // Add recipient email
     entry.name,
     entry.type,
     entry.amount,
     entry.description,
-    '',  // Group ID
-    balance.toFixed(2) // Add balance
+    balance
   ]];
 
   return gFetch(
-    `${SHEETS_URL}/${spreadsheetId}/values/A2:I2:append?valueInputOption=USER_ENTERED`,
+    `${SHEETS_URL}/${spreadsheetId}/values/A1:I1:append?valueInputOption=RAW`,
     accessToken,
     'POST',
     { values }
   );
 }
 
-export async function fetchAllRows({ spreadsheetId, accessToken }) {
-  try {
-    const res = await gFetch(
-      `${SHEETS_URL}/${spreadsheetId}/values/Expenses!A2:I10000`,
-      accessToken
-    );
-
-    if (!res.values) return [];
-
-    // Map the rows and sort by timestamp in descending order (newest first)
-    return res.values
-      .map(([id, timestamp, userEmail, name, type, amount, description, groupId, balance], i) => ({
-        id,
-        timestamp,
-        userEmail,
-        name,
-        type,
-        amount,
-        description,
-        balance: balance || '0.00',
-        rowIndex: i + 2
-      }))
-      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-  } catch (error) {
-    console.error('Error fetching rows:', error);
-    return [];
-  }
-}
-
 export async function updateExpenseRow({ spreadsheetId, accessToken, rowIndex, entry, currentUserEmail }) {
-  // Get all transactions to recalculate balance
+  // Get all transactions to recalculate balances
   const allTransactions = await fetchAllRows({ spreadsheetId, accessToken });
   
-  // Sort transactions chronologically for balance calculation
-  const chronologicalTransactions = [...allTransactions]
-    .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+  // Update the specific transaction
+  allTransactions[rowIndex] = entry;
   
-  // Replace the transaction at rowIndex with the new entry
-  const targetIndex = chronologicalTransactions.findIndex(t => t.rowIndex === rowIndex);
-  if (targetIndex !== -1) {
-    chronologicalTransactions[targetIndex] = { ...entry, rowIndex };
-  }
-  
-  // Calculate new balance using transactions up to this point
-  const balance = calculateBalance(
-    chronologicalTransactions.slice(0, targetIndex + 1),
-    currentUserEmail,
-    entry.userEmail
-  );
+  // Calculate new balance for this specific user
+  const balance = calculateBalance(allTransactions, currentUserEmail, entry.userEmail);
 
-  const range = `Expenses!A${rowIndex}:I${rowIndex}`;
   const values = [[
     entry.id,
     entry.timestamp,
     entry.userEmail,
+    currentUserEmail, // Add recipient email
     entry.name,
     entry.type,
     entry.amount,
     entry.description,
-    '',  // Group ID
-    balance.toFixed(2) // Add balance
+    balance
   ]];
 
+  // Update the row
   return gFetch(
-    `${SHEETS_URL}/${spreadsheetId}/values/${range}?valueInputOption=USER_ENTERED`,
+    `${SHEETS_URL}/${spreadsheetId}/values/A${rowIndex + 2}:I${rowIndex + 2}?valueInputOption=RAW`,
     accessToken,
     'PUT',
     { values }
   );
+}
+
+export async function fetchAllRows({ spreadsheetId, accessToken }) {
+  const response = await gFetch(
+    `${SHEETS_URL}/${spreadsheetId}/values/A2:I`,
+    accessToken
+  );
+
+  if (!response.values?.length) return [];
+
+  return response.values.map(row => ({
+    id: row[0],
+    timestamp: row[1],
+    userEmail: row[2],
+    recipientEmail: row[3], // Add recipient email to the returned object
+    name: row[4],
+    type: row[5],
+    amount: row[6],
+    description: row[7],
+    balance: parseFloat(row[8] || 0)
+  }));
 }
 
 export async function deleteExpenseRow({ spreadsheetId, accessToken, rowIndex }) {

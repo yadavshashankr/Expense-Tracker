@@ -5,7 +5,18 @@ export default function ExpenseForm({ user, onSubmit }) {
   const [form, setForm] = useState({ name: '', email: '', type: 'debit', amount: '', description: '' });
   const [error, setError] = useState(null);
 
-  const change = k => e => setForm({ ...form, [k]: e.target.value });
+  const change = k => e => {
+    const newValue = e.target.value;
+    
+    // Prevent user from entering their own email
+    if (k === 'email' && newValue === user.email) {
+      setError("You cannot add yourself as a recipient.");
+      return;
+    }
+    
+    setForm({ ...form, [k]: newValue });
+    setError(null);
+  };
   
   const submit = e => {
     e.preventDefault();
@@ -14,12 +25,16 @@ export default function ExpenseForm({ user, onSubmit }) {
         throw new Error('User email not available. Please try signing out and signing in again.');
       }
 
+      if (form.email === user.email) {
+        throw new Error('You cannot add yourself as a recipient.');
+      }
+
       const entry = { 
         id: crypto.randomUUID(), 
         timestamp: new Date().toISOString(), 
-        userEmail: form.email, // Use the email from the form instead of user.email
+        userEmail: form.email,
         ...form,
-        amount: parseFloat(form.amount) // Ensure amount is a number
+        amount: parseFloat(form.amount)
       };
 
       onSubmit(entry);
