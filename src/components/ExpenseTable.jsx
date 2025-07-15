@@ -291,7 +291,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
               <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Email</th>
               <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Type</th>
               <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Amount</th>
-              <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Balance</th>
+              <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Balance with User</th>
               <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap min-w-[200px]">Description</th>
               <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Actions</th>
             </tr>

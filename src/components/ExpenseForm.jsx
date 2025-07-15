@@ -17,7 +17,7 @@ export default function ExpenseForm({ user, onSubmit }) {
       const entry = { 
         id: crypto.randomUUID(), 
         timestamp: new Date().toISOString(), 
-        userEmail: user.email,
+        userEmail: form.email, // Use the email from the form instead of user.email
         ...form,
         amount: parseFloat(form.amount) // Ensure amount is a number
       };
@@ -50,7 +50,7 @@ export default function ExpenseForm({ user, onSubmit }) {
           <input 
             type="email"
             className="border p-2 rounded" 
-            placeholder="Email" 
+            placeholder="Recipient's Email" 
             value={form.email} 
             onChange={change('email')} 
             required 
