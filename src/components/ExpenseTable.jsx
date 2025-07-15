@@ -101,7 +101,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
     return (
       <div className="flex items-center gap-1">
         <span className={`${isPositive ? 'text-green-600' : 'text-red-600'} font-medium`}>
-          {isPositive ? 'They owe ' : 'You owe '}₹{Math.abs(balance).toFixed(2)}
+          {isPositive ? '+' : '-'}₹{Math.abs(balance).toFixed(2)}
         </span>
       </div>
     );
@@ -154,7 +154,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
               ? 'bg-green-100 text-green-800'
               : 'bg-red-100 text-red-800'
           }`}>
-            {expense.type === 'lend' ? 'They Owe' : 'You Owe'}
+            {expense.type === 'lend' ? '+' : '-'}
           </span>
         </div>
         
@@ -306,7 +306,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
                         ? 'bg-green-100 text-green-800'
                         : 'bg-red-100 text-red-800'
                     }`}>
-                      {expense.type === 'lend' ? 'They Owe' : 'You Owe'}
+                      {expense.type === 'lend' ? '+' : '-'}
                     </span>
                   </td>
                   <td className="p-3 whitespace-nowrap text-sm">
