@@ -71,15 +71,15 @@ const calculateBalance = (transactions, currentUserEmail, targetEmail) => {
     
     // If it's my transaction
     if (firstTransaction.userEmail === currentUserEmail) {
-      // If I'm paying (debit), it should be negative
-      if (firstTransaction.type === 'debit') return -amount;
-      // If I'm receiving (credit), it should be positive
-      if (firstTransaction.type === 'credit') return amount;
+      // If I owe them (debt), it should be negative
+      if (firstTransaction.type === 'debt') return -amount;
+      // If they owe me (lend), it should be positive
+      if (firstTransaction.type === 'lend') return amount;
     } else {
-      // If they're paying (debit), I should receive (positive)
-      if (firstTransaction.type === 'debit') return amount;
-      // If they're receiving (credit), I should pay (negative)
-      if (firstTransaction.type === 'credit') return -amount;
+      // If they owe me (lend), it should be positive
+      if (firstTransaction.type === 'lend') return amount;
+      // If I owe them (debt), it should be negative
+      if (firstTransaction.type === 'debt') return -amount;
     }
     return 0;
   }
@@ -94,15 +94,15 @@ const calculateBalance = (transactions, currentUserEmail, targetEmail) => {
     
     // From logged-in user's perspective:
     if (transaction.userEmail === currentUserEmail) {
-      // When I pay (debit), my balance with them decreases
-      if (transaction.type === 'debit') return balance - amount;
-      // When I receive (credit), my balance with them increases
-      if (transaction.type === 'credit') return balance + amount;
+      // When I owe them (debt), my balance decreases
+      if (transaction.type === 'debt') return balance - amount;
+      // When they owe me (lend), my balance increases
+      if (transaction.type === 'lend') return balance + amount;
     } else {
-      // When they pay (debit), my balance with them increases
-      if (transaction.type === 'debit') return balance + amount;
-      // When they receive (credit), my balance with them decreases
-      if (transaction.type === 'credit') return balance - amount;
+      // When they owe me (lend), my balance increases
+      if (transaction.type === 'lend') return balance + amount;
+      // When I owe them (debt), my balance decreases
+      if (transaction.type === 'debt') return balance - amount;
     }
     return balance;
   }, 0);
@@ -133,21 +133,16 @@ export async function ensureUserSheet({ appName, userName, accessToken }) {
       folderId = folderSearchRes.files[0].id;
     }
 
-    // Search for existing sheet in the folder
-    const sheetQuery = encodeURIComponent(`name='${userName}' and mimeType='application/vnd.google-apps.spreadsheet' and '${folderId}' in parents and trashed=false`);
+    // Search for existing sheet
+    const sheetQuery = encodeURIComponent(`name='${userName}-transactions' and mimeType='application/vnd.google-apps.spreadsheet' and '${folderId}' in parents and trashed=false`);
     const sheetSearchRes = await gFetch(`${DRIVE_FILES_URL}?q=${sheetQuery}&fields=files(id,name)`, accessToken);
-    
+
+    // Return existing sheet if found
     if (sheetSearchRes.files?.length) {
-      console.log('Found existing sheet:', sheetSearchRes.files[0].id);
-      try {
-        await setTextWrapping(sheetSearchRes.files[0].id, accessToken);
-      } catch (error) {
-        console.warn('Failed to set text wrapping on existing sheet:', error);
-      }
       return sheetSearchRes.files[0].id;
     }
 
-    // Create new spreadsheet
+    // Create new sheet
     console.log('Creating new sheet...');
     const createRes = await gFetch(
       SHEETS_URL,
@@ -155,17 +150,8 @@ export async function ensureUserSheet({ appName, userName, accessToken }) {
       'POST',
       {
         properties: {
-          title: userName,
-        },
-        sheets: [{
-          properties: {
-            title: 'Expenses',
-            gridProperties: {
-              rowCount: 1000,
-              columnCount: 9 // Added one more column for balance
-            }
-          }
-        }]
+          title: `${userName}-transactions`
+        }
       }
     );
 
@@ -182,9 +168,9 @@ export async function ensureUserSheet({ appName, userName, accessToken }) {
 
     // Add headers
     console.log('Adding headers to new sheet...');
-    const headers = [['ID', 'Timestamp', 'User Email', 'Name', 'Type', 'Amount', 'Description', 'Group ID', 'Balance']];
+    const headers = [['ID', 'Timestamp', 'User Email', 'Name', 'Type', 'Amount', 'Description', 'Balance']];
     await gFetch(
-      `${SHEETS_URL}/${createRes.spreadsheetId}/values/A1:I1?valueInputOption=RAW`,
+      `${SHEETS_URL}/${createRes.spreadsheetId}/values/A1:H1?valueInputOption=RAW`,
       accessToken,
       'PUT',
       { values: headers }
@@ -264,12 +250,11 @@ export async function appendExpense({ spreadsheetId, accessToken, entry, current
     entry.type,
     entry.amount,
     entry.description,
-    '',  // Group ID
-    balance.toFixed(2) // Add balance
+    balance
   ]];
 
   return gFetch(
-    `${SHEETS_URL}/${spreadsheetId}/values/A2:I2:append?valueInputOption=USER_ENTERED`,
+    `${SHEETS_URL}/${spreadsheetId}/values/A1:H1:append?valueInputOption=RAW`,
     accessToken,
     'POST',
     { values }
@@ -277,56 +262,35 @@ export async function appendExpense({ spreadsheetId, accessToken, entry, current
 }
 
 export async function fetchAllRows({ spreadsheetId, accessToken }) {
-  try {
-    const res = await gFetch(
-      `${SHEETS_URL}/${spreadsheetId}/values/Expenses!A2:I10000`,
-      accessToken
-    );
+  const response = await gFetch(
+    `${SHEETS_URL}/${spreadsheetId}/values/A2:H`,
+    accessToken
+  );
 
-    if (!res.values) return [];
+  if (!response.values?.length) return [];
 
-    // Map the rows and sort by timestamp in descending order (newest first)
-    return res.values
-      .map(([id, timestamp, userEmail, name, type, amount, description, groupId, balance], i) => ({
-        id,
-        timestamp,
-        userEmail,
-        name,
-        type,
-        amount,
-        description,
-        balance: balance || '0.00',
-        rowIndex: i + 2
-      }))
-      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-  } catch (error) {
-    console.error('Error fetching rows:', error);
-    return [];
-  }
+  return response.values.map(row => ({
+    id: row[0],
+    timestamp: row[1],
+    userEmail: row[2],
+    name: row[3],
+    type: row[4],
+    amount: row[5],
+    description: row[6],
+    balance: parseFloat(row[7] || 0)
+  }));
 }
 
 export async function updateExpenseRow({ spreadsheetId, accessToken, rowIndex, entry, currentUserEmail }) {
-  // Get all transactions to recalculate balance
+  // Get all transactions to recalculate balances
   const allTransactions = await fetchAllRows({ spreadsheetId, accessToken });
   
-  // Sort transactions chronologically for balance calculation
-  const chronologicalTransactions = [...allTransactions]
-    .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+  // Update the specific transaction
+  allTransactions[rowIndex] = entry;
   
-  // Replace the transaction at rowIndex with the new entry
-  const targetIndex = chronologicalTransactions.findIndex(t => t.rowIndex === rowIndex);
-  if (targetIndex !== -1) {
-    chronologicalTransactions[targetIndex] = { ...entry, rowIndex };
-  }
-  
-  // Calculate new balance using transactions up to this point
-  const balance = calculateBalance(
-    chronologicalTransactions.slice(0, targetIndex + 1),
-    currentUserEmail,
-    entry.userEmail
-  );
+  // Calculate new balance
+  const balance = calculateBalance(allTransactions, currentUserEmail, entry.userEmail);
 
-  const range = `Expenses!A${rowIndex}:I${rowIndex}`;
   const values = [[
     entry.id,
     entry.timestamp,
@@ -335,12 +299,12 @@ export async function updateExpenseRow({ spreadsheetId, accessToken, rowIndex, e
     entry.type,
     entry.amount,
     entry.description,
-    '',  // Group ID
-    balance.toFixed(2) // Add balance
+    balance
   ]];
 
+  // Update the row
   return gFetch(
-    `${SHEETS_URL}/${spreadsheetId}/values/${range}?valueInputOption=USER_ENTERED`,
+    `${SHEETS_URL}/${spreadsheetId}/values/A${rowIndex + 2}:H${rowIndex + 2}?valueInputOption=RAW`,
     accessToken,
     'PUT',
     { values }

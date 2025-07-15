@@ -2,7 +2,7 @@
 import { useState } from 'react';
 
 export default function ExpenseForm({ user, onSubmit }) {
-  const [form, setForm] = useState({ name: '', email: '', type: 'debit', amount: '', description: '' });
+  const [form, setForm] = useState({ name: '', email: '', type: 'debt', amount: '', description: '' });
   const [error, setError] = useState(null);
 
   const change = k => e => setForm({ ...form, [k]: e.target.value });
@@ -17,16 +17,16 @@ export default function ExpenseForm({ user, onSubmit }) {
       const entry = { 
         id: crypto.randomUUID(), 
         timestamp: new Date().toISOString(), 
-        userEmail: form.email, // Use the email from the form instead of user.email
+        userEmail: form.email,
         ...form,
-        amount: parseFloat(form.amount) // Ensure amount is a number
+        amount: parseFloat(form.amount)
       };
 
       onSubmit(entry);
-      setForm({ name: '', email: '', type: 'debit', amount: '', description: '' });
+      setForm({ name: '', email: '', type: 'debt', amount: '', description: '' });
       setError(null);
     } catch (err) {
-      console.error('Error submitting expense:', err);
+      console.error('Error submitting transaction:', err);
       setError(err.message);
     }
   };
@@ -50,7 +50,7 @@ export default function ExpenseForm({ user, onSubmit }) {
           <input 
             type="email"
             className="border p-2 rounded" 
-            placeholder="Recipient's Email" 
+            placeholder="Person's Email" 
             value={form.email} 
             onChange={change('email')} 
             required 
@@ -60,8 +60,8 @@ export default function ExpenseForm({ user, onSubmit }) {
             value={form.type} 
             onChange={change('type')}
           >
-            <option value="debit">Debit</option>
-            <option value="credit">Credit</option>
+            <option value="debt">I Owe (Debt)</option>
+            <option value="lend">They Owe (Lend)</option>
           </select>
           <input 
             type="number" 
@@ -84,7 +84,7 @@ export default function ExpenseForm({ user, onSubmit }) {
           type="submit"
           className="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-xl transition-colors"
         >
-          Add Expense
+          Add Transaction
         </button>
       </form>
     </div>
