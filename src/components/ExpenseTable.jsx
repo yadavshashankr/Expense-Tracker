@@ -26,25 +26,25 @@ const formatDateTime = (timestamp) => {
 // New utility function to calculate balance with other users
 const calculateUserBalance = (expenses, currentUserEmail, otherUserEmail) => {
   const relevantTransactions = expenses.filter(expense => 
-    expense.email === otherUserEmail || expense.email === currentUserEmail
+    expense.userEmail === otherUserEmail || expense.userEmail === currentUserEmail
   );
 
   return relevantTransactions.reduce((balance, expense) => {
     const amount = parseFloat(expense.amount);
     // If current user received money (credit)
-    if (expense.email === currentUserEmail && expense.type === 'credit') {
+    if (expense.userEmail === currentUserEmail && expense.type === 'credit') {
       return balance + amount;
     }
     // If current user paid money (debit)
-    if (expense.email === currentUserEmail && expense.type === 'debit') {
+    if (expense.userEmail === currentUserEmail && expense.type === 'debit') {
       return balance - amount;
     }
     // If other user paid money (their debit is our credit)
-    if (expense.email === otherUserEmail && expense.type === 'debit') {
+    if (expense.userEmail === otherUserEmail && expense.type === 'debit') {
       return balance + amount;
     }
     // If other user received money (their credit is our debit)
-    if (expense.email === otherUserEmail && expense.type === 'credit') {
+    if (expense.userEmail === otherUserEmail && expense.type === 'credit') {
       return balance - amount;
     }
     return balance;
@@ -57,7 +57,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
 
   // Calculate balances for all users
   const userBalances = useMemo(() => {
-    const uniqueEmails = [...new Set(expenses.map(expense => expense.email))];
+    const uniqueEmails = [...new Set(expenses.map(expense => expense.userEmail))];
     return uniqueEmails.reduce((acc, email) => {
       if (email !== currentUserEmail) {
         acc[email] = calculateUserBalance(expenses, currentUserEmail, email);
@@ -111,14 +111,14 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
   // Mobile Card View Component
   const MobileExpenseCard = ({ expense }) => {
     const { dateStr, timeStr } = formatDateTime(expense.timestamp);
-    const balance = userBalances[expense.email] || 0;
+    const balance = userBalances[expense.userEmail] || 0;
     
     return (
       <div className="bg-white rounded-lg shadow p-4 space-y-3">
         <div className="flex justify-between items-start">
           <div>
             <h3 className="font-medium text-gray-900">{expense.name}</h3>
-            <p className="text-sm text-gray-500">{expense.email}</p>
+            <p className="text-sm text-gray-500">{expense.userEmail}</p>
           </div>
           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
             expense.type === 'credit' 
@@ -285,14 +285,14 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
           <tbody className="divide-y divide-gray-100">
             {expenses.map(expense => {
               const { dateStr, timeStr } = formatDateTime(expense.timestamp);
-              const balance = userBalances[expense.email] || 0;
+              const balance = userBalances[expense.userEmail] || 0;
               
               return (
                 <tr key={expense.id} className="hover:bg-gray-50 transition-colors">
                   <td className="p-3 whitespace-nowrap text-sm">{dateStr}</td>
                   <td className="p-3 whitespace-nowrap text-sm">{timeStr}</td>
                   <td className="p-3 whitespace-nowrap text-sm">{expense.name}</td>
-                  <td className="p-3 whitespace-nowrap text-sm">{expense.email}</td>
+                  <td className="p-3 whitespace-nowrap text-sm">{expense.userEmail}</td>
                   <td className="p-3 whitespace-nowrap">
                     <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
                       expense.type === 'credit' 
