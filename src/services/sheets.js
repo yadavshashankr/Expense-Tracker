@@ -62,6 +62,28 @@ async function gFetch(url, accessToken, method='GET', body) {
 
 // Add balance calculation function
 const calculateBalance = (transactions, currentUserEmail, targetEmail) => {
+  if (transactions.length === 0) return 0;
+
+  // For the first transaction, handle it directly
+  if (transactions.length === 1) {
+    const firstTransaction = transactions[0];
+    const amount = parseFloat(firstTransaction.amount);
+    
+    // If it's my transaction
+    if (firstTransaction.userEmail === currentUserEmail) {
+      // If I'm paying (debit), it should be negative
+      if (firstTransaction.type === 'debit') return -amount;
+      // If I'm receiving (credit), it should be positive
+      if (firstTransaction.type === 'credit') return amount;
+    } else {
+      // If they're paying (debit), I should receive (positive)
+      if (firstTransaction.type === 'debit') return amount;
+      // If they're receiving (credit), I should pay (negative)
+      if (firstTransaction.type === 'credit') return -amount;
+    }
+  }
+
+  // For multiple transactions, calculate total balance
   return transactions.reduce((balance, transaction) => {
     if (transaction.userEmail !== targetEmail && transaction.userEmail !== currentUserEmail) {
       return balance;
@@ -226,7 +248,12 @@ async function setTextWrapping(spreadsheetId, accessToken) {
 export async function appendExpense({ spreadsheetId, accessToken, entry, currentUserEmail }) {
   // First get all existing transactions to calculate the new balance
   const existingTransactions = await fetchAllRows({ spreadsheetId, accessToken });
-  const balance = calculateBalance([...existingTransactions, entry], currentUserEmail, entry.userEmail);
+  
+  // Sort transactions chronologically for balance calculation
+  const chronologicalTransactions = [...existingTransactions]
+    .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+  
+  const balance = calculateBalance([...chronologicalTransactions, entry], currentUserEmail, entry.userEmail);
 
   const values = [[
     entry.id,
@@ -257,17 +284,20 @@ export async function fetchAllRows({ spreadsheetId, accessToken }) {
 
     if (!res.values) return [];
 
-    return res.values.map(([id, timestamp, userEmail, name, type, amount, description, groupId, balance], i) => ({
-      id,
-      timestamp,
-      userEmail,
-      name,
-      type,
-      amount,
-      description,
-      balance: balance || '0.00',
-      rowIndex: i + 2
-    }));
+    // Map the rows and sort by timestamp in descending order (newest first)
+    return res.values
+      .map(([id, timestamp, userEmail, name, type, amount, description, groupId, balance], i) => ({
+        id,
+        timestamp,
+        userEmail,
+        name,
+        type,
+        amount,
+        description,
+        balance: balance || '0.00',
+        rowIndex: i + 2
+      }))
+      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
   } catch (error) {
     console.error('Error fetching rows:', error);
     return [];
@@ -277,10 +307,23 @@ export async function fetchAllRows({ spreadsheetId, accessToken }) {
 export async function updateExpenseRow({ spreadsheetId, accessToken, rowIndex, entry, currentUserEmail }) {
   // Get all transactions to recalculate balance
   const allTransactions = await fetchAllRows({ spreadsheetId, accessToken });
+  
+  // Sort transactions chronologically for balance calculation
+  const chronologicalTransactions = [...allTransactions]
+    .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+  
   // Replace the transaction at rowIndex with the new entry
-  allTransactions[rowIndex - 2] = { ...entry, rowIndex };
-  // Calculate new balance
-  const balance = calculateBalance(allTransactions.slice(0, rowIndex - 1), currentUserEmail, entry.userEmail);
+  const targetIndex = chronologicalTransactions.findIndex(t => t.rowIndex === rowIndex);
+  if (targetIndex !== -1) {
+    chronologicalTransactions[targetIndex] = { ...entry, rowIndex };
+  }
+  
+  // Calculate new balance using transactions up to this point
+  const balance = calculateBalance(
+    chronologicalTransactions.slice(0, targetIndex + 1),
+    currentUserEmail,
+    entry.userEmail
+  );
 
   const range = `Expenses!A${rowIndex}:I${rowIndex}`;
   const values = [[

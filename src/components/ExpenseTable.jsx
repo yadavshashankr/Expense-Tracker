@@ -25,6 +25,26 @@ const formatDateTime = (timestamp) => {
 
 // Calculate running balance up to a specific transaction
 const calculateRunningBalance = (expenses, currentUserEmail, targetEmail, upToIndex) => {
+  // For the first transaction, handle it directly
+  if (upToIndex === 0) {
+    const firstTransaction = expenses[0];
+    const amount = parseFloat(firstTransaction.amount);
+    
+    // If it's my transaction
+    if (firstTransaction.userEmail === currentUserEmail) {
+      // If I'm paying (debit), it should be negative
+      if (firstTransaction.type === 'debit') return -amount;
+      // If I'm receiving (credit), it should be positive
+      if (firstTransaction.type === 'credit') return amount;
+    } else {
+      // If they're paying (debit), I should receive (positive)
+      if (firstTransaction.type === 'debit') return amount;
+      // If they're receiving (credit), I should pay (negative)
+      if (firstTransaction.type === 'credit') return -amount;
+    }
+  }
+
+  // For subsequent transactions, calculate running balance
   return expenses
     .slice(0, upToIndex + 1)
     .reduce((balance, expense) => {
@@ -54,12 +74,24 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
   const [editingId, setEditingId] = useState(null);
   const [draft, setDraft] = useState({});
 
+  // Sort expenses by timestamp in descending order (newest first)
+  const sortedExpenses = useMemo(() => {
+    return [...expenses].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  }, [expenses]);
+
   // Calculate running balances for each transaction
   const runningBalances = useMemo(() => {
-    return expenses.map((expense, index) => ({
+    // We need to calculate running balances on chronological order (oldest first)
+    const chronologicalExpenses = [...expenses].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    
+    // Calculate running balances
+    const balances = chronologicalExpenses.map((expense, index) => ({
       ...expense,
-      runningBalance: calculateRunningBalance(expenses, currentUserEmail, expense.userEmail, index)
+      runningBalance: calculateRunningBalance(chronologicalExpenses, currentUserEmail, expense.userEmail, index)
     }));
+
+    // Sort back to display order (newest first)
+    return balances.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
   }, [expenses, currentUserEmail]);
 
   // Balance display component
