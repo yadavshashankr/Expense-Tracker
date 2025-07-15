@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 // Utility function for date formatting
 const formatDateTime = (timestamp) => {
@@ -23,9 +23,74 @@ const formatDateTime = (timestamp) => {
   return { dateStr, timeStr };
 };
 
-export default function ExpenseTable({ expenses, onEdit, onDelete }) {
+// New utility function to calculate balance with other users
+const calculateUserBalance = (expenses, currentUserEmail, otherUserEmail) => {
+  const relevantTransactions = expenses.filter(expense => 
+    expense.email === otherUserEmail || expense.email === currentUserEmail
+  );
+
+  return relevantTransactions.reduce((balance, expense) => {
+    const amount = parseFloat(expense.amount);
+    // If current user received money (credit)
+    if (expense.email === currentUserEmail && expense.type === 'credit') {
+      return balance + amount;
+    }
+    // If current user paid money (debit)
+    if (expense.email === currentUserEmail && expense.type === 'debit') {
+      return balance - amount;
+    }
+    // If other user paid money (their debit is our credit)
+    if (expense.email === otherUserEmail && expense.type === 'debit') {
+      return balance + amount;
+    }
+    // If other user received money (their credit is our debit)
+    if (expense.email === otherUserEmail && expense.type === 'credit') {
+      return balance - amount;
+    }
+    return balance;
+  }, 0);
+};
+
+export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEmail }) {
   const [editingId, setEditingId] = useState(null);
   const [draft, setDraft] = useState({});
+
+  // Calculate balances for all users
+  const userBalances = useMemo(() => {
+    const uniqueEmails = [...new Set(expenses.map(expense => expense.email))];
+    return uniqueEmails.reduce((acc, email) => {
+      if (email !== currentUserEmail) {
+        acc[email] = calculateUserBalance(expenses, currentUserEmail, email);
+      }
+      return acc;
+    }, {});
+  }, [expenses, currentUserEmail]);
+
+  // Balance display component
+  const BalanceDisplay = ({ balance }) => {
+    const isPositive = balance >= 0;
+    return (
+      <div className="flex items-center gap-1">
+        <span className={`${isPositive ? 'text-blue-600' : 'text-orange-600'} font-medium`}>
+          ₹{Math.abs(balance).toFixed(2)}
+        </span>
+        <span className="flex items-center">
+          {isPositive ? (
+            <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+            </svg>
+          ) : (
+            <svg className="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+            </svg>
+          )}
+        </span>
+        <span className={`text-xs ${isPositive ? 'text-blue-600' : 'text-orange-600'}`}>
+          {isPositive ? 'Leading' : 'Trailing'}
+        </span>
+      </div>
+    );
+  };
 
   const startEdit = expense => {
     setEditingId(expense.id);
@@ -60,6 +125,8 @@ export default function ExpenseTable({ expenses, onEdit, onDelete }) {
   // Mobile Card View Component
   const MobileExpenseCard = ({ expense }) => {
     const { dateStr, timeStr } = formatDateTime(expense.timestamp);
+    const balance = userBalances[expense.email] || 0;
+    
     return (
       <div className="bg-white rounded-lg shadow p-4 space-y-3">
         <div className="flex justify-between items-start">
@@ -86,6 +153,11 @@ export default function ExpenseTable({ expenses, onEdit, onDelete }) {
             <div className="text-sm text-gray-500">{dateStr}</div>
             <div className="text-xs text-gray-400">{timeStr}</div>
           </div>
+        </div>
+
+        <div className="flex justify-between items-center pt-2 border-t border-gray-100">
+          <div className="text-sm text-gray-600">Balance with user:</div>
+          <BalanceDisplay balance={balance} />
         </div>
         
         {expense.description && (
@@ -219,6 +291,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete }) {
               <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Email</th>
               <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Type</th>
               <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Amount</th>
+              <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Balance</th>
               <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap min-w-[200px]">Description</th>
               <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Actions</th>
             </tr>
@@ -226,6 +299,8 @@ export default function ExpenseTable({ expenses, onEdit, onDelete }) {
           <tbody className="divide-y divide-gray-100">
             {expenses.map(expense => {
               const { dateStr, timeStr } = formatDateTime(expense.timestamp);
+              const balance = userBalances[expense.email] || 0;
+              
               return (
                 <tr key={expense.id} className="hover:bg-gray-50 transition-colors">
                   <td className="p-3 whitespace-nowrap text-sm">{dateStr}</td>
@@ -245,6 +320,9 @@ export default function ExpenseTable({ expenses, onEdit, onDelete }) {
                     <span className={expense.type === 'credit' ? 'text-green-600' : 'text-red-600'}>
                       ₹{parseFloat(expense.amount).toFixed(2)}
                     </span>
+                  </td>
+                  <td className="p-3 whitespace-nowrap">
+                    <BalanceDisplay balance={balance} />
                   </td>
                   <td className="p-3 text-sm break-words">{expense.description}</td>
                   <td className="p-3 whitespace-nowrap">

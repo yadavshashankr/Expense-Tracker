@@ -198,6 +198,7 @@ function App() {
                   expenses={expenses}
                   onEdit={handleUpdateExpense}
                   onDelete={handleDeleteExpense}
+                  currentUserEmail={user.profile.email}
                 />
               </div>
             </div>
