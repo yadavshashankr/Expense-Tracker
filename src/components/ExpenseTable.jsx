@@ -23,19 +23,11 @@ const formatDateTime = (timestamp) => {
   return { dateStr, timeStr };
 };
 
-// Calculate running balance up to a specific transaction for a specific user
+// Calculate running balance up to a specific transaction
 const calculateRunningBalance = (expenses, currentUserEmail, targetEmail, upToIndex) => {
-  // Filter transactions only between current user and target user
-  const relevantExpenses = expenses.filter(expense => 
-    (expense.userEmail === currentUserEmail && expense.recipientEmail === targetEmail) ||
-    (expense.userEmail === targetEmail && expense.recipientEmail === currentUserEmail)
-  );
-
-  if (relevantExpenses.length === 0) return 0;
-
-  // For the first transaction between these users
+  // For the first transaction, handle it directly
   if (upToIndex === 0) {
-    const firstTransaction = relevantExpenses[0];
+    const firstTransaction = expenses[0];
     const amount = parseFloat(firstTransaction.amount);
     
     // If it's my transaction
@@ -54,9 +46,13 @@ const calculateRunningBalance = (expenses, currentUserEmail, targetEmail, upToIn
   }
 
   // For subsequent transactions, calculate running balance
-  return relevantExpenses
+  return expenses
     .slice(0, upToIndex + 1)
     .reduce((balance, expense) => {
+      if (expense.userEmail !== targetEmail && expense.userEmail !== currentUserEmail) {
+        return balance;
+      }
+
       const amount = parseFloat(expense.amount);
       
       // From logged-in user's perspective:
@@ -84,45 +80,29 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
     return [...expenses].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
   }, [expenses]);
 
-  // Group expenses by user and calculate running balances
+  // Calculate running balances for each transaction
   const runningBalances = useMemo(() => {
-    // First, get unique users
-    const uniqueUsers = [...new Set(expenses.map(expense => expense.userEmail))];
+    // We need to calculate running balances on chronological order (oldest first)
+    const chronologicalExpenses = [...expenses].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
     
-    // For each unique user, calculate their running balance
-    const balancesByUser = {};
-    uniqueUsers.forEach(userEmail => {
-      if (userEmail === currentUserEmail) return; // Skip current user
-      
-      // Get transactions with this user in chronological order
-      const userTransactions = expenses
-        .filter(expense => expense.userEmail === userEmail || expense.recipientEmail === userEmail)
-        .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-      
-      // Calculate running balance for each transaction
-      const userBalances = userTransactions.map((expense, index) => ({
-        ...expense,
-        runningBalance: calculateRunningBalance(userTransactions, currentUserEmail, userEmail, index)
-      }));
-      
-      balancesByUser[userEmail] = userBalances;
-    });
+    // Calculate running balances
+    const balances = chronologicalExpenses.map((expense, index) => ({
+      ...expense,
+      runningBalance: calculateRunningBalance(chronologicalExpenses, currentUserEmail, expense.userEmail, index)
+    }));
 
-    // Combine all balances and sort by timestamp (newest first)
-    return Object.values(balancesByUser)
-      .flat()
-      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    // Sort back to display order (newest first)
+    return balances.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
   }, [expenses, currentUserEmail]);
 
   // Balance display component
-  const BalanceDisplay = ({ balance, userEmail }) => {
+  const BalanceDisplay = ({ balance }) => {
     const isPositive = balance >= 0;
     return (
       <div className="flex items-center gap-1">
-        <span className={`font-medium ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-          {isPositive ? '+' : ''}{balance.toFixed(2)}
+        <span className={`${isPositive ? 'text-green-600' : 'text-red-600'} font-medium`}>
+          {isPositive ? '+' : '-'}₹{Math.abs(balance).toFixed(2)}
         </span>
-        <span className="text-sm text-gray-500">with {userEmail}</span>
       </div>
     );
   };
@@ -160,15 +140,14 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
   // Mobile Card View Component
   const MobileExpenseCard = ({ expense, index }) => {
     const { dateStr, timeStr } = formatDateTime(expense.timestamp);
-    const runningBalance = runningBalances[index]?.runningBalance || 0;
-    const otherUserEmail = expense.userEmail === currentUserEmail ? expense.recipientEmail : expense.userEmail;
+    const runningBalance = runningBalances[index].runningBalance;
     
     return (
       <div className="bg-white rounded-lg shadow p-4 space-y-3">
         <div className="flex justify-between items-start">
           <div>
             <h3 className="font-medium text-gray-900">{expense.name}</h3>
-            <p className="text-sm text-gray-500">{otherUserEmail}</p>
+            <p className="text-sm text-gray-500">{expense.userEmail}</p>
           </div>
           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
             expense.type === 'credit' 
@@ -192,10 +171,8 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
         </div>
 
         <div className="flex justify-between items-center pt-2 border-t border-gray-100">
-          <BalanceDisplay 
-            balance={runningBalance} 
-            userEmail={otherUserEmail}
-          />
+          <div className="text-sm text-gray-600">Running Balance:</div>
+          <BalanceDisplay balance={runningBalance} />
         </div>
         
         {expense.description && (
@@ -359,7 +336,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
                     </span>
                   </td>
                   <td className="p-3 whitespace-nowrap">
-                    <BalanceDisplay balance={expense.runningBalance} userEmail={expense.userEmail} />
+                    <BalanceDisplay balance={expense.runningBalance} />
                   </td>
                   <td className="p-3 text-sm break-words">{expense.description}</td>
                   <td className="p-3 whitespace-nowrap">
