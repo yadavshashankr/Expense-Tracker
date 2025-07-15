@@ -130,7 +130,7 @@ function App() {
   };
 
   return (
-    <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
+    <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 max-w-5xl">
       {!user ? (
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
           <h1 className="text-3xl sm:text-4xl font-bold mb-8 text-center">Expense Tracker</h1>
@@ -158,7 +158,7 @@ function App() {
           </div>
 
           {error && (
-            <div className="bg-red-50 border-l-4 border-red-400 p-4 my-4">
+            <div className="bg-red-50 border-l-4 border-red-400 p-4 my-4 rounded-r-lg">
               <div className="flex">
                 <div className="flex-shrink-0">
                   <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
@@ -177,7 +177,7 @@ function App() {
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
             </div>
           ) : (
-            <>
+            <div className="space-y-6">
               <ExpenseForm 
                 onSubmit={handleAddExpense} 
                 user={user.profile} 
@@ -196,7 +196,7 @@ function App() {
                   onDelete={handleDeleteExpense}
                 />
               </div>
-            </>
+            </div>
           )}
         </div>
       )}

@@ -35,139 +35,211 @@ export default function ExpenseTable({ expenses, onEdit, onDelete }) {
     );
   }
 
+  // Mobile Card View Component
+  const MobileExpenseCard = ({ expense }) => (
+    <div className="bg-white rounded-lg shadow p-4 space-y-3">
+      <div className="flex justify-between items-start">
+        <div>
+          <h3 className="font-medium text-gray-900">{expense.name}</h3>
+          <p className="text-sm text-gray-500">{expense.email}</p>
+        </div>
+        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+          expense.type === 'credit' 
+            ? 'bg-green-100 text-green-800'
+            : 'bg-red-100 text-red-800'
+        }`}>
+          {expense.type}
+        </span>
+      </div>
+      
+      <div className="flex justify-between items-center">
+        <span className={`text-lg font-semibold ${
+          expense.type === 'credit' ? 'text-green-600' : 'text-red-600'
+        }`}>
+          ₹{parseFloat(expense.amount).toFixed(2)}
+        </span>
+        <span className="text-sm text-gray-500">
+          {new Date(expense.timestamp).toLocaleDateString()}
+        </span>
+      </div>
+      
+      {expense.description && (
+        <p className="text-sm text-gray-600 break-words">
+          {expense.description}
+        </p>
+      )}
+      
+      <div className="flex justify-end gap-3 pt-2 border-t border-gray-100">
+        <button
+          onClick={() => startEdit(expense)}
+          className="text-sm text-blue-600 hover:text-blue-800"
+        >
+          Edit
+        </button>
+        <button
+          onClick={() => onDelete(expense.rowIndex)}
+          className="text-sm text-red-600 hover:text-red-800"
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  );
+
+  // Edit Form Component
+  const EditForm = ({ expense }) => (
+    <div className="bg-white rounded-lg shadow p-4 space-y-4">
+      <div className="grid grid-cols-2 gap-4">
+        <div className="col-span-2 sm:col-span-1">
+          <label className="block text-sm font-medium text-gray-700">Date</label>
+          <input
+            type="datetime-local"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            value={draft.timestamp.slice(0, 16)}
+            onChange={e => setDraft({
+              ...draft,
+              timestamp: new Date(e.target.value).toISOString()
+            })}
+          />
+        </div>
+        <div className="col-span-2 sm:col-span-1">
+          <label className="block text-sm font-medium text-gray-700">Name</label>
+          <input
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            value={draft.name}
+            onChange={change('name')}
+          />
+        </div>
+        <div className="col-span-2">
+          <label className="block text-sm font-medium text-gray-700">Email</label>
+          <input
+            type="email"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            value={draft.email}
+            onChange={change('email')}
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Type</label>
+          <select
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            value={draft.type}
+            onChange={change('type')}
+          >
+            <option value="debit">Debit</option>
+            <option value="credit">Credit</option>
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Amount</label>
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            value={draft.amount}
+            onChange={change('amount')}
+          />
+        </div>
+        <div className="col-span-2">
+          <label className="block text-sm font-medium text-gray-700">Description</label>
+          <input
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            value={draft.description}
+            onChange={change('description')}
+          />
+        </div>
+      </div>
+      <div className="flex justify-end gap-3 pt-4">
+        <button
+          onClick={save}
+          className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        >
+          Save
+        </button>
+        <button
+          onClick={cancel}
+          className="inline-flex justify-center rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+
   return (
-    <div className="w-full overflow-x-auto bg-white shadow rounded-2xl">
-      <table className="min-w-full table-auto">
-        <thead>
-          <tr className="bg-indigo-50 text-left">
-            <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Date</th>
-            <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Name</th>
-            <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Email</th>
-            <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Type</th>
-            <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Amount</th>
-            <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap min-w-[200px]">Description</th>
-            <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Actions</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-100">
-          {expenses.map(expense => (
-            <tr key={expense.id} className="hover:bg-gray-50 transition-colors">
-              {editingId === expense.id ? (
-                <>
-                  <td className="p-3 whitespace-nowrap">
-                    <input
-                      type="datetime-local"
-                      className="w-full border rounded px-2 py-1 text-sm"
-                      value={draft.timestamp.slice(0, 16)}
-                      onChange={e => setDraft({
-                        ...draft,
-                        timestamp: new Date(e.target.value).toISOString()
-                      })}
-                    />
-                  </td>
-                  <td className="p-3 whitespace-nowrap">
-                    <input
-                      className="w-full border rounded px-2 py-1 text-sm"
-                      value={draft.name}
-                      onChange={change('name')}
-                    />
-                  </td>
-                  <td className="p-3 whitespace-nowrap">
-                    <input
-                      type="email"
-                      className="w-full border rounded px-2 py-1 text-sm"
-                      value={draft.email}
-                      onChange={change('email')}
-                    />
-                  </td>
-                  <td className="p-3 whitespace-nowrap">
-                    <select
-                      className="w-full border rounded px-2 py-1 text-sm"
-                      value={draft.type}
-                      onChange={change('type')}
-                    >
-                      <option value="debit">Debit</option>
-                      <option value="credit">Credit</option>
-                    </select>
-                  </td>
-                  <td className="p-3 whitespace-nowrap">
-                    <input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      className="w-full border rounded px-2 py-1 text-sm"
-                      value={draft.amount}
-                      onChange={change('amount')}
-                    />
-                  </td>
-                  <td className="p-3">
-                    <input
-                      className="w-full border rounded px-2 py-1 text-sm"
-                      value={draft.description}
-                      onChange={change('description')}
-                    />
-                  </td>
-                  <td className="p-3 whitespace-nowrap">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={save}
-                        className="text-green-600 hover:text-green-800 text-sm"
-                      >
-                        Save
-                      </button>
-                      <button
-                        onClick={cancel}
-                        className="text-gray-600 hover:text-gray-800 text-sm"
-                      >
-                        Cancel
-                      </button>
-                    </div>
-                  </td>
-                </>
-              ) : (
-                <>
-                  <td className="p-3 whitespace-nowrap text-sm">
-                    {new Date(expense.timestamp).toLocaleString()}
-                  </td>
-                  <td className="p-3 whitespace-nowrap text-sm">{expense.name}</td>
-                  <td className="p-3 whitespace-nowrap text-sm">{expense.email}</td>
-                  <td className="p-3 whitespace-nowrap">
-                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                      expense.type === 'credit' 
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {expense.type}
-                    </span>
-                  </td>
-                  <td className="p-3 whitespace-nowrap text-sm">
-                    <span className={expense.type === 'credit' ? 'text-green-600' : 'text-red-600'}>
-                      ₹{parseFloat(expense.amount).toFixed(2)}
-                    </span>
-                  </td>
-                  <td className="p-3 text-sm break-words">{expense.description}</td>
-                  <td className="p-3 whitespace-nowrap">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => startEdit(expense)}
-                        className="text-blue-600 hover:text-blue-800 text-sm"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => onDelete(expense.rowIndex)}
-                        className="text-red-600 hover:text-red-800 text-sm"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </td>
-                </>
-              )}
+    <div>
+      {/* Mobile List View */}
+      <div className="space-y-4 md:hidden">
+        {expenses.map(expense => (
+          <div key={expense.id}>
+            {editingId === expense.id ? (
+              <EditForm expense={expense} />
+            ) : (
+              <MobileExpenseCard expense={expense} />
+            )}
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden md:block overflow-x-auto bg-white shadow rounded-2xl">
+        <table className="min-w-full table-auto">
+          <thead>
+            <tr className="bg-indigo-50 text-left">
+              <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Date</th>
+              <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Name</th>
+              <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Email</th>
+              <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Type</th>
+              <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Amount</th>
+              <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap min-w-[200px]">Description</th>
+              <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Actions</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {expenses.map(expense => (
+              <tr key={expense.id} className="hover:bg-gray-50 transition-colors">
+                <td className="p-3 whitespace-nowrap text-sm">
+                  {new Date(expense.timestamp).toLocaleString()}
+                </td>
+                <td className="p-3 whitespace-nowrap text-sm">{expense.name}</td>
+                <td className="p-3 whitespace-nowrap text-sm">{expense.email}</td>
+                <td className="p-3 whitespace-nowrap">
+                  <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                    expense.type === 'credit' 
+                      ? 'bg-green-100 text-green-800'
+                      : 'bg-red-100 text-red-800'
+                  }`}>
+                    {expense.type}
+                  </span>
+                </td>
+                <td className="p-3 whitespace-nowrap text-sm">
+                  <span className={expense.type === 'credit' ? 'text-green-600' : 'text-red-600'}>
+                    ₹{parseFloat(expense.amount).toFixed(2)}
+                  </span>
+                </td>
+                <td className="p-3 text-sm break-words">{expense.description}</td>
+                <td className="p-3 whitespace-nowrap">
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => startEdit(expense)}
+                      className="text-blue-600 hover:text-blue-800 text-sm"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => onDelete(expense.rowIndex)}
+                      className="text-red-600 hover:text-red-800 text-sm"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
