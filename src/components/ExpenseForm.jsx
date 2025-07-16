@@ -1,11 +1,61 @@
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import SearchableInput from './SearchableInput';
 
-export default function ExpenseForm({ user, onSubmit }) {
+export default function ExpenseForm({ user, onSubmit, expenses }) {
   const [form, setForm] = useState({ name: '', email: '', type: 'debit', amount: '', description: '' });
   const [error, setError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState({ name: '', email: '' });
 
-  const change = k => e => setForm({ ...form, [k]: e.target.value });
+  // Create normalized list of unique users from expenses
+  const uniqueUsers = useMemo(() => {
+    const userMap = new Map();
+    
+    expenses?.forEach(expense => {
+      userMap.set(expense.userEmail, {
+        name: expense.name,
+        email: expense.userEmail,
+        lastUsed: expense.timestamp
+      });
+    });
+    
+    return Array.from(userMap.values())
+      .sort((a, b) => new Date(b.lastUsed) - new Date(a.lastUsed));
+  }, [expenses]);
+
+  // Search function
+  const searchUsers = (term, field) => {
+    if (!term.trim()) return [];
+    
+    const searchTerm = term.toLowerCase();
+    return uniqueUsers
+      .filter(user => {
+        if (field === 'name') {
+          return user.name.toLowerCase().includes(searchTerm);
+        } else {
+          return user.email.toLowerCase().includes(searchTerm);
+        }
+      })
+      .slice(0, 4); // Limit to 4 results
+  };
+
+  const handleSearch = (field) => (value) => {
+    setSearchTerm(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSelect = (result) => {
+    setForm(prev => ({
+      ...prev,
+      name: result.name,
+      email: result.email
+    }));
+    setSearchTerm({ name: '', email: '' });
+  };
+
+  const change = k => e => {
+    const value = e.target.value;
+    setForm(prev => ({ ...prev, [k]: value }));
+  };
   
   const submit = e => {
     e.preventDefault();
@@ -24,6 +74,7 @@ export default function ExpenseForm({ user, onSubmit }) {
 
       onSubmit(entry);
       setForm({ name: '', email: '', type: 'debit', amount: '', description: '' });
+      setSearchTerm({ name: '', email: '' });
       setError(null);
     } catch (err) {
       console.error('Error submitting transaction:', err);
@@ -40,28 +91,28 @@ export default function ExpenseForm({ user, onSubmit }) {
       )}
       <form onSubmit={submit} className="space-y-4">
         <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-            <input 
-              className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-4 py-2" 
-              placeholder="Enter name" 
-              value={form.name} 
-              onChange={change('name')} 
-              required 
-            />
-          </div>
+          <SearchableInput
+            label="Name"
+            value={form.name}
+            onChange={(value) => setForm(prev => ({ ...prev, name: value }))}
+            placeholder="Enter name"
+            required
+            searchResults={searchUsers(form.name, 'name')}
+            onSearch={handleSearch('name')}
+            onSelectResult={handleSelect}
+          />
           
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input 
-              type="email"
-              className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-4 py-2" 
-              placeholder="Enter email" 
-              value={form.email} 
-              onChange={change('email')} 
-              required 
-            />
-          </div>
+          <SearchableInput
+            label="Email"
+            type="email"
+            value={form.email}
+            onChange={(value) => setForm(prev => ({ ...prev, email: value }))}
+            placeholder="Enter email"
+            required
+            searchResults={searchUsers(form.email, 'email')}
+            onSearch={handleSearch('email')}
+            onSelectResult={handleSelect}
+          />
 
           <div className="grid grid-cols-2 gap-4">
             <div>

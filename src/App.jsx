@@ -248,8 +248,9 @@ function App() {
                     </button>
                   </div>
                   <ExpenseForm
+                    user={user}
                     onSubmit={handleAddExpense}
-                    user={user.profile}
+                    expenses={expenses}
                   />
                 </div>
               </div>
