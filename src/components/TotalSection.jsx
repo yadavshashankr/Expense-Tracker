@@ -47,7 +47,7 @@ export default function TotalSection({ expenses }) {
             </h3>
             <div className="flex items-center gap-2">
               <p className={`text-xl font-bold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                {isPositive ? '+' : '-'}₹{Math.abs(balance).toFixed(2)}
+                {isPositive ? '+' : '- '}₹{Math.abs(balance).toFixed(2)}
               </p>
               <div 
                 className="text-gray-400 transition-transform duration-300"
@@ -105,7 +105,10 @@ export default function TotalSection({ expenses }) {
               <h3 className={`text-sm font-medium ${isPositive ? 'text-green-800' : 'text-red-800'}`}>
                 Net Balance
               </h3>
-              <span className="flex items-center">
+              <span className="flex items-center gap-2">
+                <p className={`text-2xl font-bold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                  {isPositive ? '+' : '- '}₹{Math.abs(balance).toFixed(2)}
+                </p>
                 {isPositive ? (
                   <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
@@ -117,9 +120,6 @@ export default function TotalSection({ expenses }) {
                 )}
               </span>
             </div>
-            <p className={`text-2xl font-bold ${isPositive ? 'text-green-600' : 'text-red-600'} text-right`}>
-              {isPositive ? '+' : '-'}₹{Math.abs(balance).toFixed(2)}
-            </p>
           </div>
         </div>
       </div>

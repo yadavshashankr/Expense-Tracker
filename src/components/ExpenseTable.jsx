@@ -1,5 +1,6 @@
 
 import { useState, useMemo } from 'react';
+import React from 'react'; // Added missing import for React
 
 // Utility function for date formatting
 const formatDateTime = (timestamp) => {
@@ -250,7 +251,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
     <div className="bg-gray-50 border-y border-gray-200 px-3 py-2 flex items-center gap-2 text-sm font-medium text-gray-500 sticky top-0 z-10">
       <div className="flex-shrink-0 w-[28%]">Name</div>
       <div className="w-px self-stretch bg-gray-300"></div>
-      <div className="flex-shrink-0 w-[33%] text-right">Amount</div>
+      <div className="flex-shrink-0 w-[33%] text-center">Amount</div>
       <div className="w-px self-stretch bg-gray-300"></div>
       <div className="flex-1 text-right pr-5">Balance</div>
     </div>
@@ -393,52 +394,92 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
           <tbody className="bg-white divide-y divide-gray-200">
             {runningBalances.map((expense) => {
               const { dateStr, timeStr } = formatDateTime(expense.timestamp);
+              const isExpanded = expandedItems.has(expense.id);
               return (
-                <tr key={expense.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{expense.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{expense.userEmail}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                      expense.type === 'credit' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                    }`}>
-                      {expense.type}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium">
-                    <span className={expense.type === 'credit' ? 'text-green-600' : 'text-red-600'}>
-                      {expense.type === 'credit' ? '+' : '-'}₹{Math.abs(expense.amount).toFixed(2)}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium">
-                    <span className={expense.runningBalance >= 0 ? 'text-green-600' : 'text-red-600'}>
-                      {expense.runningBalance >= 0 ? '+' : '-'}₹{Math.abs(expense.runningBalance).toFixed(2)}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <div className="flex justify-end gap-3">
-                      {expense.userEmail === currentUserEmail && (
-                        <>
-                          <button
-                            onClick={() => startEdit(expense)}
-                            className="text-indigo-600 hover:text-indigo-900"
-                          >
-                            Edit
-                          </button>
-                          <button
-                            onClick={() => {
-                              if (window.confirm('Are you sure you want to delete this transaction?')) {
-                                onDelete(expense.rowIndex);
-                              }
-                            }}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            Delete
-                          </button>
-                        </>
-                      )}
-                    </div>
-                  </td>
-                </tr>
+                <React.Fragment key={expense.id}>
+                  <tr 
+                    className="hover:bg-gray-50 transition-colors cursor-pointer"
+                    onClick={() => toggleItemExpand(expense.id)}
+                  >
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{expense.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{expense.userEmail}</td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
+                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        expense.type === 'credit' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      }`}>
+                        {expense.type}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium">
+                      <span className={expense.type === 'credit' ? 'text-green-600' : 'text-red-600'}>
+                        {expense.type === 'credit' ? '+' : '-'}₹{Math.abs(expense.amount).toFixed(2)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium">
+                      <span className={expense.runningBalance >= 0 ? 'text-green-600' : 'text-red-600'}>
+                        {expense.runningBalance >= 0 ? '+' : '-'}₹{Math.abs(expense.runningBalance).toFixed(2)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                      <div className="flex justify-end items-center gap-3">
+                        {expense.userEmail === currentUserEmail && (
+                          <>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                startEdit(expense);
+                              }}
+                              className="text-indigo-600 hover:text-indigo-900"
+                            >
+                              Edit
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (window.confirm('Are you sure you want to delete this transaction?')) {
+                                  onDelete(expense.rowIndex);
+                                }
+                              }}
+                              className="text-red-600 hover:text-red-900"
+                            >
+                              Delete
+                            </button>
+                          </>
+                        )}
+                        <svg 
+                          className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                          fill="none" 
+                          stroke="currentColor" 
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </div>
+                    </td>
+                  </tr>
+                  {isExpanded && (
+                    <tr className="bg-gray-50">
+                      <td colSpan="6" className="px-6 py-4">
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span className="text-gray-500">Date:</span>
+                            <span className="ml-2 text-gray-900">{dateStr}</span>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Time:</span>
+                            <span className="ml-2 text-gray-900">{timeStr}</span>
+                          </div>
+                          {expense.description && (
+                            <div className="col-span-2">
+                              <span className="text-gray-500">Description:</span>
+                              <span className="ml-2 text-gray-900">{expense.description}</span>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </React.Fragment>
               );
             })}
           </tbody>
