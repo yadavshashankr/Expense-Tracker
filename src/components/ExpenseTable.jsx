@@ -163,7 +163,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
           <div className="w-px self-stretch bg-gray-200"></div>
           
           {/* Amount Section - Fixed width */}
-          <div className="flex-shrink-0 w-[33%] flex justify-center items-center">
+          <div className="flex-shrink-0 w-[33%] flex items-center justify-end">
             <span className={`${expense.type === 'credit' ? 'text-green-600' : 'text-red-600'} font-medium text-sm whitespace-nowrap`}>
               {expense.type === 'credit' ? '+' : '-'}₹{Math.abs(expense.amount).toFixed(2)}
             </span>
@@ -247,12 +247,12 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
 
   // Mobile List Header Component
   const MobileListHeader = () => (
-    <div className="bg-gray-50 border-y border-gray-200 px-3 py-2 flex items-center gap-2 text-sm font-medium text-gray-500">
+    <div className="bg-gray-50 border-y border-gray-200 px-3 py-2 flex items-center gap-2 text-sm font-medium text-gray-500 sticky top-0 z-10">
       <div className="flex-shrink-0 w-[28%]">Name</div>
       <div className="w-px self-stretch bg-gray-300"></div>
-      <div className="flex-shrink-0 w-[33%] text-center">Amount</div>
+      <div className="flex-shrink-0 w-[33%] text-right">Amount</div>
       <div className="w-px self-stretch bg-gray-300"></div>
-      <div className="flex-1 text-right">Balance</div>
+      <div className="flex-1 text-right pr-5">Balance</div>
     </div>
   );
 
@@ -349,7 +349,9 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
     <div className="space-y-3">
       {/* Mobile List View */}
       <div className="md:hidden">
-        <MobileListHeader />
+        <div className="sticky top-0 z-10">
+          <MobileListHeader />
+        </div>
         <div className="space-y-2 mt-2">
           {runningBalances.map((expense, index) => (
             <div key={expense.id}>
@@ -388,45 +390,52 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
-            {runningBalances.map((expense, index) => {
+          <tbody className="bg-white divide-y divide-gray-200">
+            {runningBalances.map((expense) => {
               const { dateStr, timeStr } = formatDateTime(expense.timestamp);
-              
               return (
                 <tr key={expense.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="p-3 whitespace-nowrap text-sm">{expense.name}</td>
-                  <td className="p-3 whitespace-nowrap text-sm">{expense.userEmail}</td>
-                  <td className="p-3 whitespace-nowrap">
-                    <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                      expense.type === 'credit' 
-                        ? 'bg-green-100 text-green-800'
-                        : 'bg-red-100 text-red-800'
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{expense.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{expense.userEmail}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      expense.type === 'credit' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
                     }`}>
-                      {expense.type === 'credit' ? 'Credit' : 'Debit'}
+                      {expense.type}
                     </span>
                   </td>
-                  <td className="p-3 whitespace-nowrap text-sm">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium">
                     <span className={expense.type === 'credit' ? 'text-green-600' : 'text-red-600'}>
-                      ₹{parseFloat(expense.amount).toFixed(2)}
+                      {expense.type === 'credit' ? '+' : '-'}₹{Math.abs(expense.amount).toFixed(2)}
                     </span>
                   </td>
-                  <td className="p-3 whitespace-nowrap">
-                    <BalanceDisplay balance={expense.runningBalance} />
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium">
+                    <span className={expense.runningBalance >= 0 ? 'text-green-600' : 'text-red-600'}>
+                      {expense.runningBalance >= 0 ? '+' : '-'}₹{Math.abs(expense.runningBalance).toFixed(2)}
+                    </span>
                   </td>
-                  <td className="p-3 whitespace-nowrap">
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => startEdit(expense)}
-                        className="text-blue-600 hover:text-blue-800 text-sm"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => onDelete(expense.rowIndex)}
-                        className="text-red-600 hover:text-red-800 text-sm"
-                      >
-                        Delete
-                      </button>
+                  <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <div className="flex justify-end gap-3">
+                      {expense.userEmail === currentUserEmail && (
+                        <>
+                          <button
+                            onClick={() => startEdit(expense)}
+                            className="text-indigo-600 hover:text-indigo-900"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => {
+                              if (window.confirm('Are you sure you want to delete this transaction?')) {
+                                onDelete(expense.rowIndex);
+                              }
+                            }}
+                            className="text-red-600 hover:text-red-900"
+                          >
+                            Delete
+                          </button>
+                        </>
+                      )}
                     </div>
                   </td>
                 </tr>

@@ -47,10 +47,7 @@ export default function TotalSection({ expenses }) {
             </h3>
             <div className="flex items-center gap-2">
               <p className={`text-xl font-bold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                ₹{Math.abs(balance).toFixed(2)}
-                <span className="text-2xl font-bold ml-1">
-                  {isPositive ? '+' : '-'}
-                </span>
+                {isPositive ? '+' : '-'}₹{Math.abs(balance).toFixed(2)}
               </p>
               <div 
                 className="text-gray-400 transition-transform duration-300"
@@ -70,13 +67,17 @@ export default function TotalSection({ expenses }) {
         >
           <div className="p-4 space-y-4">
             <div className="bg-green-50 rounded-lg p-4">
-              <h3 className="text-sm font-medium text-green-800">Total Credit</h3>
-              <p className="text-2xl font-bold text-green-600">₹{totals.credit.toFixed(2)}</p>
+              <div className="flex justify-between items-center">
+                <h3 className="text-sm font-medium text-green-800">Total Credit</h3>
+                <p className="text-2xl font-bold text-green-600 text-right">+₹{totals.credit.toFixed(2)}</p>
+              </div>
             </div>
 
             <div className="bg-red-50 rounded-lg p-4">
-              <h3 className="text-sm font-medium text-red-800">Total Debit</h3>
-              <p className="text-2xl font-bold text-red-600">₹{totals.debit.toFixed(2)}</p>
+              <div className="flex justify-between items-center">
+                <h3 className="text-sm font-medium text-red-800">Total Debit</h3>
+                <p className="text-2xl font-bold text-red-600 text-right">-₹{totals.debit.toFixed(2)}</p>
+              </div>
             </div>
           </div>
         </div>
@@ -86,13 +87,17 @@ export default function TotalSection({ expenses }) {
       <div className="hidden md:block p-4">
         <div className="grid grid-cols-3 gap-4">
           <div className="bg-green-50 rounded-lg p-4">
-            <h3 className="text-sm font-medium text-green-800">Total Credit</h3>
-            <p className="text-2xl font-bold text-green-600">₹{totals.credit.toFixed(2)}</p>
+            <div className="flex justify-between items-center">
+              <h3 className="text-sm font-medium text-green-800">Total Credit</h3>
+              <p className="text-2xl font-bold text-green-600 text-right">+₹{totals.credit.toFixed(2)}</p>
+            </div>
           </div>
 
           <div className="bg-red-50 rounded-lg p-4">
-            <h3 className="text-sm font-medium text-red-800">Total Debit</h3>
-            <p className="text-2xl font-bold text-red-600">₹{totals.debit.toFixed(2)}</p>
+            <div className="flex justify-between items-center">
+              <h3 className="text-sm font-medium text-red-800">Total Debit</h3>
+              <p className="text-2xl font-bold text-red-600 text-right">-₹{totals.debit.toFixed(2)}</p>
+            </div>
           </div>
 
           <div className={`${isPositive ? 'bg-green-50' : 'bg-red-50'} rounded-lg p-4`}>
@@ -112,11 +117,8 @@ export default function TotalSection({ expenses }) {
                 )}
               </span>
             </div>
-            <p className={`text-2xl font-bold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-              ₹{Math.abs(balance).toFixed(2)}
-              <span className="text-2xl font-bold ml-1">
-                {isPositive ? '+' : '-'}
-              </span>
+            <p className={`text-2xl font-bold ${isPositive ? 'text-green-600' : 'text-red-600'} text-right`}>
+              {isPositive ? '+' : '-'}₹{Math.abs(balance).toFixed(2)}
             </p>
           </div>
         </div>
