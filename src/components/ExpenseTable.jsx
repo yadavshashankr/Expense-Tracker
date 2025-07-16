@@ -159,30 +159,40 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-100">
         <div 
-          className="flex items-center min-h-[48px] cursor-pointer px-4 py-3"
+          className="flex items-center min-h-[48px] cursor-pointer px-3 py-3 gap-2"
           onClick={() => toggleItemExpand(expense.id)}
         >
-          {/* Name Section */}
-          <div className="flex-shrink-0 flex items-center w-[30%]">
-            <h3 className="font-medium text-gray-900 truncate pr-2">{expense.name}</h3>
+          {/* Name Section - Reduced width */}
+          <div className="flex-shrink-0 w-[28%]">
+            <h3 className="font-medium text-gray-900 truncate">{expense.name}</h3>
           </div>
           
           {/* First Divider */}
-          <div className="w-px h-6 bg-gray-200 mx-2"></div>
+          <div className="w-px h-6 bg-gray-200"></div>
           
-          {/* Amount Section */}
-          <div className="flex-shrink-0 w-[35%] flex items-center justify-center">
-            <span className={`${expense.type === 'credit' ? 'text-green-600' : 'text-red-600'} font-medium`}>
+          {/* Amount Section - Fixed width */}
+          <div className="flex-shrink-0 w-[33%] flex justify-center">
+            <span className={`${expense.type === 'credit' ? 'text-green-600' : 'text-red-600'} font-medium text-sm whitespace-nowrap`}>
               {expense.type === 'credit' ? '+' : '-'}₹{Math.abs(expense.amount).toFixed(2)}
             </span>
           </div>
           
           {/* Second Divider */}
-          <div className="w-px h-6 bg-gray-200 mx-2"></div>
+          <div className="w-px h-6 bg-gray-200"></div>
           
-          {/* Balance Section */}
-          <div className="flex-shrink-0 w-[35%] flex items-center justify-end">
-            <BalanceDisplay balance={runningBalance} />
+          {/* Balance Section - Remaining space */}
+          <div className="flex-1 flex items-center justify-end gap-1">
+            <span className={`${runningBalance >= 0 ? 'text-green-600' : 'text-red-600'} font-medium text-sm whitespace-nowrap`}>
+              {runningBalance >= 0 ? '+' : '-'}₹{Math.abs(runningBalance).toFixed(2)}
+            </span>
+            <svg 
+              className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
           </div>
         </div>
 
@@ -191,7 +201,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
           <div className="px-4 py-3 border-t border-gray-100 bg-gray-50 space-y-2 text-sm">
             <div className="flex justify-between text-gray-600">
               <span>Email:</span>
-              <span className="font-medium text-gray-900">{expense.userEmail}</span>
+              <span className="font-medium text-gray-900 break-all">{expense.userEmail}</span>
             </div>
             <div className="flex justify-between text-gray-600">
               <span>Date:</span>
@@ -202,13 +212,13 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
               <span className="font-medium text-gray-900">{timeStr}</span>
             </div>
             {expense.description && (
-              <div className="flex justify-between text-gray-600">
+              <div className="flex flex-col gap-1 text-gray-600">
                 <span>Description:</span>
                 <span className="font-medium text-gray-900">{expense.description}</span>
               </div>
             )}
             {expense.userEmail === currentUserEmail && (
-              <div className="flex justify-end gap-2 mt-3 pt-2 border-t border-gray-200">
+              <div className="flex justify-end gap-3 mt-3 pt-2 border-t border-gray-200">
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
