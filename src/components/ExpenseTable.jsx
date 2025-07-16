@@ -156,8 +156,8 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
           onClick={() => toggleItemExpand(expense.id)}
         >
           {/* Name Section - Reduced width */}
-          <div className="flex-shrink-0 w-[28%] flex items-center justify-center">
-            <h3 className="font-medium text-gray-900 break-words text-center">{expense.name}</h3>
+          <div className="flex-shrink-0 w-[28%] flex items-center">
+            <h3 className="font-medium text-gray-900 break-words">{expense.name}</h3>
           </div>
           
           {/* First Divider */}
@@ -253,7 +253,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
       <div className="w-px self-stretch bg-gray-300"></div>
       <div className="flex-shrink-0 w-[33%] text-center">Amount</div>
       <div className="w-px self-stretch bg-gray-300"></div>
-      <div className="flex-1 text-center pr-5">Balance</div>
+      <div className="flex-1 text-right pr-5">Balance</div>
     </div>
   );
 
