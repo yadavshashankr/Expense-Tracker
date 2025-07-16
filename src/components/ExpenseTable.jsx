@@ -162,10 +162,12 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
           className="flex justify-between items-center min-h-[32px] cursor-pointer"
           onClick={() => toggleItemExpand(expense.id)}
         >
-          <div className="flex-shrink-0 flex items-center">
-            <h3 className="font-medium text-gray-900">{expense.name}</h3>
+          <div className="flex-shrink-0 flex items-center flex-1">
+            <h3 className="font-medium text-gray-900 truncate">{expense.name}</h3>
           </div>
-          <div className="flex items-center gap-4 flex-shrink-0">
+          
+          <div className="flex items-center flex-shrink-0">
+            <div className="w-px h-6 bg-gray-200 mx-4"></div>
             <div className="flex justify-center min-w-[100px]">
               <span className={`text-lg font-semibold text-center ${
                 expense.type === 'credit' ? 'text-green-600' : 'text-red-600'
@@ -173,6 +175,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
                 ₹{parseFloat(expense.amount).toFixed(2)}
               </span>
             </div>
+            <div className="w-px h-6 bg-gray-200 mx-4"></div>
             <div className="flex items-center gap-2">
               <BalanceDisplay balance={runningBalance} />
               <button 

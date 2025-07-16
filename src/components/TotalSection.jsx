@@ -38,8 +38,8 @@ export default function TotalSection({ expenses }) {
       {/* Mobile View */}
       <div className="md:hidden">
         <div 
-          className={`p-4 ${isExpanded ? 'border-b border-gray-200' : ''}`}
-          onClick={toggleExpand}
+          className={`p-4 cursor-pointer ${isExpanded ? 'border-b border-gray-200' : ''}`}
+          onClick={() => setIsExpanded(!isExpanded)}
         >
           <div className="flex items-center justify-between">
             <h3 className={`text-sm font-medium ${isPositive ? 'text-green-800' : 'text-red-800'}`}>
@@ -52,14 +52,14 @@ export default function TotalSection({ expenses }) {
                   {isPositive ? '+' : '-'}
                 </span>
               </p>
-              <button 
+              <div 
                 className="text-gray-400 transition-transform duration-300"
                 style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
-              </button>
+              </div>
             </div>
           </div>
         </div>
