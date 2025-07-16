@@ -142,14 +142,6 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
     });
   };
 
-  if (!expenses?.length) {
-    return (
-      <div className="text-center py-8 bg-white shadow rounded-2xl">
-        <p className="text-gray-500">No transactions yet. Add your first transaction above!</p>
-      </div>
-    );
-  }
-
   // Mobile Card View Component
   const MobileExpenseCard = ({ expense, index }) => {
     const { dateStr, timeStr } = formatDateTime(expense.timestamp);
@@ -159,26 +151,26 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-100">
         <div 
-          className="flex items-center min-h-[48px] cursor-pointer px-3 py-3 gap-2"
+          className="flex items-stretch min-h-[48px] cursor-pointer px-3 py-3 gap-2"
           onClick={() => toggleItemExpand(expense.id)}
         >
           {/* Name Section - Reduced width */}
-          <div className="flex-shrink-0 w-[28%]">
-            <h3 className="font-medium text-gray-900 truncate">{expense.name}</h3>
+          <div className="flex-shrink-0 w-[28%] flex items-center">
+            <h3 className="font-medium text-gray-900 break-words">{expense.name}</h3>
           </div>
           
           {/* First Divider */}
-          <div className="w-px h-6 bg-gray-200"></div>
+          <div className="w-px self-stretch bg-gray-200"></div>
           
           {/* Amount Section - Fixed width */}
-          <div className="flex-shrink-0 w-[33%] flex justify-center">
+          <div className="flex-shrink-0 w-[33%] flex justify-center items-center">
             <span className={`${expense.type === 'credit' ? 'text-green-600' : 'text-red-600'} font-medium text-sm whitespace-nowrap`}>
               {expense.type === 'credit' ? '+' : '-'}₹{Math.abs(expense.amount).toFixed(2)}
             </span>
           </div>
           
           {/* Second Divider */}
-          <div className="w-px h-6 bg-gray-200"></div>
+          <div className="w-px self-stretch bg-gray-200"></div>
           
           {/* Balance Section - Remaining space */}
           <div className="flex-1 flex items-center justify-end gap-1">
@@ -199,22 +191,28 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
         {/* Expanded Content */}
         {isExpanded && (
           <div className="px-4 py-3 border-t border-gray-100 bg-gray-50 space-y-2 text-sm">
-            <div className="flex justify-between text-gray-600">
+            <div className="flex justify-between items-center text-gray-600">
+              <span>Type:</span>
+              <span className={`font-medium ${expense.type === 'credit' ? 'text-green-600' : 'text-red-600'} capitalize`}>
+                {expense.type}
+              </span>
+            </div>
+            <div className="flex justify-between items-center text-gray-600">
               <span>Email:</span>
               <span className="font-medium text-gray-900 break-all">{expense.userEmail}</span>
             </div>
-            <div className="flex justify-between text-gray-600">
+            <div className="flex justify-between items-center text-gray-600">
               <span>Date:</span>
               <span className="font-medium text-gray-900">{dateStr}</span>
             </div>
-            <div className="flex justify-between text-gray-600">
+            <div className="flex justify-between items-center text-gray-600">
               <span>Time:</span>
               <span className="font-medium text-gray-900">{timeStr}</span>
             </div>
             {expense.description && (
-              <div className="flex flex-col gap-1 text-gray-600">
+              <div className="flex justify-between items-center text-gray-600">
                 <span>Description:</span>
-                <span className="font-medium text-gray-900">{expense.description}</span>
+                <span className="font-medium text-gray-900 text-right">{expense.description}</span>
               </div>
             )}
             {expense.userEmail === currentUserEmail && (
@@ -246,6 +244,17 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
       </div>
     );
   };
+
+  // Mobile List Header Component
+  const MobileListHeader = () => (
+    <div className="bg-gray-50 border-y border-gray-200 px-3 py-2 flex items-center gap-2 text-sm font-medium text-gray-500">
+      <div className="flex-shrink-0 w-[28%]">Name</div>
+      <div className="w-px self-stretch bg-gray-300"></div>
+      <div className="flex-shrink-0 w-[33%] text-center">Amount</div>
+      <div className="w-px self-stretch bg-gray-300"></div>
+      <div className="flex-1 text-right">Balance</div>
+    </div>
+  );
 
   // Edit Form Component
   const EditForm = ({ expense }) => (
@@ -328,35 +337,55 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
     </div>
   );
 
+  if (!expenses?.length) {
+    return (
+      <div className="text-center py-8 bg-white shadow rounded-2xl">
+        <p className="text-gray-500">No transactions yet. Add your first transaction above!</p>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-3">
       {/* Mobile List View */}
-      <div className="md:hidden space-y-2">
-        {runningBalances.map((expense, index) => (
-          <div key={expense.id}>
-            {editingId === expense.id ? (
-              <EditForm expense={expense} />
-            ) : (
-              <MobileExpenseCard expense={expense} index={index} />
-            )}
-          </div>
-        ))}
+      <div className="md:hidden">
+        <MobileListHeader />
+        <div className="space-y-2 mt-2">
+          {runningBalances.map((expense, index) => (
+            <div key={expense.id}>
+              {editingId === expense.id ? (
+                <EditForm expense={expense} />
+              ) : (
+                <MobileExpenseCard expense={expense} index={index} />
+              )}
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Desktop Table View */}
       <div className="hidden md:block overflow-hidden">
         <table className="min-w-full table-auto">
-          <thead>
-            <tr className="bg-indigo-50 text-left">
-              <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Date</th>
-              <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Time</th>
-              <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Name</th>
-              <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Email</th>
-              <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Type</th>
-              <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Amount</th>
-              <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Running Balance</th>
-              <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap min-w-[200px]">Description</th>
-              <th className="p-3 text-sm font-semibold text-gray-600 whitespace-nowrap">Actions</th>
+          <thead className="bg-gray-50">
+            <tr>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Name
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Email
+              </th>
+              <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Type
+              </th>
+              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Amount
+              </th>
+              <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Balance
+              </th>
+              <th scope="col" className="relative px-6 py-3">
+                <span className="sr-only">Actions</span>
+              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -365,8 +394,6 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
               
               return (
                 <tr key={expense.id} className="hover:bg-gray-50 transition-colors">
-                  <td className="p-3 whitespace-nowrap text-sm">{dateStr}</td>
-                  <td className="p-3 whitespace-nowrap text-sm">{timeStr}</td>
                   <td className="p-3 whitespace-nowrap text-sm">{expense.name}</td>
                   <td className="p-3 whitespace-nowrap text-sm">{expense.userEmail}</td>
                   <td className="p-3 whitespace-nowrap">
@@ -386,7 +413,6 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
                   <td className="p-3 whitespace-nowrap">
                     <BalanceDisplay balance={expense.runningBalance} />
                   </td>
-                  <td className="p-3 text-sm break-words">{expense.description}</td>
                   <td className="p-3 whitespace-nowrap">
                     <div className="flex gap-2">
                       <button
