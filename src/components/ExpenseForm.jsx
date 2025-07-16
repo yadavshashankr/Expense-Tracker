@@ -32,57 +32,79 @@ export default function ExpenseForm({ user, onSubmit }) {
   };
 
   return (
-    <div className="w-full max-w-md">
+    <div className="w-full">
       {error && (
         <div className="mb-4 text-red-600 bg-red-50 p-3 rounded-lg text-sm">
           {error}
         </div>
       )}
-      <form onSubmit={submit} className="bg-white shadow rounded-2xl p-4 mb-6">
-        <div className="grid grid-cols-2 gap-3">
-          <input 
-            className="border p-2 rounded" 
-            placeholder="Name" 
-            value={form.name} 
-            onChange={change('name')} 
-            required 
-          />
-          <input 
-            type="email"
-            className="border p-2 rounded" 
-            placeholder="Person's Email" 
-            value={form.email} 
-            onChange={change('email')} 
-            required 
-          />
-          <select 
-            className="border p-2 rounded" 
-            value={form.type} 
-            onChange={change('type')}
-          >
-            <option value="debit">Debit</option>
-            <option value="credit">Credit</option>
-          </select>
-          <input 
-            type="number" 
-            step="0.01"
-            min="0"
-            className="border p-2 rounded" 
-            placeholder="Amount" 
-            value={form.amount} 
-            onChange={change('amount')} 
-            required 
-          />
-          <input 
-            className="border p-2 rounded col-span-2" 
-            placeholder="Description" 
-            value={form.description} 
-            onChange={change('description')} 
-          />
+      <form onSubmit={submit} className="space-y-4">
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
+            <input 
+              className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" 
+              placeholder="Enter name" 
+              value={form.name} 
+              onChange={change('name')} 
+              required 
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <input 
+              type="email"
+              className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" 
+              placeholder="Enter email" 
+              value={form.email} 
+              onChange={change('email')} 
+              required 
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+              <select 
+                className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" 
+                value={form.type} 
+                onChange={change('type')}
+              >
+                <option value="debit">Debit</option>
+                <option value="credit">Credit</option>
+              </select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+              <input 
+                type="number" 
+                step="0.01"
+                min="0"
+                className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" 
+                placeholder="Enter amount" 
+                value={form.amount} 
+                onChange={change('amount')} 
+                required 
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <input 
+              className="w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" 
+              placeholder="Enter description" 
+              value={form.description} 
+              onChange={change('description')} 
+            />
+          </div>
         </div>
+
         <button 
           type="submit"
-          className="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-xl transition-colors"
+          className="w-full bg-indigo-600 text-white py-2 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-colors"
         >
           Add Transaction
         </button>
