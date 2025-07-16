@@ -218,8 +218,8 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
             value={draft.type}
             onChange={change('type')}
           >
-            <option value="debit">You Owe</option>
-            <option value="credit">They Owe</option>
+            <option value="debit">Debit</option>
+            <option value="credit">Credit</option>
           </select>
         </div>
         <div>

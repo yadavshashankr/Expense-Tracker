@@ -60,8 +60,8 @@ export default function ExpenseForm({ user, onSubmit }) {
             value={form.type} 
             onChange={change('type')}
           >
-            <option value="debit">I Owe (Debit)</option>
-            <option value="credit">They Owe (Credit)</option>
+            <option value="debit">Debit</option>
+            <option value="credit">Credit</option>
           </select>
           <input 
             type="number" 
