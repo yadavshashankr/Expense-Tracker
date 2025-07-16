@@ -159,45 +159,44 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
     return (
       <div className="bg-white rounded-lg shadow p-3 space-y-2">
         <div 
-          className="flex justify-between items-center min-h-[32px] cursor-pointer"
+          className="flex items-center min-h-[32px] cursor-pointer px-2"
           onClick={() => toggleItemExpand(expense.id)}
         >
-          {/* Name Section - Fixed width */}
-          <div className="flex-shrink-0 flex items-center w-[30%]">
+          {/* Name Section */}
+          <div className="flex-shrink-0 flex items-center w-[35%]">
             <h3 className="font-medium text-gray-900 truncate">{expense.name}</h3>
           </div>
           
-          {/* Amount and Balance Section - Fixed layout */}
-          <div className="flex items-center flex-shrink-0 w-[70%]">
-            {/* First Divider */}
-            <div className="w-px h-6 bg-gray-200"></div>
-            
-            {/* Amount Section - Fixed width */}
-            <div className="flex justify-center w-[45%]">
-              <span className={`text-lg font-semibold text-center ${
-                expense.type === 'credit' ? 'text-green-600' : 'text-red-600'
-              }`}>
-                ₹{parseFloat(expense.amount).toFixed(2)}
-              </span>
-            </div>
-            
-            {/* Second Divider */}
-            <div className="w-px h-6 bg-gray-200"></div>
-            
-            {/* Balance Section - Fixed width with separate arrow */}
-            <div className="flex items-center justify-end w-[45%]">
-              <div className="flex-grow flex justify-end">
-                <BalanceDisplay balance={runningBalance} />
-              </div>
-              <button 
-                className="text-gray-400 transition-transform duration-300 flex-shrink-0 ml-3"
-                style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
-              >
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-            </div>
+          {/* First Divider */}
+          <div className="w-px h-6 bg-gray-200 mx-3"></div>
+          
+          {/* Amount Section */}
+          <div className="flex justify-center w-[25%]">
+            <span className={`text-lg font-semibold text-center ${
+              expense.type === 'credit' ? 'text-green-600' : 'text-red-600'
+            }`}>
+              ₹{parseFloat(expense.amount).toFixed(2)}
+            </span>
+          </div>
+          
+          {/* Second Divider */}
+          <div className="w-px h-6 bg-gray-200 mx-3"></div>
+          
+          {/* Balance Section */}
+          <div className="flex items-center justify-end w-[25%]">
+            <BalanceDisplay balance={runningBalance} />
+          </div>
+
+          {/* Arrow Section */}
+          <div className="flex items-center justify-center w-[10%]">
+            <button 
+              className="text-gray-400 transition-transform duration-300 flex-shrink-0"
+              style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
           </div>
         </div>
 
