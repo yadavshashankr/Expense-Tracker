@@ -157,20 +157,22 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
     const isExpanded = expandedItems.has(expense.id);
     
     return (
-      <div className="bg-white rounded-lg shadow p-4 space-y-3">
+      <div className="bg-white rounded-lg shadow p-3 space-y-2">
         <div 
-          className="flex justify-between items-center min-h-[40px] cursor-pointer"
+          className="flex justify-between items-center min-h-[32px] cursor-pointer"
           onClick={() => toggleItemExpand(expense.id)}
         >
           <div className="flex-shrink-0 flex items-center">
             <h3 className="font-medium text-gray-900">{expense.name}</h3>
           </div>
           <div className="flex items-center gap-4 flex-shrink-0">
-            <span className={`text-lg font-semibold text-right min-w-[100px] ${
-              expense.type === 'credit' ? 'text-green-600' : 'text-red-600'
-            }`}>
-              ₹{parseFloat(expense.amount).toFixed(2)}
-            </span>
+            <div className="flex justify-center min-w-[100px]">
+              <span className={`text-lg font-semibold text-center ${
+                expense.type === 'credit' ? 'text-green-600' : 'text-red-600'
+              }`}>
+                ₹{parseFloat(expense.amount).toFixed(2)}
+              </span>
+            </div>
             <div className="flex items-center gap-2">
               <BalanceDisplay balance={runningBalance} />
               <button 
@@ -189,10 +191,10 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
           className="transition-all duration-300 overflow-hidden"
           style={{ maxHeight: isExpanded ? '200px' : '0px' }}
         >
-          <div className="pt-3 border-t border-gray-100 space-y-3 px-1">
+          <div className="pt-2 border-t border-gray-100 space-y-2 px-1">
             <div className="flex justify-between items-start">
               <p className="text-sm text-gray-500">{expense.userEmail}</p>
-              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
                 expense.type === 'credit' 
                   ? 'bg-green-100 text-green-800'
                   : 'bg-red-100 text-red-800'
@@ -320,7 +322,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
   return (
     <div>
       {/* Mobile List View */}
-      <div className="space-y-4 md:hidden">
+      <div className="space-y-3 md:hidden pb-4">
         {runningBalances.map((expense, index) => (
           <div key={expense.id}>
             {editingId === expense.id ? (
