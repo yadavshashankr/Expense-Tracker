@@ -331,20 +331,18 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
   );
 
   return (
-    <div className="flex flex-col h-full">
+    <div>
       {/* Mobile List View */}
-      <div className="md:hidden flex flex-col flex-1 pb-20 overflow-y-auto">
-        <div className="space-y-2">
-          {runningBalances.map((expense, index) => (
-            <div key={expense.id}>
-              {editingId === expense.id ? (
-                <EditForm expense={expense} />
-              ) : (
-                <MobileExpenseCard expense={expense} index={index} />
-              )}
-            </div>
-          ))}
-        </div>
+      <div className="space-y-3 md:hidden pb-4">
+        {runningBalances.map((expense, index) => (
+          <div key={expense.id}>
+            {editingId === expense.id ? (
+              <EditForm expense={expense} />
+            ) : (
+              <MobileExpenseCard expense={expense} index={index} />
+            )}
+          </div>
+        ))}
       </div>
 
       {/* Desktop Table View */}
