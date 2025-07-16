@@ -184,11 +184,13 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
             {/* Second Divider */}
             <div className="w-px h-6 bg-gray-200"></div>
             
-            {/* Balance Section - Fixed width */}
-            <div className="flex items-center justify-end w-[45%] gap-2">
-              <BalanceDisplay balance={runningBalance} />
+            {/* Balance Section - Fixed width with separate arrow */}
+            <div className="flex items-center justify-end w-[45%]">
+              <div className="flex-grow flex justify-end">
+                <BalanceDisplay balance={runningBalance} />
+              </div>
               <button 
-                className="text-gray-400 transition-transform duration-300 flex-shrink-0"
+                className="text-gray-400 transition-transform duration-300 flex-shrink-0 ml-3"
                 style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
