@@ -157,9 +157,9 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
     const isExpanded = expandedItems.has(expense.id);
     
     return (
-      <div className="bg-white rounded-lg shadow p-3 space-y-2">
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100">
         <div 
-          className="flex items-center min-h-[40px] cursor-pointer px-3"
+          className="flex items-center min-h-[48px] cursor-pointer px-4 py-3"
           onClick={() => toggleItemExpand(expense.id)}
         >
           {/* Name Section */}
@@ -168,83 +168,71 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
           </div>
           
           {/* First Divider */}
-          <div className="w-px h-6 bg-gray-200"></div>
+          <div className="w-px h-6 bg-gray-200 mx-2"></div>
           
           {/* Amount Section */}
-          <div className="flex justify-center items-center w-[35%] px-2">
-            <span className={`text-base font-semibold text-center ${
-              expense.type === 'credit' ? 'text-green-600' : 'text-red-600'
-            }`}>
-              ₹{parseFloat(expense.amount).toFixed(2)}
+          <div className="flex-shrink-0 w-[35%] flex items-center justify-center">
+            <span className={`${expense.type === 'credit' ? 'text-green-600' : 'text-red-600'} font-medium`}>
+              {expense.type === 'credit' ? '+' : '-'}₹{Math.abs(expense.amount).toFixed(2)}
             </span>
           </div>
           
           {/* Second Divider */}
-          <div className="w-px h-6 bg-gray-200"></div>
+          <div className="w-px h-6 bg-gray-200 mx-2"></div>
           
-          {/* Balance and Arrow Section */}
-          <div className="flex items-center justify-end w-[35%] pl-2 pr-1 gap-2">
-            <div className="flex-shrink-0">
-              <BalanceDisplay balance={runningBalance} />
-            </div>
-            <button 
-              className="text-gray-400 transition-transform duration-300 flex-shrink-0 ml-1"
-              style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
+          {/* Balance Section */}
+          <div className="flex-shrink-0 w-[35%] flex items-center justify-end">
+            <BalanceDisplay balance={runningBalance} />
           </div>
         </div>
 
-        <div 
-          className="transition-all duration-300 overflow-hidden"
-          style={{ maxHeight: isExpanded ? '200px' : '0px' }}
-        >
-          <div className="pt-2 border-t border-gray-100 space-y-2 px-3">
-            <div className="flex justify-between items-start">
-              <p className="text-sm text-gray-500">{expense.userEmail}</p>
-              <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
-                expense.type === 'credit' 
-                  ? 'bg-green-100 text-green-800'
-                  : 'bg-red-100 text-red-800'
-              }`}>
-                {expense.type === 'credit' ? 'Credit' : 'Debit'}
-              </span>
+        {/* Expanded Content */}
+        {isExpanded && (
+          <div className="px-4 py-3 border-t border-gray-100 bg-gray-50 space-y-2 text-sm">
+            <div className="flex justify-between text-gray-600">
+              <span>Email:</span>
+              <span className="font-medium text-gray-900">{expense.userEmail}</span>
             </div>
-            
-            <div className="flex justify-between items-center">
-              <div className="text-sm text-gray-500">{dateStr}</div>
-              <div className="text-xs text-gray-400">{timeStr}</div>
+            <div className="flex justify-between text-gray-600">
+              <span>Date:</span>
+              <span className="font-medium text-gray-900">{dateStr}</span>
             </div>
-
+            <div className="flex justify-between text-gray-600">
+              <span>Time:</span>
+              <span className="font-medium text-gray-900">{timeStr}</span>
+            </div>
             {expense.description && (
-              <p className="text-sm text-gray-600">{expense.description}</p>
+              <div className="flex justify-between text-gray-600">
+                <span>Description:</span>
+                <span className="font-medium text-gray-900">{expense.description}</span>
+              </div>
             )}
-
-            <div className="flex justify-end gap-2 pt-2">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  startEdit(expense);
-                }}
-                className="text-blue-600 hover:text-blue-800 text-sm"
-              >
-                Edit
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onDelete(expense.rowIndex);
-                }}
-                className="text-red-600 hover:text-red-800 text-sm"
-              >
-                Delete
-              </button>
-            </div>
+            {expense.userEmail === currentUserEmail && (
+              <div className="flex justify-end gap-2 mt-3 pt-2 border-t border-gray-200">
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    startEdit(expense);
+                  }}
+                  className="text-indigo-600 hover:text-indigo-700 font-medium text-sm"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (window.confirm('Are you sure you want to delete this transaction?')) {
+                      onDelete(expense.rowIndex);
+                    }
+                  }}
+                  className="text-red-600 hover:text-red-700 font-medium text-sm"
+                >
+                  Delete
+                </button>
+              </div>
+            )}
           </div>
-        </div>
+        )}
       </div>
     );
   };
@@ -331,9 +319,9 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
   );
 
   return (
-    <div>
+    <div className="space-y-3">
       {/* Mobile List View */}
-      <div className="space-y-3 md:hidden pb-4">
+      <div className="md:hidden space-y-2">
         {runningBalances.map((expense, index) => (
           <div key={expense.id}>
             {editingId === expense.id ? (
@@ -346,7 +334,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
       </div>
 
       {/* Desktop Table View */}
-      <div className="hidden md:block overflow-x-auto bg-white shadow rounded-2xl">
+      <div className="hidden md:block overflow-hidden">
         <table className="min-w-full table-auto">
           <thead>
             <tr className="bg-indigo-50 text-left">
