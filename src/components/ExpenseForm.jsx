@@ -2,7 +2,7 @@
 import { useState } from 'react';
 
 export default function ExpenseForm({ user, onSubmit }) {
-  const [form, setForm] = useState({ name: '', email: '', type: 'debt', amount: '', description: '' });
+  const [form, setForm] = useState({ name: '', email: '', type: 'debit', amount: '', description: '' });
   const [error, setError] = useState(null);
 
   const change = k => e => setForm({ ...form, [k]: e.target.value });
@@ -23,7 +23,7 @@ export default function ExpenseForm({ user, onSubmit }) {
       };
 
       onSubmit(entry);
-      setForm({ name: '', email: '', type: 'debt', amount: '', description: '' });
+      setForm({ name: '', email: '', type: 'debit', amount: '', description: '' });
       setError(null);
     } catch (err) {
       console.error('Error submitting transaction:', err);
@@ -60,8 +60,8 @@ export default function ExpenseForm({ user, onSubmit }) {
             value={form.type} 
             onChange={change('type')}
           >
-            <option value="debt">I Owe (Debt)</option>
-            <option value="lend">They Owe (Lend)</option>
+            <option value="debit">I Owe (Debit)</option>
+            <option value="credit">They Owe (Credit)</option>
           </select>
           <input 
             type="number" 

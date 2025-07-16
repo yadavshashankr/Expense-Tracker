@@ -71,15 +71,15 @@ const calculateBalance = (transactions, currentUserEmail, targetEmail) => {
     
     // If it's my transaction
     if (firstTransaction.userEmail === currentUserEmail) {
-      // If I owe them (debt), it should be negative
-      if (firstTransaction.type === 'debt') return -amount;
-      // If they owe me (lend), it should be positive
-      if (firstTransaction.type === 'lend') return amount;
+      // If I owe them (debit), it should be negative
+      if (firstTransaction.type === 'debit') return -amount;
+      // If they owe me (credit), it should be positive
+      if (firstTransaction.type === 'credit') return amount;
     } else {
-      // If they owe me (lend), it should be positive
-      if (firstTransaction.type === 'lend') return amount;
-      // If I owe them (debt), it should be negative
-      if (firstTransaction.type === 'debt') return -amount;
+      // If they owe me (credit), it should be positive
+      if (firstTransaction.type === 'credit') return amount;
+      // If I owe them (debit), it should be negative
+      if (firstTransaction.type === 'debit') return -amount;
     }
     return 0;
   }
@@ -94,15 +94,15 @@ const calculateBalance = (transactions, currentUserEmail, targetEmail) => {
     
     // From logged-in user's perspective:
     if (transaction.userEmail === currentUserEmail) {
-      // When I owe them (debt), my balance decreases
-      if (transaction.type === 'debt') return balance - amount;
-      // When they owe me (lend), my balance increases
-      if (transaction.type === 'lend') return balance + amount;
+      // When I owe them (debit), my balance decreases
+      if (transaction.type === 'debit') return balance - amount;
+      // When they owe me (credit), my balance increases
+      if (transaction.type === 'credit') return balance + amount;
     } else {
-      // When they owe me (lend), my balance increases
-      if (transaction.type === 'lend') return balance + amount;
-      // When I owe them (debt), my balance decreases
-      if (transaction.type === 'debt') return balance - amount;
+      // When they owe me (credit), my balance increases
+      if (transaction.type === 'credit') return balance + amount;
+      // When I owe them (debit), my balance decreases
+      if (transaction.type === 'debit') return balance - amount;
     }
     return balance;
   }, 0);

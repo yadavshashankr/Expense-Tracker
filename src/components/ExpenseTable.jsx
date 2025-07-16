@@ -32,15 +32,15 @@ const calculateRunningBalance = (expenses, currentUserEmail, targetEmail, upToIn
     
     // If it's my transaction
     if (firstTransaction.userEmail === currentUserEmail) {
-      // If I owe them (debt), it should be negative
-      if (firstTransaction.type === 'debt') return -amount;
-      // If they owe me (lend), it should be positive
-      if (firstTransaction.type === 'lend') return amount;
+      // If I owe them (debit), it should be negative
+      if (firstTransaction.type === 'debit') return -amount;
+      // If they owe me (credit), it should be positive
+      if (firstTransaction.type === 'credit') return amount;
     } else {
-      // If they owe me (lend), it should be positive
-      if (firstTransaction.type === 'lend') return amount;
-      // If I owe them (debt), it should be negative
-      if (firstTransaction.type === 'debt') return -amount;
+      // If they owe me (credit), it should be positive
+      if (firstTransaction.type === 'credit') return amount;
+      // If I owe them (debit), it should be negative
+      if (firstTransaction.type === 'debit') return -amount;
     }
     return 0;
   }
@@ -57,15 +57,15 @@ const calculateRunningBalance = (expenses, currentUserEmail, targetEmail, upToIn
       
       // From logged-in user's perspective:
       if (expense.userEmail === currentUserEmail) {
-        // When I owe them (debt), my balance decreases
-        if (expense.type === 'debt') return balance - amount;
-        // When they owe me (lend), my balance increases
-        if (expense.type === 'lend') return balance + amount;
+        // When I owe them (debit), my balance decreases
+        if (expense.type === 'debit') return balance - amount;
+        // When they owe me (credit), my balance increases
+        if (expense.type === 'credit') return balance + amount;
       } else {
-        // When they owe me (lend), my balance increases
-        if (expense.type === 'lend') return balance + amount;
-        // When I owe them (debt), my balance decreases
-        if (expense.type === 'debt') return balance - amount;
+        // When they owe me (credit), my balance increases
+        if (expense.type === 'credit') return balance + amount;
+        // When I owe them (debit), my balance decreases
+        if (expense.type === 'debit') return balance - amount;
       }
       return balance;
     }, 0);
@@ -150,17 +150,17 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
             <p className="text-sm text-gray-500">{expense.userEmail}</p>
           </div>
           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-            expense.type === 'lend' 
+            expense.type === 'credit' 
               ? 'bg-green-100 text-green-800'
               : 'bg-red-100 text-red-800'
           }`}>
-            {expense.type === 'lend' ? 'Lend' : 'Debt'}
+            {expense.type === 'credit' ? 'Credit' : 'Debit'}
           </span>
         </div>
         
         <div className="flex justify-between items-center">
           <span className={`text-lg font-semibold ${
-            expense.type === 'lend' ? 'text-green-600' : 'text-red-600'
+            expense.type === 'credit' ? 'text-green-600' : 'text-red-600'
           }`}>
             ₹{parseFloat(expense.amount).toFixed(2)}
           </span>
@@ -218,8 +218,8 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
             value={draft.type}
             onChange={change('type')}
           >
-            <option value="debt">You Owe</option>
-            <option value="lend">They Owe</option>
+            <option value="debit">You Owe</option>
+            <option value="credit">They Owe</option>
           </select>
         </div>
         <div>
@@ -302,15 +302,15 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
                   <td className="p-3 whitespace-nowrap text-sm">{expense.userEmail}</td>
                   <td className="p-3 whitespace-nowrap">
                     <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
-                      expense.type === 'lend' 
+                      expense.type === 'credit' 
                         ? 'bg-green-100 text-green-800'
                         : 'bg-red-100 text-red-800'
                     }`}>
-                      {expense.type === 'lend' ? 'Lend' : 'Debt'}
+                      {expense.type === 'credit' ? 'Credit' : 'Debit'}
                     </span>
                   </td>
                   <td className="p-3 whitespace-nowrap text-sm">
-                    <span className={expense.type === 'lend' ? 'text-green-600' : 'text-red-600'}>
+                    <span className={expense.type === 'credit' ? 'text-green-600' : 'text-red-600'}>
                       ₹{parseFloat(expense.amount).toFixed(2)}
                     </span>
                   </td>
