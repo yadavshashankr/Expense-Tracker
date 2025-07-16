@@ -60,7 +60,7 @@ export default function ExpenseForm({ user, onSubmit, expenses }) {
   const submit = e => {
     e.preventDefault();
     try {
-      if (!user || !user.email) {
+      if (!user || !user.profile?.email) {
         throw new Error('User email not available. Please try signing out and signing in again.');
       }
 
