@@ -137,14 +137,14 @@ function App() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 fixed inset-0 overflow-hidden">
       {!user ? (
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
           <h1 className="text-3xl sm:text-4xl font-bold mb-8 text-center">Expense Tracker</h1>
           <LoginButton onLogin={setUser} />
         </div>
       ) : (
-        <div className="flex flex-col h-screen">
+        <div className="flex flex-col h-full">
           <div className="flex-none p-4">
             <div className="max-w-7xl mx-auto">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-4">
