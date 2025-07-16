@@ -66,7 +66,7 @@ export default function TotalSection({ expenses }) {
 
         <div 
           className="transition-all duration-300 overflow-hidden"
-          style={{ maxHeight: isExpanded ? '200px' : '0px' }}
+          style={{ maxHeight: isExpanded ? '220px' : '0px' }}
         >
           <div className="p-4 space-y-4">
             <div className="bg-green-50 rounded-lg p-4">

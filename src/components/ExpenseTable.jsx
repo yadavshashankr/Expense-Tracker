@@ -159,27 +159,29 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
     return (
       <div className="bg-white rounded-lg shadow p-4 space-y-3">
         <div 
-          className="flex justify-between items-center cursor-pointer"
+          className="flex justify-between items-center min-h-[40px] cursor-pointer"
           onClick={() => toggleItemExpand(expense.id)}
         >
-          <div>
+          <div className="flex-shrink-0 flex items-center">
             <h3 className="font-medium text-gray-900">{expense.name}</h3>
           </div>
-          <div className="flex items-center gap-3">
-            <span className={`text-lg font-semibold ${
+          <div className="flex items-center gap-4 flex-shrink-0">
+            <span className={`text-lg font-semibold text-right min-w-[100px] ${
               expense.type === 'credit' ? 'text-green-600' : 'text-red-600'
             }`}>
               ₹{parseFloat(expense.amount).toFixed(2)}
             </span>
-            <BalanceDisplay balance={runningBalance} />
-            <button 
-              className="text-gray-400 transition-transform duration-300"
-              style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
+            <div className="flex items-center gap-2">
+              <BalanceDisplay balance={runningBalance} />
+              <button 
+                className="text-gray-400 transition-transform duration-300 ml-1 flex-shrink-0"
+                style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
 
