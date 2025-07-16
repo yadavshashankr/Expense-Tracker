@@ -74,6 +74,7 @@ const calculateRunningBalance = (expenses, currentUserEmail, targetEmail, upToIn
 export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEmail }) {
   const [editingId, setEditingId] = useState(null);
   const [draft, setDraft] = useState({});
+  const [expandedItems, setExpandedItems] = useState(new Set());
 
   // Sort expenses by timestamp in descending order (newest first)
   const sortedExpenses = useMemo(() => {
@@ -129,6 +130,18 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
     setDraft({ ...draft, [field]: e.target.value });
   };
 
+  const toggleItemExpand = (id) => {
+    setExpandedItems(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(id)) {
+        newSet.delete(id);
+      } else {
+        newSet.add(id);
+      }
+      return newSet;
+    });
+  };
+
   if (!expenses?.length) {
     return (
       <div className="text-center py-8 bg-white shadow rounded-2xl">
@@ -141,38 +154,73 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
   const MobileExpenseCard = ({ expense, index }) => {
     const { dateStr, timeStr } = formatDateTime(expense.timestamp);
     const runningBalance = runningBalances[index].runningBalance;
+    const isExpanded = expandedItems.has(expense.id);
     
     return (
       <div className="bg-white rounded-lg shadow p-4 space-y-3">
-        <div className="flex justify-between items-start">
+        <div 
+          className="flex justify-between items-center cursor-pointer"
+          onClick={() => toggleItemExpand(expense.id)}
+        >
           <div>
             <h3 className="font-medium text-gray-900">{expense.name}</h3>
-            <p className="text-sm text-gray-500">{expense.userEmail}</p>
           </div>
-          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-            expense.type === 'credit' 
-              ? 'bg-green-100 text-green-800'
-              : 'bg-red-100 text-red-800'
-          }`}>
-            {expense.type === 'credit' ? 'Credit' : 'Debit'}
-          </span>
-        </div>
-        
-        <div className="flex justify-between items-center">
-          <span className={`text-lg font-semibold ${
-            expense.type === 'credit' ? 'text-green-600' : 'text-red-600'
-          }`}>
-            ₹{parseFloat(expense.amount).toFixed(2)}
-          </span>
-          <div className="text-right">
-            <div className="text-sm text-gray-500">{dateStr}</div>
-            <div className="text-xs text-gray-400">{timeStr}</div>
+          <div className="flex items-center gap-3">
+            <span className={`text-lg font-semibold ${
+              expense.type === 'credit' ? 'text-green-600' : 'text-red-600'
+            }`}>
+              ₹{parseFloat(expense.amount).toFixed(2)}
+            </span>
+            <BalanceDisplay balance={runningBalance} />
           </div>
         </div>
 
-        <div className="flex justify-between items-center pt-2 border-t border-gray-100">
-          <div className="text-sm text-gray-600">Running Balance:</div>
-          <BalanceDisplay balance={runningBalance} />
+        <div 
+          className="transition-all duration-300 overflow-hidden"
+          style={{ maxHeight: isExpanded ? '200px' : '0px' }}
+        >
+          <div className="pt-3 border-t border-gray-100 space-y-3">
+            <div className="flex justify-between items-start">
+              <p className="text-sm text-gray-500">{expense.userEmail}</p>
+              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                expense.type === 'credit' 
+                  ? 'bg-green-100 text-green-800'
+                  : 'bg-red-100 text-red-800'
+              }`}>
+                {expense.type === 'credit' ? 'Credit' : 'Debit'}
+              </span>
+            </div>
+            
+            <div className="flex justify-between items-center">
+              <div className="text-sm text-gray-500">{dateStr}</div>
+              <div className="text-xs text-gray-400">{timeStr}</div>
+            </div>
+
+            {expense.description && (
+              <p className="text-sm text-gray-600">{expense.description}</p>
+            )}
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  startEdit(expense);
+                }}
+                className="text-blue-600 hover:text-blue-800 text-sm"
+              >
+                Edit
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onDelete(expense.rowIndex);
+                }}
+                className="text-red-600 hover:text-red-800 text-sm"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );

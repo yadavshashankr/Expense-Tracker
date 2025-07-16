@@ -14,6 +14,7 @@ function App() {
   const [isLoading, setIsLoading] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   // Function to fetch expenses
   const fetchExpenses = async () => {
@@ -82,6 +83,11 @@ function App() {
   const handleAddExpense = async (expense) => {
     try {
       setError(null);
+      // Close form immediately
+      setShowAddForm(false);
+      // Show loading state
+      setIsSubmitting(true);
+      
       await appendExpense({
         spreadsheetId,
         accessToken: user.accessToken,
@@ -89,14 +95,13 @@ function App() {
         currentUserEmail: user.profile.email
       });
       
-      // Close the form popup
-      setShowAddForm(false);
-      
       // Refresh expenses
       await fetchExpenses();
     } catch (err) {
       console.error('Error adding expense:', err);
       setError(err.message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -186,9 +191,12 @@ function App() {
             </div>
           </div>
 
-          {isLoading ? (
-            <div className="flex justify-center items-center py-12">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+          {isLoading || isSubmitting ? (
+            <div className="flex-1 flex justify-center items-center">
+              <div className="flex flex-col items-center gap-3">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                <p className="text-gray-600">{isSubmitting ? 'Adding transaction...' : 'Loading...'}</p>
+              </div>
             </div>
           ) : (
             <div className="flex-1 flex flex-col min-h-0 relative">

@@ -74,7 +74,7 @@ export default function TotalSection({ expenses }) {
               <p className="text-2xl font-bold text-green-600">₹{totals.credit.toFixed(2)}</p>
             </div>
 
-            <div className="bg-red-50 rounded-lg p-4">
+            <div className="bg-red-50 rounded-lg p-4 mb-2">
               <h3 className="text-sm font-medium text-red-800">Total Debit</h3>
               <p className="text-2xl font-bold text-red-600">₹{totals.debit.toFixed(2)}</p>
             </div>
