@@ -172,6 +172,14 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
               ₹{parseFloat(expense.amount).toFixed(2)}
             </span>
             <BalanceDisplay balance={runningBalance} />
+            <button 
+              className="text-gray-400 transition-transform duration-300"
+              style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
           </div>
         </div>
 
@@ -179,7 +187,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
           className="transition-all duration-300 overflow-hidden"
           style={{ maxHeight: isExpanded ? '200px' : '0px' }}
         >
-          <div className="pt-3 border-t border-gray-100 space-y-3">
+          <div className="pt-3 border-t border-gray-100 space-y-3 px-1">
             <div className="flex justify-between items-start">
               <p className="text-sm text-gray-500">{expense.userEmail}</p>
               <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
