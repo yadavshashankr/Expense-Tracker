@@ -159,20 +159,20 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
     return (
       <div className="bg-white rounded-lg shadow p-3 space-y-2">
         <div 
-          className="flex items-center min-h-[32px] cursor-pointer px-2"
+          className="flex items-center min-h-[40px] cursor-pointer px-3"
           onClick={() => toggleItemExpand(expense.id)}
         >
           {/* Name Section */}
-          <div className="flex-shrink-0 flex items-center w-[35%]">
-            <h3 className="font-medium text-gray-900 truncate">{expense.name}</h3>
+          <div className="flex-shrink-0 flex items-center w-[30%]">
+            <h3 className="font-medium text-gray-900 truncate pr-2">{expense.name}</h3>
           </div>
           
           {/* First Divider */}
-          <div className="w-px h-6 bg-gray-200 mx-3"></div>
+          <div className="w-px h-6 bg-gray-200"></div>
           
           {/* Amount Section */}
-          <div className="flex justify-center w-[25%]">
-            <span className={`text-lg font-semibold text-center ${
+          <div className="flex justify-center items-center w-[35%] px-2">
+            <span className={`text-base font-semibold text-center ${
               expense.type === 'credit' ? 'text-green-600' : 'text-red-600'
             }`}>
               ₹{parseFloat(expense.amount).toFixed(2)}
@@ -180,20 +180,18 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
           </div>
           
           {/* Second Divider */}
-          <div className="w-px h-6 bg-gray-200 mx-3"></div>
+          <div className="w-px h-6 bg-gray-200"></div>
           
-          {/* Balance Section */}
-          <div className="flex items-center justify-end w-[25%]">
-            <BalanceDisplay balance={runningBalance} />
-          </div>
-
-          {/* Arrow Section */}
-          <div className="flex items-center justify-center w-[10%]">
+          {/* Balance and Arrow Section */}
+          <div className="flex items-center justify-end w-[35%] pl-2 pr-1 gap-2">
+            <div className="flex-shrink-0">
+              <BalanceDisplay balance={runningBalance} />
+            </div>
             <button 
-              className="text-gray-400 transition-transform duration-300 flex-shrink-0"
+              className="text-gray-400 transition-transform duration-300 flex-shrink-0 ml-1"
               style={{ transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)' }}
             >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </svg>
             </button>
@@ -204,7 +202,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
           className="transition-all duration-300 overflow-hidden"
           style={{ maxHeight: isExpanded ? '200px' : '0px' }}
         >
-          <div className="pt-2 border-t border-gray-100 space-y-2 px-1">
+          <div className="pt-2 border-t border-gray-100 space-y-2 px-3">
             <div className="flex justify-between items-start">
               <p className="text-sm text-gray-500">{expense.userEmail}</p>
               <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
