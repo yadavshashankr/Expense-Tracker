@@ -111,52 +111,64 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
   return (
     <div className="w-full bg-white rounded-xl shadow-2xl overflow-hidden">
       {/* Header */}
-      <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
-        <h2 className="text-xl font-semibold text-gray-800">Add Transaction</h2>
+      <div className="px-5 py-3 border-b border-gray-200 bg-gray-50">
+        <h2 className="text-lg font-semibold text-gray-800">Add Transaction</h2>
       </div>
 
       {/* Content */}
-      <div className="p-6">
+      <div className="p-5">
         {error && (
-          <div className="mb-6 text-red-600 bg-red-50 p-3 rounded-lg text-sm">
+          <div className="mb-5 text-red-600 bg-red-50 p-3 rounded-lg text-sm">
             {error}
           </div>
         )}
         
-        <form onSubmit={submit} className="space-y-6">
+        <form onSubmit={submit} className="space-y-5">
           {/* Basic Info Section */}
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <SearchableInput
-                label="Name"
-                value={form.name}
-                onChange={change('name')}
-                onSearch={handleSearch('name')}
-                searchResults={searchUsers(searchTerm.name, 'name')}
-                onSelect={handleSelect}
-                displayField="name"
-                required
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Name
+                </label>
+                <SearchableInput
+                  hideLabel
+                  value={form.name}
+                  onChange={change('name')}
+                  onSearch={handleSearch('name')}
+                  searchResults={searchUsers(searchTerm.name, 'name')}
+                  onSelect={handleSelect}
+                  displayField="name"
+                  required
+                  className="h-10"
+                />
+              </div>
               
-              <SearchableInput
-                label="Email"
-                type="email"
-                value={form.email}
-                onChange={change('email')}
-                onSearch={handleSearch('email')}
-                searchResults={searchUsers(searchTerm.email, 'email')}
-                onSelect={handleSelect}
-                displayField="email"
-                required
-              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
+                </label>
+                <SearchableInput
+                  hideLabel
+                  type="email"
+                  value={form.email}
+                  onChange={change('email')}
+                  onSearch={handleSearch('email')}
+                  searchResults={searchUsers(searchTerm.email, 'email')}
+                  onSelect={handleSelect}
+                  displayField="email"
+                  required
+                  className="h-10"
+                />
+              </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Mobile Number
               </label>
-              <div className="flex gap-2">
-                <div className="w-1/3 md:w-1/4">
+              <div className="flex gap-3">
+                <div className="w-32">
                   <CountryCodeSelect
                     value={form.countryCode}
                     onChange={(code) => setForm(prev => ({ ...prev, countryCode: code }))}
@@ -173,6 +185,7 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
                     onSelect={handleSelect}
                     displayField="mobileNumber"
                     placeholder="Enter mobile number"
+                    className="h-10"
                   />
                 </div>
               </div>
@@ -185,11 +198,11 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Amount
               </label>
-              <div className="flex gap-2">
+              <div className="flex gap-3">
                 <select
                   value={form.type}
                   onChange={change('type')}
-                  className="rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors"
+                  className="h-10 rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors"
                 >
                   <option value="debit">Debit</option>
                   <option value="credit">Credit</option>
@@ -199,7 +212,7 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
                   value={form.amount}
                   onChange={change('amount')}
                   placeholder="Enter amount"
-                  className="flex-1 rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors"
+                  className="flex-1 h-10 rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors"
                   required
                   min="0"
                   step="0.01"
@@ -215,7 +228,7 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
                 value={form.description}
                 onChange={change('description')}
                 placeholder="Enter description"
-                className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors"
+                className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors resize-none"
                 rows="2"
               />
             </div>
@@ -226,7 +239,7 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
             <div className="flex justify-end">
               <button
                 type="submit"
-                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all"
+                className="h-10 px-4 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all"
               >
                 Add Transaction
               </button>
