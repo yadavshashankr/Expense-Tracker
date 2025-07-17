@@ -1,6 +1,6 @@
 import { useState } from 'react';
 
-const countries = [
+export const countries = [
   { code: '+91', flag: '🇮🇳', name: 'India' },
   { code: '+1', flag: '🇺🇸', name: 'United States' },
   { code: '+44', flag: '🇬🇧', name: 'United Kingdom' },
@@ -12,6 +12,9 @@ const countries = [
   { code: '+39', flag: '🇮🇹', name: 'Italy' },
   { code: '+7', flag: '🇷🇺', name: 'Russia' },
 ];
+
+// Alias for backward compatibility
+export const countryData = countries;
 
 export default function CountryCodeSelect({ value, onChange }) {
   const [isOpen, setIsOpen] = useState(false);

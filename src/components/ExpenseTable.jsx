@@ -1,7 +1,7 @@
 
 import { useState, useMemo } from 'react';
 import React from 'react'; // Added missing import for React
-import { countryData } from './CountryCodeSelect';
+import { countries as countryData } from './CountryCodeSelect';
 
 // Utility function for date formatting
 const formatDateTime = (timestamp) => {
