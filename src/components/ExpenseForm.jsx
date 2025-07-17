@@ -79,10 +79,10 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
   const handleSelect = (result) => {
     setForm(prev => ({
       ...prev,
-      name: result.name,
-      email: result.email,
-      mobileNumber: result.mobileNumber || '',
-      countryCode: result.countryCode || '+91'
+      name: result.name || prev.name,
+      email: result.email || prev.email,
+      mobileNumber: result.mobileNumber || prev.mobileNumber,
+      countryCode: result.countryCode || prev.countryCode
     }));
     setSearchTerm({ name: '', email: '', mobileNumber: '' });
   };

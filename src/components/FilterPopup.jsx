@@ -85,12 +85,13 @@ export default function FilterPopup({ onApply, onClose, initialFilters, expenses
 
   const handleSelect = (result) => {
     const { field, ...userData } = result;
+    // Always fill all related fields regardless of which field was searched
     setFilters(prev => ({
       ...prev,
-      name: field === 'name' ? userData.name : prev.name,
-      email: field === 'email' ? userData.email : prev.email,
-      mobileNumber: field === 'mobileNumber' ? userData.mobileNumber : prev.mobileNumber,
-      countryCode: field === 'mobileNumber' ? userData.countryCode : prev.countryCode
+      name: userData.name || prev.name,
+      email: userData.email || prev.email,
+      mobileNumber: userData.mobileNumber || prev.mobileNumber,
+      countryCode: userData.countryCode || prev.countryCode
     }));
     setSearchTerm(prev => ({ ...prev, [field]: '' }));
   };
