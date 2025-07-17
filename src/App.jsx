@@ -165,6 +165,14 @@ function App() {
     }
   };
 
+  // Function to handle opening add transaction popup
+  const handleOpenAddForm = () => {
+    // Reset filters when opening add form
+    setActiveFilters(null);
+    localStorage.removeItem('expenseTrackerFilters');
+    setShowAddForm(true);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {!user ? (
@@ -261,7 +269,7 @@ function App() {
 
             {/* Add Transaction Button */}
             <button
-              onClick={() => setShowAddForm(true)}
+              onClick={handleOpenAddForm}
               className="bg-indigo-600 text-white p-4 rounded-full shadow-lg hover:bg-indigo-700 transition-colors"
               aria-label="Add Transaction"
             >
@@ -290,6 +298,7 @@ function App() {
                   <ExpenseForm
                     onSubmit={handleAddExpense}
                     currentUserEmail={user.profile.email}
+                    expenses={expenses}
                   />
                 </div>
               </div>
