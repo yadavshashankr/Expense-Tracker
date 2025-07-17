@@ -1,242 +1,187 @@
-import { useState, useEffect, useMemo } from 'react';
-import SearchableInput from './SearchableInput';
+import { useState } from 'react';
+import CountryCodeSelect from './CountryCodeSelect';
 
-const initialFilterState = {
-  name: '',
-  email: '',
-  amountMin: '',
-  amountMax: '',
-  balanceMin: '',
-  balanceMax: '',
-  type: 'all',
-  dateFrom: '',
-  dateTo: '',
-  description: '',
-};
-
-export default function FilterPopup({ onClose, onApplyFilters, initialFilters, expenses }) {
-  const [filters, setFilters] = useState(initialFilterState);
-  const [searchTerm, setSearchTerm] = useState({ name: '', email: '' });
-
-  useEffect(() => {
-    if (initialFilters) {
-      setFilters({
-        ...initialFilterState,
-        ...initialFilters
-      });
-    }
-  }, [initialFilters]);
-
-  // Create normalized list of unique users from expenses
-  const uniqueUsers = useMemo(() => {
-    const userMap = new Map();
-    
-    expenses?.forEach(expense => {
-      userMap.set(expense.userEmail, {
-        name: expense.name,
-        email: expense.userEmail,
-        lastUsed: expense.timestamp
-      });
-    });
-    
-    return Array.from(userMap.values())
-      .sort((a, b) => new Date(b.lastUsed) - new Date(a.lastUsed));
-  }, [expenses]);
-
-  // Search function
-  const searchUsers = (term, field) => {
-    if (!term || typeof term !== 'string') return [];
-    
-    const trimmedTerm = term.trim();
-    if (!trimmedTerm) return [];
-    
-    const searchTerm = trimmedTerm.toLowerCase();
-    return uniqueUsers
-      .filter(user => {
-        if (!user || !user[field]) return false;
-        
-        if (field === 'name') {
-          return user.name.toLowerCase().includes(searchTerm);
-        } else {
-          return user.email.toLowerCase().includes(searchTerm);
-        }
-      })
-      .slice(0, 4); // Limit to 4 results
-  };
-
-  const handleSearch = (field) => (value) => {
-    setSearchTerm(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleSelect = (result) => {
-    setFilters(prev => ({
-      ...prev,
-      name: result.name,
-      email: result.email
-    }));
-    setSearchTerm({ name: '', email: '' });
-  };
+export default function FilterPopup({ onApply, onClose, initialFilters = {} }) {
+  const [filters, setFilters] = useState({
+    name: initialFilters.name || '',
+    email: initialFilters.email || '',
+    mobileNumber: initialFilters.mobileNumber || '',
+    countryCode: initialFilters.countryCode || '',
+    type: initialFilters.type || 'all',
+    amountMin: initialFilters.amountMin || '',
+    amountMax: initialFilters.amountMax || '',
+    dateFrom: initialFilters.dateFrom || '',
+    dateTo: initialFilters.dateTo || '',
+    description: initialFilters.description || ''
+  });
 
   const handleChange = (field) => (e) => {
-    setFilters(prev => ({
-      ...prev,
-      [field]: e.target.value
-    }));
+    setFilters(prev => ({ ...prev, [field]: e.target.value }));
   };
 
-  const handleReset = () => {
-    setFilters(initialFilterState);
-    onApplyFilters(initialFilterState);
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onApply(filters);
+  };
+
+  const clearFilters = () => {
+    setFilters({
+      name: '',
+      email: '',
+      mobileNumber: '',
+      countryCode: '',
+      type: 'all',
+      amountMin: '',
+      amountMax: '',
+      dateFrom: '',
+      dateTo: '',
+      description: ''
+    });
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-auto sm:w-[95%] md:w-[85%]">
-        <div className="p-4 sm:p-6">
-          <div className="flex justify-between items-center mb-4 sm:mb-6 sticky top-0 bg-white z-10 pb-2 border-b">
-            <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Filter Transactions</h2>
-            <button
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-500"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
+    <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg shadow-xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-lg font-medium">Filter Transactions</h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-500"
+          >
+            <span className="sr-only">Close</span>
+            <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
 
-          <div className="space-y-3 sm:space-y-4">
-            {/* Name and Email */}
-            <div className="grid grid-cols-2 gap-3 sm:gap-4">
-              <div>
-                <SearchableInput
-                  label="Name"
-                  value={filters.name}
-                  onChange={(value) => setFilters(prev => ({ ...prev, name: value }))}
-                  placeholder="Search by name"
-                  searchResults={searchUsers(filters.name, 'name')}
-                  onSearch={handleSearch('name')}
-                  onSelectResult={handleSelect}
-                />
-              </div>
-              <div>
-                <SearchableInput
-                  label="Email"
-                  type="email"
-                  value={filters.email}
-                  onChange={(value) => setFilters(prev => ({ ...prev, email: value }))}
-                  placeholder="Search by email"
-                  searchResults={searchUsers(filters.email, 'email')}
-                  onSearch={handleSearch('email')}
-                  onSelectResult={handleSelect}
-                />
-              </div>
-            </div>
-
-            {/* Amount and Balance in one row */}
-            <div className="grid grid-cols-2 gap-3 sm:gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Amount Range</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <input
-                    type="number"
-                    value={filters.amountMin}
-                    onChange={handleChange('amountMin')}
-                    placeholder="Min"
-                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                  <input
-                    type="number"
-                    value={filters.amountMax}
-                    onChange={handleChange('amountMax')}
-                    placeholder="Max"
-                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Balance Range</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <input
-                    type="number"
-                    value={filters.balanceMin}
-                    onChange={handleChange('balanceMin')}
-                    placeholder="Min"
-                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                  <input
-                    type="number"
-                    value={filters.balanceMax}
-                    onChange={handleChange('balanceMax')}
-                    placeholder="Max"
-                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Type and Date in one row */}
-            <div className="grid grid-cols-2 gap-3 sm:gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Transaction Type</label>
-                <select
-                  value={filters.type}
-                  onChange={handleChange('type')}
-                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                >
-                  <option value="all">All</option>
-                  <option value="credit">Credit</option>
-                  <option value="debit">Debit</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <input
-                    type="date"
-                    value={filters.dateFrom}
-                    onChange={handleChange('dateFrom')}
-                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                  <input
-                    type="date"
-                    value={filters.dateTo}
-                    onChange={handleChange('dateTo')}
-                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Description */}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <label className="block text-sm font-medium text-gray-700">Name</label>
               <input
                 type="text"
+                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                value={filters.name}
+                onChange={handleChange('name')}
+                placeholder="Filter by name"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Email</label>
+              <input
+                type="text"
+                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                value={filters.email}
+                onChange={handleChange('email')}
+                placeholder="Filter by email"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Country Code</label>
+              <CountryCodeSelect
+                value={filters.countryCode}
+                onChange={(code) => setFilters(prev => ({ ...prev, countryCode: code }))}
+                className="mt-1"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Mobile Number</label>
+              <input
+                type="text"
+                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                value={filters.mobileNumber}
+                onChange={handleChange('mobileNumber')}
+                placeholder="Filter by mobile number"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Transaction Type</label>
+              <select
+                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                value={filters.type}
+                onChange={handleChange('type')}
+              >
+                <option value="all">All</option>
+                <option value="debit">I Owe</option>
+                <option value="credit">They Owe</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Description</label>
+              <input
+                type="text"
+                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
                 value={filters.description}
                 onChange={handleChange('description')}
-                placeholder="Search in description"
-                className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                placeholder="Filter by description"
               />
             </div>
           </div>
 
-          {/* Action Buttons - Sticky at bottom */}
-          <div className="mt-4 sm:mt-6 flex justify-end gap-3 sticky bottom-0 bg-white pt-3 border-t">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Amount Range</label>
+              <div className="mt-1 grid grid-cols-2 gap-2">
+                <input
+                  type="number"
+                  className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  value={filters.amountMin}
+                  onChange={handleChange('amountMin')}
+                  placeholder="Min"
+                  step="0.01"
+                />
+                <input
+                  type="number"
+                  className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  value={filters.amountMax}
+                  onChange={handleChange('amountMax')}
+                  placeholder="Max"
+                  step="0.01"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Date Range</label>
+              <div className="mt-1 grid grid-cols-2 gap-2">
+                <input
+                  type="date"
+                  className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  value={filters.dateFrom}
+                  onChange={handleChange('dateFrom')}
+                />
+                <input
+                  type="date"
+                  className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                  value={filters.dateTo}
+                  onChange={handleChange('dateTo')}
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4">
             <button
-              onClick={handleReset}
-              className="px-3 sm:px-4 py-1.5 sm:py-2 text-sm font-medium text-gray-700 hover:text-gray-800"
+              type="button"
+              onClick={clearFilters}
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
-              Reset
+              Clear Filters
             </button>
             <button
-              onClick={() => onApplyFilters(filters)}
-              className="px-3 sm:px-4 py-1.5 sm:py-2 text-sm bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              type="submit"
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               Apply Filters
             </button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );
