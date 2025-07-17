@@ -143,14 +143,14 @@ export default function FilterPopup({ onClose, onApplyFilters, initialFilters, e
                     value={filters.amountMin}
                     onChange={handleChange('amountMin')}
                     placeholder="Min"
-                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                   />
                   <input
                     type="number"
                     value={filters.amountMax}
                     onChange={handleChange('amountMax')}
                     placeholder="Max"
-                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                   />
                 </div>
               </div>
@@ -162,14 +162,14 @@ export default function FilterPopup({ onClose, onApplyFilters, initialFilters, e
                     value={filters.balanceMin}
                     onChange={handleChange('balanceMin')}
                     placeholder="Min"
-                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                   />
                   <input
                     type="number"
                     value={filters.balanceMax}
                     onChange={handleChange('balanceMax')}
                     placeholder="Max"
-                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                   />
                 </div>
               </div>
@@ -182,7 +182,7 @@ export default function FilterPopup({ onClose, onApplyFilters, initialFilters, e
                 <select
                   value={filters.type}
                   onChange={handleChange('type')}
-                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                 >
                   <option value="all">All</option>
                   <option value="credit">Credit</option>
@@ -196,13 +196,13 @@ export default function FilterPopup({ onClose, onApplyFilters, initialFilters, e
                     type="date"
                     value={filters.dateFrom}
                     onChange={handleChange('dateFrom')}
-                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                   />
                   <input
                     type="date"
                     value={filters.dateTo}
                     onChange={handleChange('dateTo')}
-                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                    className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
                   />
                 </div>
               </div>
@@ -216,7 +216,7 @@ export default function FilterPopup({ onClose, onApplyFilters, initialFilters, e
                 value={filters.description}
                 onChange={handleChange('description')}
                 placeholder="Search in description"
-                className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
               />
             </div>
           </div>

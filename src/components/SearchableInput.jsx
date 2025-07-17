@@ -84,7 +84,7 @@ export default function SearchableInput({
       <input
         ref={inputRef}
         type={type}
-        className={`w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-4 py-2 ${className}`}
+        className={`w-full rounded-lg border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 px-4 py-2 ${className}`}
         placeholder={placeholder}
         value={value || ''}
         onChange={handleChange}
