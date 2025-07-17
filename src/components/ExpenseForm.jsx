@@ -2,7 +2,7 @@
 import { useState, useMemo } from 'react';
 import SearchableInput from './SearchableInput';
 
-export default function ExpenseForm({ user, onSubmit, expenses }) {
+export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
   const [form, setForm] = useState({ name: '', email: '', type: 'debit', amount: '', description: '' });
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState({ name: '', email: '' });
@@ -60,7 +60,7 @@ export default function ExpenseForm({ user, onSubmit, expenses }) {
   const submit = e => {
     e.preventDefault();
     try {
-      if (!user || !user.profile?.email) {
+      if (!currentUserEmail) {
         throw new Error('User email not available. Please try signing out and signing in again.');
       }
 
