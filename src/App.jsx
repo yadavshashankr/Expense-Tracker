@@ -16,7 +16,10 @@ function App() {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [activeFilters, setActiveFilters] = useState(null)
+  const [activeFilters, setActiveFilters] = useState(() => {
+    const savedFilters = localStorage.getItem('expenseTrackerFilters');
+    return savedFilters ? JSON.parse(savedFilters) : null;
+  });
 
   // Function to fetch expenses
   const fetchExpenses = async () => {
@@ -152,7 +155,14 @@ function App() {
 
     // Only set filters if at least one filter has a value
     const hasActiveFilters = Object.values(cleanedFilters).some(value => value !== null);
-    setActiveFilters(hasActiveFilters ? cleanedFilters : null);
+    const newFilters = hasActiveFilters ? cleanedFilters : null;
+    
+    setActiveFilters(newFilters);
+    if (newFilters) {
+      localStorage.setItem('expenseTrackerFilters', JSON.stringify(newFilters));
+    } else {
+      localStorage.removeItem('expenseTrackerFilters');
+    }
   };
 
   return (
@@ -240,19 +250,26 @@ function App() {
             </div>
           </div>
 
-          {/* Filter Button */}
-          <FilterButton onApplyFilters={handleApplyFilters} />
+          {/* Action Buttons Container */}
+          <div className="fixed bottom-6 right-6 flex flex-col gap-4 items-center z-10">
+            {/* Filter Button */}
+            <FilterButton 
+              onApplyFilters={handleApplyFilters} 
+              initialFilters={activeFilters}
+              isActive={!!activeFilters}
+            />
 
-          {/* Add Transaction Button */}
-          <button
-            onClick={() => setShowAddForm(true)}
-            className="fixed bottom-6 right-6 bg-indigo-600 text-white p-4 rounded-full shadow-lg hover:bg-indigo-700 transition-colors z-10"
-            aria-label="Add Transaction"
-          >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-          </button>
+            {/* Add Transaction Button */}
+            <button
+              onClick={() => setShowAddForm(true)}
+              className="bg-indigo-600 text-white p-4 rounded-full shadow-lg hover:bg-indigo-700 transition-colors"
+              aria-label="Add Transaction"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+            </button>
+          </div>
 
           {/* Modal */}
           {showAddForm && (

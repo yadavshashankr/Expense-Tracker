@@ -1,14 +1,18 @@
 import { useState } from 'react';
 import FilterPopup from './FilterPopup';
 
-export default function FilterButton({ onApplyFilters }) {
+export default function FilterButton({ onApplyFilters, initialFilters, isActive }) {
   const [showFilterPopup, setShowFilterPopup] = useState(false);
 
   return (
     <>
       <button
         onClick={() => setShowFilterPopup(true)}
-        className="fixed bottom-6 right-24 bg-white text-gray-700 p-4 rounded-full shadow-lg hover:bg-gray-50 transition-colors z-10 border border-gray-200"
+        className={`p-4 rounded-full shadow-lg transition-colors ${
+          isActive 
+            ? 'bg-indigo-600 text-white hover:bg-indigo-700' 
+            : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+        }`}
         aria-label="Filter Transactions"
       >
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -23,6 +27,7 @@ export default function FilterButton({ onApplyFilters }) {
             onApplyFilters(filters);
             setShowFilterPopup(false);
           }}
+          initialFilters={initialFilters}
         />
       )}
     </>
