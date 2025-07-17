@@ -4,6 +4,7 @@ import LoginButton from './components/LoginButton'
 import ExpenseForm from './components/ExpenseForm'
 import ExpenseTable from './components/ExpenseTable'
 import TotalSection from './components/TotalSection'
+import FilterButton from './components/FilterButton'
 import { ensureUserSheet, fetchAllRows, appendExpense, updateExpenseRow, deleteExpenseRow } from './services/sheets'
 
 function App() {
@@ -15,6 +16,7 @@ function App() {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [activeFilters, setActiveFilters] = useState(null)
 
   // Function to fetch expenses
   const fetchExpenses = async () => {
@@ -141,6 +143,18 @@ function App() {
     }
   };
 
+  // Function to handle filter application
+  const handleApplyFilters = (filters) => {
+    // Convert empty string values to null
+    const cleanedFilters = Object.fromEntries(
+      Object.entries(filters).map(([key, value]) => [key, value === '' ? null : value])
+    );
+
+    // Only set filters if at least one filter has a value
+    const hasActiveFilters = Object.values(cleanedFilters).some(value => value !== null);
+    setActiveFilters(hasActiveFilters ? cleanedFilters : null);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {!user ? (
@@ -156,6 +170,11 @@ function App() {
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                 <h1 className="text-xl sm:text-2xl font-bold">Expense Tracker</h1>
                 <div className="flex items-center gap-4">
+                  {activeFilters && (
+                    <span className="text-sm text-indigo-600">
+                      Filters active
+                    </span>
+                  )}
                   <button
                     onClick={fetchExpenses}
                     disabled={isRefreshing}
@@ -214,13 +233,17 @@ function App() {
                     onEdit={handleUpdateExpense}
                     onDelete={handleDeleteExpense}
                     currentUserEmail={user.profile.email}
+                    activeFilters={activeFilters}
                   />
                 </div>
               )}
             </div>
           </div>
 
-          {/* FAB - Fixed */}
+          {/* Filter Button */}
+          <FilterButton onApplyFilters={handleApplyFilters} />
+
+          {/* Add Transaction Button */}
           <button
             onClick={() => setShowAddForm(true)}
             className="fixed bottom-6 right-6 bg-indigo-600 text-white p-4 rounded-full shadow-lg hover:bg-indigo-700 transition-colors z-10"
@@ -248,9 +271,8 @@ function App() {
                     </button>
                   </div>
                   <ExpenseForm
-                    user={user}
                     onSubmit={handleAddExpense}
-                    expenses={expenses}
+                    currentUserEmail={user.profile.email}
                   />
                 </div>
               </div>

@@ -72,20 +72,75 @@ const calculateRunningBalance = (expenses, currentUserEmail, targetEmail, upToIn
     }, 0);
 };
 
-export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEmail }) {
+export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEmail, activeFilters }) {
   const [editingId, setEditingId] = useState(null);
   const [draft, setDraft] = useState({});
   const [expandedItems, setExpandedItems] = useState(new Set());
 
-  // Sort expenses by timestamp in descending order (newest first)
-  const sortedExpenses = useMemo(() => {
-    return [...expenses].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-  }, [expenses]);
+  // Apply filters and sort expenses
+  const filteredAndSortedExpenses = useMemo(() => {
+    let filtered = [...expenses];
 
-  // Calculate running balances for each transaction
+    if (activeFilters) {
+      filtered = filtered.filter(expense => {
+        // Name filter
+        if (activeFilters.name && !expense.name.toLowerCase().includes(activeFilters.name.toLowerCase())) {
+          return false;
+        }
+
+        // Email filter
+        if (activeFilters.email && !expense.userEmail.toLowerCase().includes(activeFilters.email.toLowerCase())) {
+          return false;
+        }
+
+        // Amount range filter
+        const amount = parseFloat(expense.amount);
+        if (activeFilters.amountMin && amount < parseFloat(activeFilters.amountMin)) {
+          return false;
+        }
+        if (activeFilters.amountMax && amount > parseFloat(activeFilters.amountMax)) {
+          return false;
+        }
+
+        // Transaction type filter
+        if (activeFilters.type !== 'all' && expense.type !== activeFilters.type) {
+          return false;
+        }
+
+        // Date range filter
+        if (activeFilters.dateFrom || activeFilters.dateTo) {
+          const expenseDate = new Date(expense.timestamp);
+          if (activeFilters.dateFrom) {
+            const fromDate = new Date(activeFilters.dateFrom);
+            if (expenseDate < fromDate) return false;
+          }
+          if (activeFilters.dateTo) {
+            const toDate = new Date(activeFilters.dateTo);
+            toDate.setHours(23, 59, 59, 999); // End of the day
+            if (expenseDate > toDate) return false;
+          }
+        }
+
+        // Description filter
+        if (activeFilters.description && 
+            !expense.description?.toLowerCase().includes(activeFilters.description.toLowerCase())) {
+          return false;
+        }
+
+        return true;
+      });
+    }
+
+    // Sort by timestamp (newest first)
+    return filtered.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+  }, [expenses, activeFilters]);
+
+  // Calculate running balances for filtered expenses
   const runningBalances = useMemo(() => {
     // We need to calculate running balances on chronological order (oldest first)
-    const chronologicalExpenses = [...expenses].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    const chronologicalExpenses = [...filteredAndSortedExpenses].sort((a, b) => 
+      new Date(a.timestamp) - new Date(b.timestamp)
+    );
     
     // Calculate running balances
     const balances = chronologicalExpenses.map((expense, index) => ({
@@ -93,9 +148,23 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
       runningBalance: calculateRunningBalance(chronologicalExpenses, currentUserEmail, expense.userEmail, index)
     }));
 
+    // Filter by balance range if specified
+    if (activeFilters?.balanceMin || activeFilters?.balanceMax) {
+      return balances.filter(expense => {
+        const balance = expense.runningBalance;
+        if (activeFilters.balanceMin && balance < parseFloat(activeFilters.balanceMin)) {
+          return false;
+        }
+        if (activeFilters.balanceMax && balance > parseFloat(activeFilters.balanceMax)) {
+          return false;
+        }
+        return true;
+      });
+    }
+
     // Sort back to display order (newest first)
     return balances.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-  }, [expenses, currentUserEmail]);
+  }, [filteredAndSortedExpenses, currentUserEmail, activeFilters]);
 
   // Balance display component
   const BalanceDisplay = ({ balance }) => {
