@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import SearchableInput from './SearchableInput';
 
 const initialFilterState = {
   name: '',
@@ -13,8 +14,9 @@ const initialFilterState = {
   description: '',
 };
 
-export default function FilterPopup({ onClose, onApplyFilters, initialFilters }) {
+export default function FilterPopup({ onClose, onApplyFilters, initialFilters, expenses }) {
   const [filters, setFilters] = useState(initialFilterState);
+  const [searchTerm, setSearchTerm] = useState({ name: '', email: '' });
 
   useEffect(() => {
     if (initialFilters) {
@@ -24,6 +26,51 @@ export default function FilterPopup({ onClose, onApplyFilters, initialFilters })
       });
     }
   }, [initialFilters]);
+
+  // Create normalized list of unique users from expenses
+  const uniqueUsers = useMemo(() => {
+    const userMap = new Map();
+    
+    expenses?.forEach(expense => {
+      userMap.set(expense.userEmail, {
+        name: expense.name,
+        email: expense.userEmail,
+        lastUsed: expense.timestamp
+      });
+    });
+    
+    return Array.from(userMap.values())
+      .sort((a, b) => new Date(b.lastUsed) - new Date(a.lastUsed));
+  }, [expenses]);
+
+  // Search function
+  const searchUsers = (term, field) => {
+    if (!term.trim()) return [];
+    
+    const searchTerm = term.toLowerCase();
+    return uniqueUsers
+      .filter(user => {
+        if (field === 'name') {
+          return user.name.toLowerCase().includes(searchTerm);
+        } else {
+          return user.email.toLowerCase().includes(searchTerm);
+        }
+      })
+      .slice(0, 4); // Limit to 4 results
+  };
+
+  const handleSearch = (field) => (value) => {
+    setSearchTerm(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSelect = (result) => {
+    setFilters(prev => ({
+      ...prev,
+      name: result.name,
+      email: result.email
+    }));
+    setSearchTerm({ name: '', email: '' });
+  };
 
   const handleChange = (field) => (e) => {
     setFilters(prev => ({
@@ -57,23 +104,26 @@ export default function FilterPopup({ onClose, onApplyFilters, initialFilters })
             {/* Name and Email */}
             <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                <input
-                  type="text"
+                <SearchableInput
+                  label="Name"
                   value={filters.name}
-                  onChange={handleChange('name')}
+                  onChange={(value) => setFilters(prev => ({ ...prev, name: value }))}
                   placeholder="Search by name"
-                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                  searchResults={searchUsers(filters.name, 'name')}
+                  onSearch={handleSearch('name')}
+                  onSelectResult={handleSelect}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <input
-                  type="text"
+                <SearchableInput
+                  label="Email"
+                  type="email"
                   value={filters.email}
-                  onChange={handleChange('email')}
+                  onChange={(value) => setFilters(prev => ({ ...prev, email: value }))}
                   placeholder="Search by email"
-                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
+                  searchResults={searchUsers(filters.email, 'email')}
+                  onSearch={handleSearch('email')}
+                  onSelectResult={handleSelect}
                 />
               </div>
             </div>

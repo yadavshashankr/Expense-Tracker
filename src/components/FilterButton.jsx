@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import FilterPopup from './FilterPopup';
 
-export default function FilterButton({ onApplyFilters, initialFilters, isActive }) {
+export default function FilterButton({ onApplyFilters, initialFilters, isActive, expenses }) {
   const [showFilterPopup, setShowFilterPopup] = useState(false);
 
   return (
@@ -28,6 +28,7 @@ export default function FilterButton({ onApplyFilters, initialFilters, isActive 
             setShowFilterPopup(false);
           }}
           initialFilters={initialFilters}
+          expenses={expenses}
         />
       )}
     </>

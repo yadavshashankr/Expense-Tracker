@@ -188,11 +188,6 @@ function App() {
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                 <h1 className="text-xl sm:text-2xl font-bold">Expense Tracker</h1>
                 <div className="flex items-center gap-4">
-                  {activeFilters && (
-                    <span className="text-sm text-indigo-600">
-                      Filters active
-                    </span>
-                  )}
                   <button
                     onClick={fetchExpenses}
                     disabled={isRefreshing}
@@ -265,6 +260,7 @@ function App() {
               onApplyFilters={handleApplyFilters} 
               initialFilters={activeFilters}
               isActive={!!activeFilters}
+              expenses={expenses}
             />
 
             {/* Add Transaction Button */}
