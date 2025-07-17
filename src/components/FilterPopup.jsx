@@ -40,13 +40,14 @@ export default function FilterPopup({ onApply, onClose, initialFilters = {} }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-medium">Filter Transactions</h2>
+    <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden">
+        {/* Header */}
+        <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+          <h2 className="text-xl font-semibold text-gray-800">Filter Transactions</h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-500"
+            className="text-gray-400 hover:text-gray-500 transition-colors p-2 hover:bg-gray-100 rounded-full"
           >
             <span className="sr-only">Close</span>
             <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -55,134 +56,146 @@ export default function FilterPopup({ onApply, onClose, initialFilters = {} }) {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Name</label>
-              <input
-                type="text"
-                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                value={filters.name}
-                onChange={handleChange('name')}
-                placeholder="Filter by name"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Email</label>
-              <input
-                type="text"
-                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                value={filters.email}
-                onChange={handleChange('email')}
-                placeholder="Filter by email"
-              />
-            </div>
-
-            <div className="col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
-              <div className="flex gap-2">
-                <div className="w-1/3 md:w-1/4">
-                  <CountryCodeSelect
-                    value={filters.countryCode}
-                    onChange={(code) => setFilters(prev => ({ ...prev, countryCode: code }))}
-                  />
-                </div>
-                <div className="flex-1">
+        {/* Content */}
+        <div className="p-6 overflow-y-auto max-h-[calc(90vh-8rem)]">
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Basic Info Section */}
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
                   <input
                     type="text"
-                    className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                    value={filters.mobileNumber}
-                    onChange={handleChange('mobileNumber')}
-                    placeholder="Filter by mobile number"
+                    className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors"
+                    value={filters.name}
+                    onChange={handleChange('name')}
+                    placeholder="Filter by name"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                  <input
+                    type="text"
+                    className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors"
+                    value={filters.email}
+                    onChange={handleChange('email')}
+                    placeholder="Filter by email"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
+                <div className="flex gap-2">
+                  <div className="w-1/3 md:w-1/4">
+                    <CountryCodeSelect
+                      value={filters.countryCode}
+                      onChange={(code) => setFilters(prev => ({ ...prev, countryCode: code }))}
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <input
+                      type="text"
+                      className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors"
+                      value={filters.mobileNumber}
+                      onChange={handleChange('mobileNumber')}
+                      placeholder="Filter by mobile number"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Transaction Type</label>
-              <select
-                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                value={filters.type}
-                onChange={handleChange('type')}
-              >
-                <option value="all">All</option>
-                <option value="debit">I Owe</option>
-                <option value="credit">They Owe</option>
-              </select>
-            </div>
+            {/* Transaction Details Section */}
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Transaction Type</label>
+                  <select
+                    className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors"
+                    value={filters.type}
+                    onChange={handleChange('type')}
+                  >
+                    <option value="all">All</option>
+                    <option value="debit">Debit</option>
+                    <option value="credit">Credit</option>
+                  </select>
+                </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Description</label>
-              <input
-                type="text"
-                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                value={filters.description}
-                onChange={handleChange('description')}
-                placeholder="Filter by description"
-              />
-            </div>
-          </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                  <input
+                    type="text"
+                    className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors"
+                    value={filters.description}
+                    onChange={handleChange('description')}
+                    placeholder="Filter by description"
+                  />
+                </div>
+              </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Amount Range</label>
-              <div className="mt-1 grid grid-cols-2 gap-2">
-                <input
-                  type="number"
-                  className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  value={filters.amountMin}
-                  onChange={handleChange('amountMin')}
-                  placeholder="Min"
-                  step="0.01"
-                />
-                <input
-                  type="number"
-                  className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  value={filters.amountMax}
-                  onChange={handleChange('amountMax')}
-                  placeholder="Max"
-                  step="0.01"
-                />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Amount Range</label>
+                <div className="grid grid-cols-2 gap-4">
+                  <input
+                    type="number"
+                    className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors"
+                    value={filters.amountMin}
+                    onChange={handleChange('amountMin')}
+                    placeholder="Min amount"
+                    step="0.01"
+                  />
+                  <input
+                    type="number"
+                    className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors"
+                    value={filters.amountMax}
+                    onChange={handleChange('amountMax')}
+                    placeholder="Max amount"
+                    step="0.01"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+                <div className="grid grid-cols-2 gap-4">
+                  <input
+                    type="date"
+                    className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors"
+                    value={filters.dateFrom}
+                    onChange={handleChange('dateFrom')}
+                  />
+                  <input
+                    type="date"
+                    className="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors"
+                    value={filters.dateTo}
+                    onChange={handleChange('dateTo')}
+                  />
+                </div>
               </div>
             </div>
+          </form>
+        </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Date Range</label>
-              <div className="mt-1 grid grid-cols-2 gap-2">
-                <input
-                  type="date"
-                  className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  value={filters.dateFrom}
-                  onChange={handleChange('dateFrom')}
-                />
-                <input
-                  type="date"
-                  className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                  value={filters.dateTo}
-                  onChange={handleChange('dateTo')}
-                />
-              </div>
-            </div>
-          </div>
-
-          <div className="flex justify-end gap-3 pt-4">
+        {/* Footer */}
+        <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+          <div className="flex justify-end gap-3">
             <button
               type="button"
               onClick={clearFilters}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all"
             >
               Clear Filters
             </button>
             <button
-              type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              onClick={handleSubmit}
+              className="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all"
             >
               Apply Filters
             </button>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );
