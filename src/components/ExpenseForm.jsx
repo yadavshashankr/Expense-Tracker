@@ -21,13 +21,29 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
     const userMap = new Map();
     
     expenses?.forEach(expense => {
-      userMap.set(expense.userEmail, {
-        name: expense.name,
-        email: expense.userEmail,
-        mobileNumber: expense.mobileNumber,
-        countryCode: expense.countryCode,
-        lastUsed: expense.timestamp
-      });
+      // Extract country code and mobile number
+      let countryCode = '+91';
+      let mobileNumber = '';
+      if (expense.mobileNumber) {
+        const match = expense.mobileNumber.match(/(\+\d+)(.*)/);
+        if (match) {
+          [, countryCode, mobileNumber] = match;
+          mobileNumber = mobileNumber.trim();
+        }
+      }
+
+      const key = expense.userEmail;
+      const existing = userMap.get(key);
+      
+      if (!existing || new Date(expense.timestamp) > new Date(existing.lastUsed)) {
+        userMap.set(key, {
+          name: expense.name,
+          email: expense.userEmail,
+          mobileNumber: mobileNumber,
+          countryCode: countryCode,
+          lastUsed: expense.timestamp
+        });
+      }
     });
     
     return Array.from(userMap.values())
@@ -38,18 +54,18 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
   const searchUsers = (term, field) => {
     if (!term.trim()) return [];
     
-    const searchTerm = term.toLowerCase();
+    const searchTerm = term.toLowerCase().trim();
     return uniqueUsers
       .filter(user => {
         if (field === 'name') {
-          return user.name.toLowerCase().includes(searchTerm);
+          return user.name?.toLowerCase().includes(searchTerm);
         } else if (field === 'email') {
-          return user.email.toLowerCase().includes(searchTerm);
+          return user.email?.toLowerCase().includes(searchTerm);
         } else if (field === 'mobileNumber') {
-          // Search by mobile number without country code
+          // Clean up the search term and user's mobile number for comparison
           const searchNumber = searchTerm.replace(/\D/g, '');
-          const userNumber = user.mobileNumber?.replace(/\D/g, '');
-          return userNumber?.includes(searchNumber);
+          const userNumber = (user.countryCode + user.mobileNumber).replace(/\D/g, '');
+          return userNumber.includes(searchNumber);
         }
         return false;
       })

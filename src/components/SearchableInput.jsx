@@ -102,7 +102,7 @@ export default function SearchableInput({
         <div className="absolute z-10 w-full mt-1 bg-white rounded-md shadow-lg border border-gray-200">
           <ul className="py-1 max-h-60 overflow-auto">
             {searchResults.map((result, index) => (
-              result && result[displayField] && (
+              result && (
                 <li
                   key={result.email || index}
                   className={`px-4 py-2 cursor-pointer ${
@@ -113,9 +113,9 @@ export default function SearchableInput({
                   onClick={() => handleSelect(result)}
                   onMouseEnter={() => setHighlightedIndex(index)}
                 >
-                  <div className="font-medium">{result[displayField]}</div>
+                  <div className="font-medium">{result.name || 'Unknown'}</div>
                   {result.email && <div className="text-sm text-gray-500">{result.email}</div>}
-                  {result.mobileNumber && (
+                  {(result.countryCode || result.mobileNumber) && (
                     <div className="text-sm text-gray-500">
                       {result.countryCode}{result.mobileNumber}
                     </div>

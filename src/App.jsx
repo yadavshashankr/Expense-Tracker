@@ -167,9 +167,6 @@ function App() {
 
   // Function to handle opening add transaction popup
   const handleOpenAddForm = () => {
-    // Reset filters when opening add form
-    setActiveFilters(null);
-    localStorage.removeItem('expenseTrackerFilters');
     setShowAddForm(true);
   };
 
