@@ -84,12 +84,13 @@ export default function FilterPopup({ onApply, onClose, initialFilters, expenses
   };
 
   const handleSelect = (result) => {
+    const { field, ...userData } = result;
     setFilters(prev => ({
       ...prev,
-      name: field === 'name' ? result.name : prev.name,
-      email: field === 'email' ? result.email : prev.email,
-      mobileNumber: field === 'mobileNumber' ? result.mobileNumber : prev.mobileNumber,
-      countryCode: field === 'mobileNumber' ? result.countryCode : prev.countryCode
+      name: field === 'name' ? userData.name : prev.name,
+      email: field === 'email' ? userData.email : prev.email,
+      mobileNumber: field === 'mobileNumber' ? userData.mobileNumber : prev.mobileNumber,
+      countryCode: field === 'mobileNumber' ? userData.countryCode : prev.countryCode
     }));
     setSearchTerm(prev => ({ ...prev, [field]: '' }));
   };
