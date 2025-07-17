@@ -21,14 +21,19 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
     const userMap = new Map();
     
     expenses?.forEach(expense => {
-      // Extract country code and mobile number
+      // Extract country code and mobile number from the combined field
       let countryCode = '+91';
       let mobileNumber = '';
+      
       if (expense.mobileNumber) {
+        // Try to extract country code and number from the combined field
         const match = expense.mobileNumber.match(/(\+\d+)(.*)/);
         if (match) {
           [, countryCode, mobileNumber] = match;
           mobileNumber = mobileNumber.trim();
+        } else {
+          // If no country code found, treat the whole thing as a number
+          mobileNumber = expense.mobileNumber;
         }
       }
 
@@ -41,7 +46,9 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
           email: expense.userEmail,
           mobileNumber: mobileNumber,
           countryCode: countryCode,
-          lastUsed: expense.timestamp
+          lastUsed: expense.timestamp,
+          // Store the original combined mobile number for reference
+          originalMobileNumber: expense.mobileNumber
         });
       }
     });
@@ -62,10 +69,11 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
         } else if (field === 'email') {
           return user.email?.toLowerCase().includes(searchTerm);
         } else if (field === 'mobileNumber') {
-          // Clean up the search term and user's mobile number for comparison
+          // Search in both split and original formats
           const searchNumber = searchTerm.replace(/\D/g, '');
-          const userNumber = (user.countryCode + user.mobileNumber).replace(/\D/g, '');
-          return userNumber.includes(searchNumber);
+          const userNumber = user.originalMobileNumber?.replace(/\D/g, '') || '';
+          const splitNumber = (user.countryCode + user.mobileNumber).replace(/\D/g, '');
+          return userNumber.includes(searchNumber) || splitNumber.includes(searchNumber);
         }
         return false;
       })
@@ -81,8 +89,14 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
       ...prev,
       name: result.name || prev.name,
       email: result.email || prev.email,
-      mobileNumber: result.mobileNumber || prev.mobileNumber,
-      countryCode: result.countryCode || prev.countryCode
+      // If we have the original mobile number, use it to extract parts
+      ...(result.originalMobileNumber ? {
+        mobileNumber: result.mobileNumber || '',
+        countryCode: result.countryCode || '+91'
+      } : {
+        mobileNumber: result.mobileNumber || prev.mobileNumber,
+        countryCode: result.countryCode || prev.countryCode
+      })
     }));
     setSearchTerm({ name: '', email: '', mobileNumber: '' });
   };
