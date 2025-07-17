@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import CountryCodeSelect from './CountryCodeSelect';
+import SearchableInput from './SearchableInput';
 
-export default function FilterPopup({ onApply, onClose, initialFilters }) {
+export default function FilterPopup({ onApply, onClose, initialFilters, expenses }) {
   // Ensure initialFilters is an object, even if null is passed
   const safeInitialFilters = initialFilters || {};
   
@@ -20,6 +21,79 @@ export default function FilterPopup({ onApply, onClose, initialFilters }) {
     balanceMax: safeInitialFilters.balanceMax || ''
   });
 
+  const [searchTerm, setSearchTerm] = useState({ name: '', email: '', mobileNumber: '' });
+
+  // Create normalized list of unique users from expenses
+  const uniqueUsers = useMemo(() => {
+    const userMap = new Map();
+    
+    expenses?.forEach(expense => {
+      // Extract country code and mobile number
+      let countryCode = '+91';
+      let mobileNumber = '';
+      if (expense.mobileNumber) {
+        const match = expense.mobileNumber.match(/(\+\d+)(.*)/);
+        if (match) {
+          [, countryCode, mobileNumber] = match;
+          mobileNumber = mobileNumber.trim();
+        }
+      }
+
+      const key = expense.userEmail;
+      const existing = userMap.get(key);
+      
+      if (!existing || new Date(expense.timestamp) > new Date(existing.lastUsed)) {
+        userMap.set(key, {
+          name: expense.name,
+          email: expense.userEmail,
+          mobileNumber: mobileNumber,
+          countryCode: countryCode,
+          lastUsed: expense.timestamp
+        });
+      }
+    });
+    
+    return Array.from(userMap.values())
+      .sort((a, b) => new Date(b.lastUsed) - new Date(a.lastUsed));
+  }, [expenses]);
+
+  // Search function
+  const searchUsers = (term, field) => {
+    if (!term.trim()) return [];
+    
+    const searchTerm = term.toLowerCase().trim();
+    return uniqueUsers
+      .filter(user => {
+        if (field === 'name') {
+          return user.name?.toLowerCase().includes(searchTerm);
+        } else if (field === 'email') {
+          return user.email?.toLowerCase().includes(searchTerm);
+        } else if (field === 'mobileNumber') {
+          // Clean up the search term and user's mobile number for comparison
+          const searchNumber = searchTerm.replace(/\D/g, '');
+          const userNumber = (user.countryCode + user.mobileNumber).replace(/\D/g, '');
+          return userNumber.includes(searchNumber);
+        }
+        return false;
+      })
+      .slice(0, 5); // Show up to 5 results
+  };
+
+  const handleSearch = (field) => (value) => {
+    setSearchTerm(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSelect = (result) => {
+    setFilters(prev => ({
+      ...prev,
+      name: field === 'name' ? result.name : prev.name,
+      email: field === 'email' ? result.email : prev.email,
+      mobileNumber: field === 'mobileNumber' ? result.mobileNumber : prev.mobileNumber,
+      countryCode: field === 'mobileNumber' ? result.countryCode : prev.countryCode
+    }));
+    setSearchTerm(prev => ({ ...prev, [field]: '' }));
+  };
+
   const handleChange = (field) => (e) => {
     const value = e.target.value;
     setFilters(prev => ({ ...prev, [field]: value }));
@@ -35,7 +109,7 @@ export default function FilterPopup({ onApply, onClose, initialFilters }) {
       name: '',
       email: '',
       mobileNumber: '',
-      countryCode: '',
+      countryCode: '+91',
       type: 'all',
       amountMin: '',
       amountMax: '',
@@ -74,22 +148,31 @@ export default function FilterPopup({ onApply, onClose, initialFilters }) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                  <input
-                    type="text"
-                    className="w-full h-10 rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors"
+                  <SearchableInput
+                    hideLabel
                     value={filters.name}
                     onChange={handleChange('name')}
+                    onSearch={handleSearch('name')}
+                    searchResults={searchUsers(searchTerm.name, 'name')}
+                    onSelect={(result) => handleSelect({ ...result, field: 'name' })}
+                    displayField="name"
+                    className="h-10"
                     placeholder="Filter by name"
                   />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                  <input
-                    type="text"
-                    className="w-full h-10 rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors"
+                  <SearchableInput
+                    hideLabel
+                    type="email"
                     value={filters.email}
                     onChange={handleChange('email')}
+                    onSearch={handleSearch('email')}
+                    searchResults={searchUsers(searchTerm.email, 'email')}
+                    onSelect={(result) => handleSelect({ ...result, field: 'email' })}
+                    displayField="email"
+                    className="h-10"
                     placeholder="Filter by email"
                   />
                 </div>
@@ -105,12 +188,17 @@ export default function FilterPopup({ onApply, onClose, initialFilters }) {
                     />
                   </div>
                   <div className="flex-1">
-                    <input
-                      type="text"
-                      className="w-full h-10 rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 transition-colors"
+                    <SearchableInput
+                      hideLabel
+                      type="tel"
                       value={filters.mobileNumber}
                       onChange={handleChange('mobileNumber')}
+                      onSearch={handleSearch('mobileNumber')}
+                      searchResults={searchUsers(searchTerm.mobileNumber, 'mobileNumber')}
+                      onSelect={(result) => handleSelect({ ...result, field: 'mobileNumber' })}
+                      displayField="mobileNumber"
                       placeholder="Filter by mobile number"
+                      className="h-10"
                     />
                   </div>
                 </div>
