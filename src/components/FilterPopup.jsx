@@ -1,20 +1,23 @@
 import { useState } from 'react';
 import CountryCodeSelect from './CountryCodeSelect';
 
-export default function FilterPopup({ onApply, onClose, initialFilters = {} }) {
+export default function FilterPopup({ onApply, onClose, initialFilters }) {
+  // Ensure initialFilters is an object, even if null is passed
+  const safeInitialFilters = initialFilters || {};
+  
   const [filters, setFilters] = useState({
-    name: initialFilters.name || '',
-    email: initialFilters.email || '',
-    mobileNumber: initialFilters.mobileNumber || '',
-    countryCode: initialFilters.countryCode || '',
-    type: initialFilters.type || 'all',
-    amountMin: initialFilters.amountMin || '',
-    amountMax: initialFilters.amountMax || '',
-    dateFrom: initialFilters.dateFrom || '',
-    dateTo: initialFilters.dateTo || '',
-    description: initialFilters.description || '',
-    balanceMin: initialFilters.balanceMin || '',
-    balanceMax: initialFilters.balanceMax || ''
+    name: safeInitialFilters.name || '',
+    email: safeInitialFilters.email || '',
+    mobileNumber: safeInitialFilters.mobileNumber || '',
+    countryCode: safeInitialFilters.countryCode || '+91',
+    type: safeInitialFilters.type || 'all',
+    amountMin: safeInitialFilters.amountMin || '',
+    amountMax: safeInitialFilters.amountMax || '',
+    dateFrom: safeInitialFilters.dateFrom || '',
+    dateTo: safeInitialFilters.dateTo || '',
+    description: safeInitialFilters.description || '',
+    balanceMin: safeInitialFilters.balanceMin || '',
+    balanceMax: safeInitialFilters.balanceMax || ''
   });
 
   const handleChange = (field) => (e) => {
