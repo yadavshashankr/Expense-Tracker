@@ -142,32 +142,34 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="flex gap-2">
-            <div className="w-1/3">
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Country Code
-              </label>
-              <CountryCodeSelect
-                value={form.countryCode}
-                onChange={(code) => setForm(prev => ({ ...prev, countryCode: code }))}
-              />
-            </div>
-            <div className="flex-1">
-              <SearchableInput
-                label="Mobile Number"
-                type="tel"
-                value={form.mobileNumber}
-                onChange={change('mobileNumber')}
-                onSearch={handleSearch('mobileNumber')}
-                searchResults={searchUsers(searchTerm.mobileNumber, 'mobileNumber')}
-                onSelect={handleSelect}
-                displayField="mobileNumber"
-                placeholder="Enter mobile number"
-              />
+          <div className="col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Mobile Number
+            </label>
+            <div className="flex gap-2">
+              <div className="w-1/3 md:w-1/4">
+                <CountryCodeSelect
+                  value={form.countryCode}
+                  onChange={(code) => setForm(prev => ({ ...prev, countryCode: code }))}
+                />
+              </div>
+              <div className="flex-1">
+                <SearchableInput
+                  hideLabel
+                  type="tel"
+                  value={form.mobileNumber}
+                  onChange={change('mobileNumber')}
+                  onSearch={handleSearch('mobileNumber')}
+                  searchResults={searchUsers(searchTerm.mobileNumber, 'mobileNumber')}
+                  onSelect={handleSelect}
+                  displayField="mobileNumber"
+                  placeholder="Enter mobile number"
+                />
+              </div>
             </div>
           </div>
 
-          <div>
+          <div className="col-span-2 md:col-span-1">
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Amount
             </label>

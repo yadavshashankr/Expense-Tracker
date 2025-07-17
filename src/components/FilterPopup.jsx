@@ -79,24 +79,25 @@ export default function FilterPopup({ onApply, onClose, initialFilters = {} }) {
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Country Code</label>
-              <CountryCodeSelect
-                value={filters.countryCode}
-                onChange={(code) => setFilters(prev => ({ ...prev, countryCode: code }))}
-                className="mt-1"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700">Mobile Number</label>
-              <input
-                type="text"
-                className="mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-                value={filters.mobileNumber}
-                onChange={handleChange('mobileNumber')}
-                placeholder="Filter by mobile number"
-              />
+            <div className="col-span-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">Mobile Number</label>
+              <div className="flex gap-2">
+                <div className="w-1/3 md:w-1/4">
+                  <CountryCodeSelect
+                    value={filters.countryCode}
+                    onChange={(code) => setFilters(prev => ({ ...prev, countryCode: code }))}
+                  />
+                </div>
+                <div className="flex-1">
+                  <input
+                    type="text"
+                    className="block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    value={filters.mobileNumber}
+                    onChange={handleChange('mobileNumber')}
+                    placeholder="Filter by mobile number"
+                  />
+                </div>
+              </div>
             </div>
 
             <div>
