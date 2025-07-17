@@ -45,11 +45,16 @@ export default function FilterPopup({ onClose, onApplyFilters, initialFilters, e
 
   // Search function
   const searchUsers = (term, field) => {
-    if (!term.trim()) return [];
+    if (!term || typeof term !== 'string') return [];
     
-    const searchTerm = term.toLowerCase();
+    const trimmedTerm = term.trim();
+    if (!trimmedTerm) return [];
+    
+    const searchTerm = trimmedTerm.toLowerCase();
     return uniqueUsers
       .filter(user => {
+        if (!user || !user[field]) return false;
+        
         if (field === 'name') {
           return user.name.toLowerCase().includes(searchTerm);
         } else {

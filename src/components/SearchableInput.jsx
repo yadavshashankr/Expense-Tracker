@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 
 export default function SearchableInput({
   label,
-  value,
+  value = '',
   onChange,
   type = 'text',
   placeholder,
@@ -31,7 +31,7 @@ export default function SearchableInput({
 
   // Handle input change
   const handleChange = (e) => {
-    const newValue = e.target.value;
+    const newValue = e.target.value || '';
     onChange(newValue);
     onSearch(newValue);
     setIsOpen(true);
@@ -70,6 +70,7 @@ export default function SearchableInput({
 
   // Handle result selection
   const handleSelect = (result) => {
+    if (!result) return;
     onSelectResult(result);
     setIsOpen(false);
     setHighlightedIndex(-1);
@@ -85,30 +86,32 @@ export default function SearchableInput({
         type={type}
         className={`w-full rounded-lg border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 px-4 py-2 ${className}`}
         placeholder={placeholder}
-        value={value}
+        value={value || ''}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
         required={required}
       />
       
       {/* Search Results Dropdown */}
-      {isOpen && searchResults.length > 0 && (
+      {isOpen && Array.isArray(searchResults) && searchResults.length > 0 && (
         <div className="absolute z-10 w-full mt-1 bg-white rounded-md shadow-lg border border-gray-200">
           <ul className="py-1 max-h-60 overflow-auto">
             {searchResults.map((result, index) => (
-              <li
-                key={result.email}
-                className={`px-4 py-2 cursor-pointer ${
-                  index === highlightedIndex
-                    ? 'bg-indigo-50 text-indigo-700'
-                    : 'hover:bg-gray-50'
-                }`}
-                onClick={() => handleSelect(result)}
-                onMouseEnter={() => setHighlightedIndex(index)}
-              >
-                <div className="font-medium">{result.name}</div>
-                <div className="text-sm text-gray-500">{result.email}</div>
-              </li>
+              result && result.email && (
+                <li
+                  key={result.email}
+                  className={`px-4 py-2 cursor-pointer ${
+                    index === highlightedIndex
+                      ? 'bg-indigo-50 text-indigo-700'
+                      : 'hover:bg-gray-50'
+                  }`}
+                  onClick={() => handleSelect(result)}
+                  onMouseEnter={() => setHighlightedIndex(index)}
+                >
+                  <div className="font-medium">{result.name}</div>
+                  <div className="text-sm text-gray-500">{result.email}</div>
+                </li>
+              )
             ))}
           </ul>
         </div>
