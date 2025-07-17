@@ -12,11 +12,14 @@ export default function FilterPopup({ onApply, onClose, initialFilters = {} }) {
     amountMax: initialFilters.amountMax || '',
     dateFrom: initialFilters.dateFrom || '',
     dateTo: initialFilters.dateTo || '',
-    description: initialFilters.description || ''
+    description: initialFilters.description || '',
+    balanceMin: initialFilters.balanceMin || '',
+    balanceMax: initialFilters.balanceMax || ''
   });
 
   const handleChange = (field) => (e) => {
-    setFilters(prev => ({ ...prev, [field]: e.target.value }));
+    const value = e.target.value;
+    setFilters(prev => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = (e) => {
@@ -25,7 +28,7 @@ export default function FilterPopup({ onApply, onClose, initialFilters = {} }) {
   };
 
   const clearFilters = () => {
-    setFilters({
+    const emptyFilters = {
       name: '',
       email: '',
       mobileNumber: '',
@@ -35,8 +38,12 @@ export default function FilterPopup({ onApply, onClose, initialFilters = {} }) {
       amountMax: '',
       dateFrom: '',
       dateTo: '',
-      description: ''
-    });
+      description: '',
+      balanceMin: '',
+      balanceMax: ''
+    };
+    setFilters(emptyFilters);
+    onApply(emptyFilters);
   };
 
   return (

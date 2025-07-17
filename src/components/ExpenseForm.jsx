@@ -47,11 +47,13 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
           return user.email.toLowerCase().includes(searchTerm);
         } else if (field === 'mobileNumber') {
           // Search by mobile number without country code
-          return user.mobileNumber?.includes(searchTerm);
+          const searchNumber = searchTerm.replace(/\D/g, '');
+          const userNumber = user.mobileNumber?.replace(/\D/g, '');
+          return userNumber?.includes(searchNumber);
         }
         return false;
       })
-      .slice(0, 4); // Limit to 4 results
+      .slice(0, 5); // Show up to 5 results
   };
 
   const handleSearch = (field) => (value) => {

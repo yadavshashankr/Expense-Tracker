@@ -33,7 +33,7 @@ export default function SearchableInput({
 
   // Handle input change
   const handleChange = (e) => {
-    const newValue = e.target.value || '';
+    const newValue = e.target.value;
     onChange(e);
     onSearch(newValue);
     setIsOpen(true);
@@ -94,6 +94,7 @@ export default function SearchableInput({
         onChange={handleChange}
         onKeyDown={handleKeyDown}
         required={required}
+        autoComplete="off"
       />
       
       {/* Search Results Dropdown */}
@@ -114,6 +115,11 @@ export default function SearchableInput({
                 >
                   <div className="font-medium">{result[displayField]}</div>
                   {result.email && <div className="text-sm text-gray-500">{result.email}</div>}
+                  {result.mobileNumber && (
+                    <div className="text-sm text-gray-500">
+                      {result.countryCode}{result.mobileNumber}
+                    </div>
+                  )}
                 </li>
               )
             ))}
