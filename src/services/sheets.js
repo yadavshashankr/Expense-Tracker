@@ -168,9 +168,9 @@ export async function ensureUserSheet({ appName, userName, accessToken }) {
 
     // Add headers
     console.log('Adding headers to new sheet...');
-    const headers = [['ID', 'Timestamp', 'Email', 'Name', 'Type', 'Amount', 'Description', 'Mobile Number', 'Balance']];
+    const headers = [['ID', 'Timestamp', 'User Email', 'Name', 'Type', 'Amount', 'Description', 'Balance']];
     await gFetch(
-      `${SHEETS_URL}/${createRes.spreadsheetId}/values/A1:I1?valueInputOption=RAW`,
+      `${SHEETS_URL}/${createRes.spreadsheetId}/values/A1:H1?valueInputOption=RAW`,
       accessToken,
       'PUT',
       { values: headers }
@@ -250,12 +250,11 @@ export async function appendExpense({ spreadsheetId, accessToken, entry, current
     entry.type,
     entry.amount,
     entry.description,
-    entry.mobileNumber || '', // Store mobile number with country code
     balance
   ]];
 
   return gFetch(
-    `${SHEETS_URL}/${spreadsheetId}/values/A1:I1:append?valueInputOption=RAW`,
+    `${SHEETS_URL}/${spreadsheetId}/values/A1:H1:append?valueInputOption=RAW`,
     accessToken,
     'POST',
     { values }
@@ -264,26 +263,21 @@ export async function appendExpense({ spreadsheetId, accessToken, entry, current
 
 export async function fetchAllRows({ spreadsheetId, accessToken }) {
   const response = await gFetch(
-    `${SHEETS_URL}/${spreadsheetId}/values/A:I`,
+    `${SHEETS_URL}/${spreadsheetId}/values/A2:H`,
     accessToken
   );
 
-  if (!response.values || response.values.length <= 1) {
-    return [];
-  }
+  if (!response.values?.length) return [];
 
-  const [headers, ...rows] = response.values;
-
-  return rows.map(row => ({
-    id: row[0] || '',
-    timestamp: row[1] || '',
-    userEmail: row[2] || '',
-    name: row[3] || '',
-    type: row[4] || '',
-    amount: parseFloat(row[5]) || 0,
-    description: row[6] || '',
-    mobileNumber: row[7] || '',
-    balance: parseFloat(row[8]) || 0
+  return response.values.map(row => ({
+    id: row[0],
+    timestamp: row[1],
+    userEmail: row[2],
+    name: row[3],
+    type: row[4],
+    amount: row[5],
+    description: row[6],
+    balance: parseFloat(row[7] || 0)
   }));
 }
 
@@ -305,13 +299,12 @@ export async function updateExpenseRow({ spreadsheetId, accessToken, rowIndex, e
     entry.type,
     entry.amount,
     entry.description,
-    entry.mobileNumber || '',
     balance
   ]];
 
   // Update the row
   return gFetch(
-    `${SHEETS_URL}/${spreadsheetId}/values/A${rowIndex + 2}:I${rowIndex + 2}?valueInputOption=RAW`,
+    `${SHEETS_URL}/${spreadsheetId}/values/A${rowIndex + 2}:H${rowIndex + 2}?valueInputOption=RAW`,
     accessToken,
     'PUT',
     { values }

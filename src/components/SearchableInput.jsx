@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from 'react';
 
 export default function SearchableInput({
   label,
-  hideLabel = false,
   value = '',
   onChange,
   type = 'text',
@@ -10,8 +9,7 @@ export default function SearchableInput({
   required,
   searchResults = [],
   onSearch,
-  onSelect,
-  displayField = 'name',
+  onSelectResult,
   className = '',
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -33,8 +31,8 @@ export default function SearchableInput({
 
   // Handle input change
   const handleChange = (e) => {
-    const newValue = e.target.value;
-    onChange(e);
+    const newValue = e.target.value || '';
+    onChange(newValue);
     onSearch(newValue);
     setIsOpen(true);
     setHighlightedIndex(-1);
@@ -73,28 +71,25 @@ export default function SearchableInput({
   // Handle result selection
   const handleSelect = (result) => {
     if (!result) return;
-    onSelect(result);
+    onSelectResult(result);
     setIsOpen(false);
     setHighlightedIndex(-1);
   };
 
   return (
     <div className="relative" ref={dropdownRef}>
-      {!hideLabel && label && (
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          {label}
-        </label>
-      )}
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        {label}
+      </label>
       <input
         ref={inputRef}
         type={type}
-        className={`w-full rounded-lg border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 px-4 transition-colors ${className}`}
+        className={`w-full rounded-lg border border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 px-4 py-2 ${className}`}
         placeholder={placeholder}
         value={value || ''}
         onChange={handleChange}
         onKeyDown={handleKeyDown}
         required={required}
-        autoComplete="off"
       />
       
       {/* Search Results Dropdown */}
@@ -102,9 +97,9 @@ export default function SearchableInput({
         <div className="absolute z-10 w-full mt-1 bg-white rounded-md shadow-lg border border-gray-200">
           <ul className="py-1 max-h-60 overflow-auto">
             {searchResults.map((result, index) => (
-              result && (
+              result && result.email && (
                 <li
-                  key={result.email || index}
+                  key={result.email}
                   className={`px-4 py-2 cursor-pointer ${
                     index === highlightedIndex
                       ? 'bg-indigo-50 text-indigo-700'
@@ -113,13 +108,8 @@ export default function SearchableInput({
                   onClick={() => handleSelect(result)}
                   onMouseEnter={() => setHighlightedIndex(index)}
                 >
-                  <div className="font-medium">{result.name || 'Unknown'}</div>
-                  {result.email && <div className="text-sm text-gray-500">{result.email}</div>}
-                  {(result.countryCode || result.mobileNumber) && (
-                    <div className="text-sm text-gray-500">
-                      {result.countryCode}{result.mobileNumber}
-                    </div>
-                  )}
+                  <div className="font-medium">{result.name}</div>
+                  <div className="text-sm text-gray-500">{result.email}</div>
                 </li>
               )
             ))}

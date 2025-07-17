@@ -1,7 +1,6 @@
 
 import { useState, useMemo } from 'react';
 import React from 'react'; // Added missing import for React
-import { countries as countryData } from './CountryCodeSelect';
 
 // Utility function for date formatting
 const formatDateTime = (timestamp) => {
@@ -91,20 +90,6 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
 
         // Email filter
         if (activeFilters.email && !expense.userEmail.toLowerCase().includes(activeFilters.email.toLowerCase())) {
-          return false;
-        }
-
-        // Mobile number filter
-        if (activeFilters.mobileNumber) {
-          const mobileFilter = activeFilters.mobileNumber.replace(/\D/g, '');
-          const expenseMobile = expense.mobileNumber?.replace(/\D/g, '');
-          if (!expenseMobile?.includes(mobileFilter)) {
-            return false;
-          }
-        }
-
-        // Country code filter
-        if (activeFilters.countryCode && !expense.mobileNumber?.startsWith(activeFilters.countryCode)) {
           return false;
         }
 
@@ -225,59 +210,6 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
       }
       return newSet;
     });
-  };
-
-  const renderExpandedDetails = (expense) => {
-    const { dateStr, timeStr } = formatDateTime(expense.timestamp);
-    
-    // Parse mobile number to get country code and number
-    let countryCode = '';
-    let mobileNumber = '';
-    if (expense.mobileNumber) {
-      const match = expense.mobileNumber.match(/(\+\d+)(.*)/);
-      if (match) {
-        [, countryCode, mobileNumber] = match;
-      }
-    }
-
-    // Find country flag
-    const country = countryData.find(c => c.code === countryCode);
-    const flag = country?.flag || '';
-
-    return (
-      <div className="px-4 py-3 bg-gray-50 space-y-2 text-sm">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <span className="font-medium">Transaction ID:</span> {expense.id}
-          </div>
-          <div>
-            <span className="font-medium">Timestamp:</span> {dateStr} {timeStr}
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <span className="font-medium">Name:</span> {expense.name}
-          </div>
-          <div>
-            <span className="font-medium">Email:</span> {expense.userEmail}
-          </div>
-        </div>
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <span className="font-medium">Mobile:</span>{' '}
-            {expense.mobileNumber ? (
-              <span>
-                {flag} {countryCode}{mobileNumber}
-              </span>
-            ) : 'Not provided'}
-          </div>
-          <div>
-            <span className="font-medium">Description:</span>{' '}
-            {expense.description || 'No description'}
-          </div>
-        </div>
-      </div>
-    );
   };
 
   // Mobile Card View Component
@@ -597,7 +529,22 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
                   {isExpanded && (
                     <tr className="bg-gray-50">
                       <td colSpan="6" className="px-6 py-4">
-                        {renderExpandedDetails(expense)}
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span className="text-gray-500">Date:</span>
+                            <span className="ml-2 text-gray-900">{dateStr}</span>
+                          </div>
+                          <div>
+                            <span className="text-gray-500">Time:</span>
+                            <span className="ml-2 text-gray-900">{timeStr}</span>
+                          </div>
+                          {expense.description && (
+                            <div className="col-span-2">
+                              <span className="text-gray-500">Description:</span>
+                              <span className="ml-2 text-gray-900">{expense.description}</span>
+                            </div>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   )}

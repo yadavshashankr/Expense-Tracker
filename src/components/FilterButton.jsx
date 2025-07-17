@@ -23,7 +23,7 @@ export default function FilterButton({ onApplyFilters, initialFilters, isActive,
       {showFilterPopup && (
         <FilterPopup
           onClose={() => setShowFilterPopup(false)}
-          onApply={(filters) => {
+          onApplyFilters={(filters) => {
             onApplyFilters(filters);
             setShowFilterPopup(false);
           }}
