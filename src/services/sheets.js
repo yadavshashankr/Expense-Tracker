@@ -168,9 +168,9 @@ export async function ensureUserSheet({ appName, userName, accessToken }) {
 
     // Add headers
     console.log('Adding headers to new sheet...');
-    const headers = [['ID', 'Timestamp', 'Email', 'Name', 'Type', 'Amount', 'Description', 'Country Code', 'Mobile Number', 'Balance']];
+    const headers = [['ID', 'Timestamp', 'Email', 'Name', 'Type', 'Amount', 'Description', 'Mobile Number', 'Balance']];
     await gFetch(
-      `${SHEETS_URL}/${createRes.spreadsheetId}/values/A1:J1?valueInputOption=RAW`,
+      `${SHEETS_URL}/${createRes.spreadsheetId}/values/A1:I1?valueInputOption=RAW`,
       accessToken,
       'PUT',
       { values: headers }
@@ -250,13 +250,12 @@ export async function appendExpense({ spreadsheetId, accessToken, entry, current
     entry.type,
     entry.amount,
     entry.description,
-    entry.countryCode || '',
-    entry.mobileNumber || '',
+    entry.mobileNumber || '', // Store mobile number with country code
     balance
   ]];
 
   return gFetch(
-    `${SHEETS_URL}/${spreadsheetId}/values/A1:J1:append?valueInputOption=RAW`,
+    `${SHEETS_URL}/${spreadsheetId}/values/A1:I1:append?valueInputOption=RAW`,
     accessToken,
     'POST',
     { values }
@@ -265,7 +264,7 @@ export async function appendExpense({ spreadsheetId, accessToken, entry, current
 
 export async function fetchAllRows({ spreadsheetId, accessToken }) {
   const response = await gFetch(
-    `${SHEETS_URL}/${spreadsheetId}/values/A:J`,
+    `${SHEETS_URL}/${spreadsheetId}/values/A:I`,
     accessToken
   );
 
@@ -283,9 +282,8 @@ export async function fetchAllRows({ spreadsheetId, accessToken }) {
     type: row[4] || '',
     amount: parseFloat(row[5]) || 0,
     description: row[6] || '',
-    countryCode: row[7] || '',
-    mobileNumber: row[8] || '',
-    balance: parseFloat(row[9]) || 0
+    mobileNumber: row[7] || '',
+    balance: parseFloat(row[8]) || 0
   }));
 }
 
@@ -307,14 +305,13 @@ export async function updateExpenseRow({ spreadsheetId, accessToken, rowIndex, e
     entry.type,
     entry.amount,
     entry.description,
-    entry.countryCode || '',
     entry.mobileNumber || '',
     balance
   ]];
 
   // Update the row
   return gFetch(
-    `${SHEETS_URL}/${spreadsheetId}/values/A${rowIndex + 2}:J${rowIndex + 2}?valueInputOption=RAW`,
+    `${SHEETS_URL}/${spreadsheetId}/values/A${rowIndex + 2}:I${rowIndex + 2}?valueInputOption=RAW`,
     accessToken,
     'PUT',
     { values }

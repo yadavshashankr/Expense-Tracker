@@ -4,14 +4,14 @@ import SearchableInput from './SearchableInput';
 import CountryCodeSelect from './CountryCodeSelect';
 
 export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
-  const [form, setForm] = useState({ 
-    name: '', 
-    email: '', 
-    type: 'debit', 
-    amount: '', 
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    type: 'debit',
+    amount: '',
     description: '',
     countryCode: '+91',
-    mobileNumber: '' 
+    mobileNumber: ''
   });
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState({ name: '', email: '', mobileNumber: '' });
@@ -46,6 +46,7 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
         } else if (field === 'email') {
           return user.email.toLowerCase().includes(searchTerm);
         } else if (field === 'mobileNumber') {
+          // Search by mobile number without country code
           return user.mobileNumber?.includes(searchTerm);
         }
         return false;
@@ -85,18 +86,19 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
         timestamp: new Date().toISOString(), 
         userEmail: form.email,
         ...form,
-        amount: parseFloat(form.amount)
+        amount: parseFloat(form.amount),
+        mobileNumber: form.countryCode + form.mobileNumber // Combine country code and mobile number
       };
 
       onSubmit(entry);
-      setForm({ 
-        name: '', 
-        email: '', 
-        type: 'debit', 
-        amount: '', 
+      setForm({
+        name: '',
+        email: '',
+        type: 'debit',
+        amount: '',
         description: '',
         countryCode: '+91',
-        mobileNumber: '' 
+        mobileNumber: ''
       });
       setSearchTerm({ name: '', email: '', mobileNumber: '' });
       setError(null);
