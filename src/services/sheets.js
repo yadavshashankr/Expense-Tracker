@@ -168,9 +168,9 @@ export async function ensureUserSheet({ appName, userName, accessToken }) {
 
     // Add headers
     console.log('Adding headers to new sheet...');
-    const headers = [['ID', 'Timestamp', 'User Email', 'Name', 'Type', 'Amount', 'Description', 'Balance']];
+    const headers = [['ID', 'Timestamp', 'User Email', 'Name', 'Type', 'Amount', 'Description', 'Balance', 'Phone']];
     await gFetch(
-      `${SHEETS_URL}/${createRes.spreadsheetId}/values/A1:H1?valueInputOption=RAW`,
+      `${SHEETS_URL}/${createRes.spreadsheetId}/values/A1:I1?valueInputOption=RAW`,
       accessToken,
       'PUT',
       { values: headers }
@@ -212,7 +212,7 @@ async function setTextWrapping(spreadsheetId, accessToken) {
           startRowIndex: 0,
           endRowIndex: 1000,
           startColumnIndex: 0,
-          endColumnIndex: 8
+          endColumnIndex: 9
         },
         cell: {
           userEnteredFormat: {
@@ -250,11 +250,12 @@ export async function appendExpense({ spreadsheetId, accessToken, entry, current
     entry.type,
     entry.amount,
     entry.description,
-    balance
+    balance,
+    entry.phone || ''
   ]];
 
   return gFetch(
-    `${SHEETS_URL}/${spreadsheetId}/values/A1:H1:append?valueInputOption=RAW`,
+    `${SHEETS_URL}/${spreadsheetId}/values/A1:I1:append?valueInputOption=RAW`,
     accessToken,
     'POST',
     { values }

@@ -3,9 +3,16 @@ import { useState, useMemo } from 'react';
 import SearchableInput from './SearchableInput';
 
 export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
-  const [form, setForm] = useState({ name: '', email: '', type: 'debit', amount: '', description: '' });
+  const [form, setForm] = useState({
+    name: '',
+    email: '',
+    type: 'debit',
+    amount: '',
+    description: '',
+    phone: ''
+  });
   const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState({ name: '', email: '' });
+  const [searchTerm, setSearchTerm] = useState({ name: '', email: '', phone: '' });
 
   // Create normalized list of unique users from expenses
   const uniqueUsers = useMemo(() => {
@@ -15,6 +22,7 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
       userMap.set(expense.userEmail, {
         name: expense.name,
         email: expense.userEmail,
+        phone: expense.phone || '',
         lastUsed: expense.timestamp
       });
     });
@@ -32,9 +40,12 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
       .filter(user => {
         if (field === 'name') {
           return user.name.toLowerCase().includes(searchTerm);
-        } else {
+        } else if (field === 'email') {
           return user.email.toLowerCase().includes(searchTerm);
+        } else if (field === 'phone') {
+          return user.phone?.toLowerCase().includes(searchTerm);
         }
+        return false;
       })
       .slice(0, 4); // Limit to 4 results
   };
@@ -46,10 +57,11 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
   const handleSelect = (result) => {
     setForm(prev => ({
       ...prev,
-      name: result.name,
-      email: result.email
+      name: result.name || prev.name,
+      email: result.email || prev.email,
+      phone: result.phone || prev.phone
     }));
-    setSearchTerm({ name: '', email: '' });
+    setSearchTerm({ name: '', email: '', phone: '' });
   };
 
   const change = k => e => {
@@ -73,8 +85,15 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
       };
 
       onSubmit(entry);
-      setForm({ name: '', email: '', type: 'debit', amount: '', description: '' });
-      setSearchTerm({ name: '', email: '' });
+      setForm({
+        name: '',
+        email: '',
+        type: 'debit',
+        amount: '',
+        description: '',
+        phone: ''
+      });
+      setSearchTerm({ name: '', email: '', phone: '' });
       setError(null);
     } catch (err) {
       console.error('Error submitting transaction:', err);
@@ -111,6 +130,17 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
             required
             searchResults={searchUsers(form.email, 'email')}
             onSearch={handleSearch('email')}
+            onSelectResult={handleSelect}
+          />
+
+          <SearchableInput
+            label="Phone"
+            type="tel"
+            value={form.phone}
+            onChange={(value) => setForm(prev => ({ ...prev, phone: value }))}
+            placeholder="Enter phone number"
+            searchResults={searchUsers(form.phone, 'phone')}
+            onSearch={handleSearch('phone')}
             onSelectResult={handleSelect}
           />
 

@@ -538,6 +538,10 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
                             <span className="text-gray-500">Time:</span>
                             <span className="ml-2 text-gray-900">{timeStr}</span>
                           </div>
+                          <div>
+                            <span className="text-gray-500">Phone:</span>
+                            <span className="ml-2 text-gray-900">{expense.phone || 'Not provided'}</span>
+                          </div>
                           {expense.description && (
                             <div className="col-span-2">
                               <span className="text-gray-500">Description:</span>
