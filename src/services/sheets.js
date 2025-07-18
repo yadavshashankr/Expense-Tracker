@@ -2,6 +2,8 @@
 const DRIVE_FILES_URL = 'https://www.googleapis.com/drive/v3/files';
 const SHEETS_URL = 'https://sheets.googleapis.com/v4/spreadsheets';
 
+const headers = [['ID', 'Timestamp', 'User Email', 'Name', 'Type', 'Amount', 'Description', 'Balance', 'Phone']];
+
 function getReadableError(error, url) {
   // Check which API is being called
   const isDriveAPI = url.includes('drive');
@@ -168,7 +170,6 @@ export async function ensureUserSheet({ appName, userName, accessToken }) {
 
     // Add headers
     console.log('Adding headers to new sheet...');
-    const headers = [['ID', 'Timestamp', 'User Email', 'Name', 'Type', 'Amount', 'Description', 'Balance', 'Phone']];
     await gFetch(
       `${SHEETS_URL}/${createRes.spreadsheetId}/values/A1:I1?valueInputOption=RAW`,
       accessToken,
@@ -264,7 +265,7 @@ export async function appendExpense({ spreadsheetId, accessToken, entry, current
 
 export async function fetchAllRows({ spreadsheetId, accessToken }) {
   const response = await gFetch(
-    `${SHEETS_URL}/${spreadsheetId}/values/A2:H`,
+    `${SHEETS_URL}/${spreadsheetId}/values/A2:I`,
     accessToken
   );
 
@@ -278,7 +279,8 @@ export async function fetchAllRows({ spreadsheetId, accessToken }) {
     type: row[4],
     amount: row[5],
     description: row[6],
-    balance: parseFloat(row[7] || 0)
+    balance: parseFloat(row[7] || 0),
+    phone: row[8] || ''
   }));
 }
 
