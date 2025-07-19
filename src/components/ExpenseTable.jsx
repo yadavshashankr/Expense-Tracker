@@ -132,7 +132,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
         }
 
         // Country code filter
-        if (activeFilters.countryCode && expense.countryCode !== activeFilters.countryCode) {
+        if (activeFilters.countryCode && activeFilters.countryCode !== 'all' && expense.countryCode !== activeFilters.countryCode) {
           return false;
         }
 

@@ -6,7 +6,7 @@ const initialFilterState = {
   name: '',
   email: '',
   phone: '',
-  countryCode: '+91',
+  countryCode: 'all',
   amountMin: '',
   amountMax: '',
   balanceMin: '',

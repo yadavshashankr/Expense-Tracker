@@ -11,7 +11,7 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
     amount: '',
     description: '',
     phone: '',
-    countryCode: '+91', // Default to India
+    countryCode: '+91', // Keep default as India for new transactions
     transactionDate: ''
   });
   

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 
 // Country data with codes and flags
 const countries = [
+  { code: 'all', flag: '🌐', name: 'All Countries' },
   { code: '+1', flag: '🇺🇸', name: 'United States' },
   { code: '+91', flag: '🇮🇳', name: 'India' },
   { code: '+44', flag: '🇬🇧', name: 'United Kingdom' },
@@ -28,7 +29,7 @@ export default function CountryCodeSelect({ value, onChange, disabled }) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCountry, setSelectedCountry] = useState(
-    countries.find(c => c.code === value) || countries[1] // Default to India (+91)
+    countries.find(c => c.code === value) || countries[0] // Default to All
   );
   const dropdownRef = useRef(null);
 
