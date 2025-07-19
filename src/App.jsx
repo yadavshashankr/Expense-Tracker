@@ -17,12 +17,13 @@ function App() {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [showFilters, setShowFilters] = useState(false);
+  const menuRef = useRef(null);
   const [activeFilters, setActiveFilters] = useState(() => {
     const savedFilters = localStorage.getItem('expenseTrackerFilters');
     return savedFilters ? JSON.parse(savedFilters) : null;
   });
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const menuRef = useRef(null);
 
   // Handle click outside for menu
   useEffect(() => {
@@ -219,19 +220,10 @@ function App() {
 
   // Function to handle filter application
   const handleApplyFilters = (filters) => {
-    // Convert empty string values to null
-    const cleanedFilters = Object.fromEntries(
-      Object.entries(filters).map(([key, value]) => [key, value === '' ? null : value])
-    );
-
-    // Only set filters if at least one filter has a value
-    const hasActiveFilters = Object.values(cleanedFilters).some(value => value !== null);
-    const newFilters = hasActiveFilters ? cleanedFilters : null;
-    
-    // Save all filters including phone number
-    setActiveFilters(newFilters);
-    if (newFilters) {
-      localStorage.setItem('expenseTrackerFilters', JSON.stringify(newFilters));
+    setActiveFilters(filters);
+    setShowFilters(false);
+    if (filters) {
+      localStorage.setItem('expenseTrackerFilters', JSON.stringify(filters));
     } else {
       localStorage.removeItem('expenseTrackerFilters');
     }
