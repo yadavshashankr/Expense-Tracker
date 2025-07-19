@@ -237,6 +237,22 @@ function App() {
     setShowAddForm(true);
   };
 
+  // Handle menu and popup actions
+  const handleAddTransaction = () => {
+    setIsMenuOpen(false);
+    setShowAddForm(true);
+  };
+
+  const handleFilterClick = () => {
+    setIsMenuOpen(false);
+    setShowFilters(true);
+  };
+
+  const handleCurrencyChange = (currency) => {
+    setSelectedCurrency(currency);
+    setIsMenuOpen(false);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {!user ? (
@@ -292,9 +308,8 @@ function App() {
               {expenses.length > 0 && (
                 <TotalSection 
                   expenses={expenses} 
-                  currentUserEmail={user.profile.email}
+                  currentUserEmail={user.email}
                   currency={selectedCurrency}
-                  onCurrencyChange={setSelectedCurrency}
                 />
               )}
             </div>
@@ -316,7 +331,7 @@ function App() {
                     expenses={expenses}
                     onEdit={handleUpdateExpense}
                     onDelete={handleDeleteExpense}
-                    currentUserEmail={user.profile.email}
+                    currentUserEmail={user.email}
                     activeFilters={activeFilters}
                     currency={selectedCurrency}
                   />
@@ -357,7 +372,7 @@ function App() {
                 <div className="relative">
                   <CurrencySelect
                     value={selectedCurrency.code}
-                    onChange={setSelectedCurrency}
+                    onChange={handleCurrencyChange}
                     renderButton={({ selectedCurrency, onClick }) => (
                       <button
                         onClick={onClick}
@@ -372,7 +387,7 @@ function App() {
 
                 {/* Filter Button */}
                 <button
-                  onClick={() => setShowFilters(true)}
+                  onClick={handleFilterClick}
                   className={`w-14 h-14 rounded-full shadow-lg transition-colors flex items-center justify-center ${
                     activeFilters
                       ? 'bg-indigo-600 text-white hover:bg-indigo-700'
@@ -387,7 +402,7 @@ function App() {
 
                 {/* Add Transaction Button */}
                 <button
-                  onClick={handleOpenAddForm}
+                  onClick={handleAddTransaction}
                   className="bg-indigo-600 w-14 h-14 rounded-full shadow-lg hover:bg-indigo-700 transition-colors flex items-center justify-center"
                   aria-label="Add Transaction"
                 >
@@ -409,31 +424,15 @@ function App() {
             />
           )}
 
-          {/* Modal */}
+          {/* Add Transaction Modal */}
           {showAddForm && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-              <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-auto">
-                <div className="p-6">
-                  <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-xl font-semibold text-gray-900">Add Transaction</h2>
-                    <button
-                      onClick={() => setShowAddForm(false)}
-                      className="text-gray-400 hover:text-gray-500"
-                    >
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                  </div>
-                  <ExpenseForm
-                    onSubmit={handleAddExpense}
-                    currentUserEmail={user.profile.email}
-                    expenses={expenses}
-                    currency={selectedCurrency}
-                  />
-                </div>
-              </div>
-            </div>
+            <ExpenseForm
+              onSubmit={handleAddExpense}
+              onClose={() => setShowAddForm(false)}
+              currentUserEmail={user.email}
+              expenses={expenses}
+              isSubmitting={isSubmitting}
+            />
           )}
         </div>
       )}
