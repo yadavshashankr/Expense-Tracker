@@ -248,20 +248,13 @@ function App() {
                 </div>
               )}
 
-              {/* Currency Selector */}
-              <div className="mb-4">
-                <CurrencySelect
-                  value={selectedCurrency.code}
-                  onChange={setSelectedCurrency}
-                />
-              </div>
-
               {/* Total Section */}
               {expenses.length > 0 && (
                 <TotalSection 
                   expenses={expenses} 
                   currentUserEmail={user.profile.email}
                   currency={selectedCurrency}
+                  onCurrencyChange={setSelectedCurrency}
                 />
               )}
             </div>
