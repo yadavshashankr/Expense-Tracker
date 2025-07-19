@@ -11,14 +11,14 @@ export default function TotalSection({ expenses, currentUserEmail }) {
       const amount = parseFloat(expense.amount);
       
       // Only count transactions where current user is involved
-      if (expense.userEmail !== currentUserEmail) return acc;
-
-      if (expense.type === 'credit') {
-        acc.credit += amount;
-        acc.balance += amount;
-      } else if (expense.type === 'debit') {
-        acc.debit += amount;
-        acc.balance -= amount;
+      if (expense.userEmail === currentUserEmail) {
+        if (expense.type === 'credit') {
+          acc.credit += amount;
+          acc.balance += amount;
+        } else if (expense.type === 'debit') {
+          acc.debit += amount;
+          acc.balance -= amount;
+        }
       }
       
       return acc;
