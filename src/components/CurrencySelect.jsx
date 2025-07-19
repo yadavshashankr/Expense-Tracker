@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 
 // Currency data with symbols and codes
-const currencies = [
+export const currencies = [
   { code: 'INR', symbol: '₹', name: 'Indian Rupee' },
   { code: 'USD', symbol: '$', name: 'US Dollar' },
   { code: 'EUR', symbol: '€', name: 'Euro' },
@@ -9,37 +9,30 @@ const currencies = [
   { code: 'JPY', symbol: '¥', name: 'Japanese Yen' },
   { code: 'AUD', symbol: 'A$', name: 'Australian Dollar' },
   { code: 'CAD', symbol: 'C$', name: 'Canadian Dollar' },
-  { code: 'CHF', symbol: 'Fr', name: 'Swiss Franc' },
-  { code: 'CNY', symbol: '¥', name: 'Chinese Yuan' },
-  { code: 'SGD', symbol: 'S$', name: 'Singapore Dollar' },
-  { code: 'AED', symbol: 'د.إ', name: 'UAE Dirham' },
-  { code: 'SAR', symbol: '﷼', name: 'Saudi Riyal' }
+  { code: 'SGD', symbol: 'S$', name: 'Singapore Dollar' }
 ];
 
 export default function CurrencySelect({ value, onChange }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const selectedCurrency = currencies.find(c => c.code === value) || currencies[0];
 
   useEffect(() => {
-    // Close dropdown when clicking outside
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setIsOpen(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
-
-  const selectedCurrency = currencies.find(c => c.code === value) || currencies[0];
 
   return (
     <div className="relative" ref={dropdownRef}>
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+        className="flex items-center gap-2 px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
       >
         <span className="font-medium">{selectedCurrency.symbol} {selectedCurrency.code}</span>
         <svg 
@@ -53,13 +46,13 @@ export default function CurrencySelect({ value, onChange }) {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-1 w-48 bg-white border rounded-lg shadow-lg z-50">
+        <div className="absolute left-0 mt-1 w-48 bg-white border rounded-lg shadow-lg z-50">
           <div className="py-1">
             {currencies.map((currency) => (
               <button
                 key={currency.code}
                 onClick={() => {
-                  onChange(currency.code);
+                  onChange(currency);
                   setIsOpen(false);
                 }}
                 className={`w-full flex items-center px-4 py-2 text-sm hover:bg-gray-100 ${
@@ -76,7 +69,4 @@ export default function CurrencySelect({ value, onChange }) {
       )}
     </div>
   );
-}
-
-// Export currencies for use in other components
-export { currencies }; 
+} 

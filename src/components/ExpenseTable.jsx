@@ -1,7 +1,6 @@
 
 import { useState, useMemo } from 'react';
 import React from 'react'; // Added missing import for React
-import { useCurrency } from '../context/CurrencyContext';
 
 // Import country data for flag display
 const countries = [
@@ -103,8 +102,7 @@ const calculateRunningBalance = (expenses, currentUserEmail, targetEmail, upToIn
     }, 0);
 };
 
-export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEmail, activeFilters }) {
-  const { currency } = useCurrency();
+export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEmail, activeFilters, currency }) {
   const [editingId, setEditingId] = useState(null);
   const [draft, setDraft] = useState({});
   const [expandedItems, setExpandedItems] = useState(new Set());
@@ -217,7 +215,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
     return (
       <div className="flex items-center gap-1">
         <span className={`${isPositive ? 'text-green-600' : 'text-red-600'} font-medium`}>
-          {isPositive ? '+' : '-'}{currency.symbol}{Math.abs(balance).toFixed(2)}
+          {isPositive ? '+' : '-'}₹{Math.abs(balance).toFixed(2)}
         </span>
       </div>
     );

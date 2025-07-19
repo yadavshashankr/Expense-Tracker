@@ -1,26 +1,48 @@
 
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
+import LoginButton from './components/LoginButton'
 import ExpenseForm from './components/ExpenseForm'
 import ExpenseTable from './components/ExpenseTable'
-import FilterButton from './components/FilterButton'
-import FilterPopup from './components/FilterPopup'
-import LoginButton from './components/LoginButton'
 import TotalSection from './components/TotalSection'
+import FilterButton from './components/FilterButton'
+import CurrencySelect, { currencies } from './components/CurrencySelect'
 import { ensureUserSheet, fetchAllRows, appendExpense, updateExpenseRow, deleteExpenseRow } from './services/sheets'
-import CurrencySelect from './components/CurrencySelect'
-import { CurrencyProvider, useCurrency } from './context/CurrencyContext'
 
 function App() {
-  const [user, setUser] = useState(null);
-  const [spreadsheetId, setSpreadsheetId] = useState(null);
-  const [expenses, setExpenses] = useState([]);
-  const [showAddExpense, setShowAddExpense] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
-  const [activeFilters, setActiveFilters] = useState(null);
-  const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [user, setUser] = useState(null)
+  const [spreadsheetId, setSpreadsheetId] = useState(null)
+  const [expenses, setExpenses] = useState([])
+  const [error, setError] = useState(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [showAddForm, setShowAddForm] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [activeFilters, setActiveFilters] = useState(() => {
+    const savedFilters = localStorage.getItem('expenseTrackerFilters');
+    return savedFilters ? JSON.parse(savedFilters) : null;
+  });
+
+  // Add currency state with user's locale detection
+  const [selectedCurrency, setSelectedCurrency] = useState(() => {
+    try {
+      const userLocale = navigator.language;
+      const userRegion = new Intl.Locale(userLocale).region;
+      const currencyByRegion = {
+        'IN': 'INR',
+        'US': 'USD',
+        'GB': 'GBP',
+        'EU': 'EUR',
+        'JP': 'JPY',
+        'AU': 'AUD',
+        'CA': 'CAD',
+        'SG': 'SGD'
+      };
+      const defaultCurrencyCode = currencyByRegion[userRegion] || 'INR';
+      return currencies.find(c => c.code === defaultCurrencyCode) || currencies[0];
+    } catch (error) {
+      return currencies[0]; // Default to INR
+    }
+  });
 
   // Function to fetch expenses
   const fetchExpenses = async () => {
@@ -90,7 +112,7 @@ function App() {
     try {
       setError(null);
       // Close form immediately
-      setShowAddExpense(false);
+      setShowAddForm(false);
       // Show loading state
       setIsSubmitting(true);
       
@@ -172,113 +194,155 @@ function App() {
     // Reset all filters including phone number when opening add form
     setActiveFilters(null);
     localStorage.removeItem('expenseTrackerFilters');
-    setShowAddExpense(true);
+    setShowAddForm(true);
   };
 
   return (
-    <CurrencyProvider>
-      <div className="min-h-screen bg-gray-50">
-        <header className="bg-white shadow">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="flex justify-between items-center">
-              <h1 className="text-2xl font-bold text-gray-900">Expense Tracker</h1>
-              {user ? (
+    <div className="min-h-screen bg-gray-50">
+      {!user ? (
+        <div className="flex flex-col items-center justify-center min-h-[60vh]">
+          <h1 className="text-3xl sm:text-4xl font-bold mb-8 text-center">Expense Tracker</h1>
+          <LoginButton onLogin={setUser} />
+        </div>
+      ) : (
+        <div className="flex flex-col h-screen">
+          {/* Fixed Header */}
+          <div className="flex-none bg-white border-b border-gray-200">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                <h1 className="text-xl sm:text-2xl font-bold">Expense Tracker</h1>
                 <div className="flex items-center gap-4">
-                  <CurrencySelect 
-                    value={useCurrency().currency.code}
-                    onChange={useCurrency().setCurrency}
-                  />
+                  <button
+                    onClick={fetchExpenses}
+                    disabled={isRefreshing}
+                    className="text-gray-600 hover:text-gray-800 disabled:opacity-50 text-sm sm:text-base"
+                  >
+                    {isRefreshing ? 'Refreshing...' : 'Refresh'}
+                  </button>
                   <button
                     onClick={() => setUser(null)}
-                    className="text-gray-600 hover:text-gray-900"
+                    className="text-gray-600 hover:text-gray-800 text-sm sm:text-base"
                   >
                     Sign Out
                   </button>
                 </div>
-              ) : (
-                <LoginButton onLogin={setUser} />
-              )}
+              </div>
             </div>
           </div>
-        </header>
 
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {error && (
-            <div className="mb-8 bg-red-50 border border-red-200 rounded-lg p-4">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                  </svg>
+          {/* Fixed Total Section */}
+          <div className="flex-none bg-white border-b border-gray-200">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+              {error && (
+                <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4 rounded-r-lg">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm text-red-700">{error}</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="ml-3">
-                  <p className="text-sm text-red-700">{error}</p>
-                </div>
-              </div>
-            </div>
-          )}
+              )}
 
-          {user && (
-            <div className="space-y-8">
-              <div className="flex justify-between items-center">
-                <div className="flex gap-4">
-                  <button
-                    onClick={() => setShowAddExpense(true)}
-                    className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                  >
-                    Add Transaction
-                  </button>
-                  <FilterButton onClick={() => setShowFilters(true)} activeFilters={activeFilters} />
-                </div>
-                <button
-                  onClick={fetchExpenses}
-                  disabled={isRefreshing}
-                  className="text-gray-600 hover:text-gray-900"
-                >
-                  {isRefreshing ? 'Refreshing...' : 'Refresh'}
-                </button>
+              {/* Currency Selector */}
+              <div className="mb-4">
+                <CurrencySelect
+                  value={selectedCurrency.code}
+                  onChange={setSelectedCurrency}
+                />
               </div>
 
-              <TotalSection expenses={expenses} currentUserEmail={user.email} />
-
-              {isLoading ? (
-                <div className="text-center py-12">
-                  <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-                  <p className="mt-2 text-gray-600">Loading transactions...</p>
-                </div>
-              ) : (
-                <ExpenseTable
-                  expenses={expenses}
-                  onEdit={handleUpdateExpense}
-                  onDelete={handleDeleteExpense}
-                  currentUserEmail={user.email}
-                  activeFilters={activeFilters}
+              {/* Total Section */}
+              {expenses.length > 0 && (
+                <TotalSection 
+                  expenses={expenses} 
+                  currentUserEmail={user.profile.email}
+                  currency={selectedCurrency}
                 />
               )}
             </div>
-          )}
+          </div>
 
-          {showAddExpense && (
-            <ExpenseForm
-              onSubmit={handleAddExpense}
-              onClose={() => setShowAddExpense(false)}
-              currentUserEmail={user?.email}
-              expenses={expenses}
-              isSubmitting={isSubmitting}
-            />
-          )}
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-hidden">
+            <div className="h-full overflow-auto">
+              {isLoading || isSubmitting ? (
+                <div className="flex justify-center items-center py-12">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                    <p className="text-gray-600">{isSubmitting ? 'Adding transaction...' : 'Loading...'}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                  <ExpenseTable
+                    expenses={expenses}
+                    onEdit={handleUpdateExpense}
+                    onDelete={handleDeleteExpense}
+                    currentUserEmail={user.profile.email}
+                    activeFilters={activeFilters}
+                    currency={selectedCurrency}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
 
-          {showFilters && (
-            <FilterPopup
-              onClose={() => setShowFilters(false)}
+          {/* Action Buttons Container */}
+          <div className="fixed bottom-6 right-6 flex flex-col gap-4 items-center z-10">
+            {/* Filter Button */}
+            <FilterButton 
               onApplyFilters={handleApplyFilters}
               initialFilters={activeFilters}
+              isActive={!!activeFilters}
               expenses={expenses}
             />
+
+            {/* Add Transaction Button */}
+            <button
+              onClick={handleOpenAddForm}
+              className="bg-indigo-600 text-white p-4 rounded-full shadow-lg hover:bg-indigo-700 transition-colors"
+              aria-label="Add Transaction"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+              </svg>
+            </button>
+          </div>
+
+          {/* Modal */}
+          {showAddForm && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+              <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-auto">
+                <div className="p-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-semibold text-gray-900">Add Transaction</h2>
+                    <button
+                      onClick={() => setShowAddForm(false)}
+                      className="text-gray-400 hover:text-gray-500"
+                    >
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                  <ExpenseForm
+                    onSubmit={handleAddExpense}
+                    currentUserEmail={user.profile.email}
+                    expenses={expenses}
+                    currency={selectedCurrency}
+                  />
+                </div>
+              </div>
+            </div>
           )}
-        </main>
-      </div>
-    </CurrencyProvider>
+        </div>
+      )}
+    </div>
   );
 }
 
