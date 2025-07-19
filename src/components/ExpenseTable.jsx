@@ -321,18 +321,18 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
               <span>Time:</span>
               <span className="font-medium text-gray-900">{timeStr}</span>
             </div>
-            <div className="flex justify-between items-center text-gray-600">
-              <span>Phone:</span>
-              <span className="font-medium text-gray-900 inline-flex items-center">
+            <div className="flex justify-between items-center text-gray-600 gap-2">
+              <span className="min-w-[60px]">Phone:</span>
+              <div className="font-medium text-gray-900 inline-flex items-center justify-end flex-shrink-0">
                 {expense.phone ? (
                   <>
                     <span className="text-lg mr-1">{getCountryFlag(expense.countryCode || '+91')}</span>
-                    <span>{(expense.countryCode || '+91')}-{expense.phone}</span>
+                    <span className="whitespace-nowrap">{(expense.countryCode || '+91')}-{expense.phone}</span>
                   </>
                 ) : (
                   'Not provided'
                 )}
-              </span>
+              </div>
             </div>
             {expense.description && (
               <div className="flex justify-between items-center text-gray-600">
@@ -593,13 +593,13 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
                             <span className="text-gray-500">Time:</span>
                             <span className="ml-2 text-gray-900">{timeStr}</span>
                           </div>
-                          <div>
-                            <span className="text-gray-500">Phone:</span>
+                          <div className="flex items-center">
+                            <span className="text-gray-500 min-w-[60px]">Phone:</span>
                             <span className="ml-2 text-gray-900 inline-flex items-center">
                               {expense.phone ? (
                                 <>
                                   <span className="text-lg mr-1">{getCountryFlag(expense.countryCode || '+91')}</span>
-                                  <span>{(expense.countryCode || '+91')}-{expense.phone}</span>
+                                  <span className="whitespace-nowrap">{(expense.countryCode || '+91')}-{expense.phone}</span>
                                 </>
                               ) : (
                                 'Not provided'
