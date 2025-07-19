@@ -47,15 +47,15 @@ function App() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Add currency state with user's locale detection
+  // Initialize currency state with default INR
   const [selectedCurrency, setSelectedCurrency] = useState(() => {
+    const defaultCurrency = { code: 'INR', symbol: '₹', name: 'Indian Rupee' };
+    
     try {
-      // Default to INR
-      const defaultCurrency = currencies.find(c => c.code === 'INR');
-      if (!user) return defaultCurrency;
+      if (!user?.profile?.email) return defaultCurrency;
 
       // Try to get country from user's email domain
-      const emailDomain = user.email.split('@')[1];
+      const emailDomain = user.profile.email.split('@')[1];
       const countryMap = {
         'gmail.com': 'IN',
         'outlook.com': 'US',
@@ -68,38 +68,35 @@ function App() {
 
       // Map country codes to currencies
       const currencyByRegion = {
-        'IN': 'INR',
-        'US': 'USD',
-        'GB': 'GBP',
-        'EU': 'EUR',
-        'JP': 'JPY',
-        'AU': 'AUD',
-        'CA': 'CAD',
-        'SG': 'SGD'
+        'IN': { code: 'INR', symbol: '₹', name: 'Indian Rupee' },
+        'US': { code: 'USD', symbol: '$', name: 'US Dollar' },
+        'GB': { code: 'GBP', symbol: '£', name: 'British Pound' },
+        'EU': { code: 'EUR', symbol: '€', name: 'Euro' },
+        'JP': { code: 'JPY', symbol: '¥', name: 'Japanese Yen' },
+        'AU': { code: 'AUD', symbol: 'A$', name: 'Australian Dollar' },
+        'CA': { code: 'CAD', symbol: 'C$', name: 'Canadian Dollar' },
+        'SG': { code: 'SGD', symbol: 'S$', name: 'Singapore Dollar' }
       };
 
       // Try to get country from email domain
       const countryCode = countryMap[emailDomain];
-      if (countryCode) {
-        const currencyCode = currencyByRegion[countryCode];
-        const currency = currencies.find(c => c.code === currencyCode);
-        if (currency) return currency;
+      if (countryCode && currencyByRegion[countryCode]) {
+        return currencyByRegion[countryCode];
       }
 
       // If no match found, try browser's locale
       const userLocale = navigator.language;
       const userRegion = new Intl.Locale(userLocale).region;
-      const localeCurrencyCode = currencyByRegion[userRegion];
-      if (localeCurrencyCode) {
-        const currency = currencies.find(c => c.code === localeCurrencyCode);
-        if (currency) return currency;
+      if (userRegion && currencyByRegion[userRegion]) {
+        return currencyByRegion[userRegion];
       }
 
       // Default to INR if no matches found
       return defaultCurrency;
     } catch (error) {
+      console.error('Error setting currency:', error);
       // Default to INR if any error occurs
-      return currencies.find(c => c.code === 'INR');
+      return defaultCurrency;
     }
   });
 
@@ -233,6 +230,7 @@ function App() {
     setShowFilters(true);
   };
 
+  // Handle currency change
   const handleCurrencyChange = (currency) => {
     setSelectedCurrency(currency);
     setIsMenuOpen(false);
@@ -279,6 +277,10 @@ function App() {
               <div className="text-sm text-gray-600">
                 {user.profile.email}
               </div>
+              <CurrencySelect
+                value={selectedCurrency.code}
+                onChange={handleCurrencyChange}
+              />
               <button
                 onClick={() => setUser(null)}
                 className="text-gray-600 hover:text-gray-800"
