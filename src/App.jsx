@@ -4,8 +4,8 @@ import LoginButton from './components/LoginButton'
 import ExpenseForm from './components/ExpenseForm'
 import ExpenseTable from './components/ExpenseTable'
 import TotalSection from './components/TotalSection'
-import FilterButton from './components/FilterButton'
 import CurrencySelect, { currencies } from './components/CurrencySelect'
+import FilterPopup from './components/FilterPopup'
 import { ensureUserSheet, fetchAllRows, appendExpense, updateExpenseRow, deleteExpenseRow } from './services/sheets'
 
 function App() {
