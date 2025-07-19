@@ -97,34 +97,77 @@ export default function CountryCodeSelect({ value, onChange, disabled }) {
       </button>
 
       {isOpen && (
-        <div className="absolute z-[100] w-full mt-1 bg-white border rounded-lg shadow-lg">
-          <div className="p-2">
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              onClick={(e) => e.stopPropagation()}
-              onTouchStart={(e) => e.stopPropagation()}
-              placeholder="Search country..."
-              className="w-full px-3 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-indigo-500"
-            />
+        <>
+          <div 
+            className="fixed inset-0 bg-transparent touch-none" 
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setIsOpen(false);
+            }}
+            onTouchStart={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              setIsOpen(false);
+            }}
+          />
+          <div 
+            className="absolute z-[100] w-full mt-1 bg-white border rounded-lg shadow-lg"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            onTouchStart={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+          >
+            <div className="p-2">
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+                onTouchStart={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+                placeholder="Search country..."
+                className="w-full px-3 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-indigo-500"
+              />
+            </div>
+            <div className="max-h-60 overflow-y-auto">
+              {filteredCountries.map((country) => (
+                <button
+                  key={country.code}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleSelect(country, e);
+                  }}
+                  onTouchStart={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                  }}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleSelect(country, e);
+                  }}
+                  className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-gray-100 active:bg-gray-200"
+                >
+                  <span className="text-xl">{country.flag}</span>
+                  <span>{country.name}</span>
+                  <span className="text-gray-500 ml-auto">{country.code}</span>
+                </button>
+              ))}
+            </div>
           </div>
-          <div className="max-h-60 overflow-y-auto">
-            {filteredCountries.map((country) => (
-              <button
-                key={country.code}
-                type="button"
-                onClick={(e) => handleSelect(country, e)}
-                onTouchStart={(e) => e.stopPropagation()}
-                className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-gray-100"
-              >
-                <span className="text-xl">{country.flag}</span>
-                <span>{country.name}</span>
-                <span className="text-gray-500 ml-auto">{country.code}</span>
-              </button>
-            ))}
-          </div>
-        </div>
+        </>
       )}
     </div>
   );
