@@ -37,15 +37,15 @@ function App() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Add currency state with user's locale detection
+  // Initialize currency state with default INR
   const [selectedCurrency, setSelectedCurrency] = useState(() => {
+    const defaultCurrency = currencies.find(c => c.code === 'INR');
+    
     try {
-      // Default to INR
-      const defaultCurrency = currencies.find(c => c.code === 'INR');
-      if (!user) return defaultCurrency;
+      if (!user?.profile?.email) return defaultCurrency;
 
       // Try to get country from user's email domain
-      const emailDomain = user.email.split('@')[1];
+      const emailDomain = user.profile.email.split('@')[1];
       const countryMap = {
         'gmail.com': 'IN',
         'outlook.com': 'US',
@@ -89,13 +89,13 @@ function App() {
       return defaultCurrency;
     } catch (error) {
       // Default to INR if any error occurs
-      return currencies.find(c => c.code === 'INR');
+      return defaultCurrency;
     }
   });
 
   // Function to fetch expenses
   const fetchExpenses = async () => {
-    if (!spreadsheetId || !user) return;
+    if (!spreadsheetId || !user?.accessToken) return;
     
     try {
       setIsRefreshing(true);
@@ -115,7 +115,7 @@ function App() {
 
   // Initialize sheet and fetch initial data
   useEffect(() => {
-    if (!user) return;
+    if (!user?.accessToken) return;
 
     const initializeSheet = async () => {
       try {
@@ -151,7 +151,7 @@ function App() {
 
   // Auto-refresh expenses every 30 seconds
   useEffect(() => {
-    if (!spreadsheetId || !user) return;
+    if (!spreadsheetId || !user?.accessToken) return;
 
     const intervalId = setInterval(fetchExpenses, 30000);
     return () => clearInterval(intervalId);
@@ -159,7 +159,7 @@ function App() {
 
   const handleAddExpense = async (expense) => {
     try {
-      if (!user?.email) {
+      if (!user?.accessToken) {
         throw new Error('Please sign in to add transactions.');
       }
 
@@ -173,7 +173,7 @@ function App() {
         spreadsheetId,
         accessToken: user.accessToken,
         entry: expense, // Use the expense object as is (contains form email)
-        currentUserEmail: user.email // Only used for tracking who created the transaction
+        currentUserEmail: user.profile.email // Use profile.email for tracking
       });
       
       // Refresh expenses
@@ -188,6 +188,10 @@ function App() {
 
   const handleUpdateExpense = async (rowIndex, expense) => {
     try {
+      if (!user?.accessToken) {
+        throw new Error('Please sign in to update transactions.');
+      }
+
       setError(null);
       await updateExpenseRow({
         spreadsheetId,
@@ -207,6 +211,10 @@ function App() {
 
   const handleDeleteExpense = async (rowIndex) => {
     try {
+      if (!user?.accessToken) {
+        throw new Error('Please sign in to delete transactions.');
+      }
+
       setError(null);
       await deleteExpenseRow({
         spreadsheetId,
