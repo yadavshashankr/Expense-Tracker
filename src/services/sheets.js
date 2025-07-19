@@ -5,45 +5,59 @@ const SHEETS_URL = 'https://sheets.googleapis.com/v4/spreadsheets';
 const headers = [['ID', 'Timestamp', 'User Email', 'Name', 'Type', 'Amount', 'Description', 'Balance', 'Phone']];
 
 function getReadableError(error, url) {
-  // Check which API is being called
-  const isDriveAPI = url.includes('drive');
-  const isSheetsAPI = url.includes('sheets');
+  const isDriveAPI = url.includes('drive.googleapis.com');
+  const isSheetsAPI = url.includes('sheets.googleapis.com');
   
   if (error.message?.includes('API has not been used') || error.message?.includes('disabled')) {
     if (isDriveAPI) {
-      return 'Google Drive API is not enabled. Please enable it at https://console.developers.google.com/apis/api/drive.googleapis.com/overview?project=1031633259679 and wait a few minutes.';
+      return 'Google Drive API access is required. Please sign out, sign in again, and make sure to grant all requested permissions.';
     }
     if (isSheetsAPI) {
-      return 'Google Sheets API is not enabled. Please enable it at https://console.developers.google.com/apis/api/sheets.googleapis.com/overview?project=1031633259679 and wait a few minutes.';
+      return 'Google Sheets API access is required. Please sign out, sign in again, and make sure to grant all requested permissions.';
     }
-    return 'Required Google APIs are not enabled. Please enable both Google Drive and Sheets APIs and wait a few minutes.';
+    return 'Required Google APIs are not enabled. Please sign out, sign in again, and make sure to grant all requested permissions.';
   }
   
   if (error.message?.includes('insufficient permissions')) {
-    return 'You don\'t have permission to access Google Drive or Sheets. Please make sure you\'ve granted all required permissions and try logging in again.';
+    if (isDriveAPI) {
+      return 'You don\'t have permission to access Google Drive. Please check your permissions and try signing in again.';
+    }
+    if (isSheetsAPI) {
+      return 'You don\'t have permission to access Google Sheets. Please check your permissions and try signing in again.';
+    }
+    return 'You don\'t have sufficient permissions. Please check your Google Drive and Sheets permissions and try signing in again.';
   }
 
   if (error.message?.includes('consent')) {
-    return 'Required permissions are missing. Please sign out, sign in again, and make sure to grant all requested permissions.';
+    return 'Additional permissions are required. Please sign out, sign in again, and make sure to grant all requested permissions.';
   }
 
-  return error.message || 'An unknown error occurred';
+  return error.message || 'An unknown error occurred. Please try signing out and signing in again.';
 }
 
 async function gFetch(url, accessToken, method='GET', body) {
   try {
     console.log(`Making ${method} request to: ${url}`);
-    const response = await fetch(url, {
+
+    // Configure headers based on the API being called
+    const headers = {
+      'Authorization': `Bearer ${accessToken}`,
+      'Content-Type': 'application/json'
+    };
+
+    // Configure request options
+    const requestOptions = {
       method,
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-        'Origin': window.location.origin
-      },
+      headers,
       mode: 'cors',
-      credentials: 'include',
+      // Only include credentials for specific endpoints that require it
+      ...(url.includes('sheets.googleapis.com') && {
+        credentials: 'include'
+      }),
       ...(body && { body: JSON.stringify(body) })
-    });
+    };
+
+    const response = await fetch(url, requestOptions);
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
@@ -54,7 +68,14 @@ async function gFetch(url, accessToken, method='GET', body) {
         throw new Error('Authentication expired. Please sign out and sign in again.');
       }
       if (response.status === 403) {
-        throw new Error('You don\'t have permission to perform this action. Please check your Google Sheets permissions.');
+        throw new Error('You don\'t have permission to perform this action. Please check your Google Drive and Sheets permissions.');
+      }
+      if (response.status === 404) {
+        if (url.includes('drive.googleapis.com')) {
+          throw new Error('Folder or file not found. Please check your Google Drive permissions.');
+        } else {
+          throw new Error('Spreadsheet not found. Please check your Google Sheets permissions.');
+        }
       }
       
       const error = new Error(
@@ -71,7 +92,11 @@ async function gFetch(url, accessToken, method='GET', body) {
     
     // Handle network errors and CORS issues
     if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
-      throw new Error('Network error. Please check your internet connection and try again. If the problem persists, try signing out and signing back in.');
+      if (url.includes('drive.googleapis.com')) {
+        throw new Error('Unable to access Google Drive. Please check your permissions and try signing out and signing back in.');
+      } else {
+        throw new Error('Unable to access Google Sheets. Please check your permissions and try signing out and signing back in.');
+      }
     }
     
     const readableError = new Error(getReadableError(error, url));
@@ -145,7 +170,9 @@ export async function ensureUserSheet({ appName, userName, accessToken }) {
         'POST',
         {
           name: appName,
-          mimeType: 'application/vnd.google-apps.folder'
+          mimeType: 'application/vnd.google-apps.folder',
+          // Ensure folder is created in the root of My Drive
+          parents: ['root']
         }
       );
       folderId = createFolderRes.id;
