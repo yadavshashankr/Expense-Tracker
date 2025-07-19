@@ -373,13 +373,13 @@ function App() {
               onUpdate={handleUpdateExpense}
               onDelete={handleDeleteExpense}
               activeFilters={activeFilters}
-              selectedCurrency={selectedCurrency}
+              currency={selectedCurrency}
             />
 
             <TotalSection
               expenses={expenses}
               currentUserEmail={user.profile.email}
-              selectedCurrency={selectedCurrency}
+              currency={selectedCurrency}
             />
           </div>
         </div>
