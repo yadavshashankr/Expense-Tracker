@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
-import CurrencySelect from './CurrencySelect';
 
-export default function TotalSection({ expenses, currentUserEmail, currency, onCurrencyChange }) {
+export default function TotalSection({ expenses, currentUserEmail, currency }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
   const totals = expenses.reduce((acc, expense) => {
@@ -62,14 +61,6 @@ export default function TotalSection({ expenses, currentUserEmail, currency, onC
           style={{ maxHeight: isExpanded ? '300px' : '0px' }}
         >
           <div className="p-4 space-y-4">
-            {/* Currency Selector */}
-            <div className="mb-4 relative z-[100]" onClick={e => e.stopPropagation()}>
-              <CurrencySelect
-                value={currency.code}
-                onChange={onCurrencyChange}
-              />
-            </div>
-
             <div className="bg-green-50 rounded-lg p-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-sm font-medium text-green-800">Total Credit</h3>
@@ -93,14 +84,6 @@ export default function TotalSection({ expenses, currentUserEmail, currency, onC
 
       {/* Desktop View */}
       <div className="hidden md:block p-4">
-        {/* Currency Selector for Desktop */}
-        <div className="mb-4">
-          <CurrencySelect
-            value={currency.code}
-            onChange={onCurrencyChange}
-          />
-        </div>
-
         <div className="grid grid-cols-3 gap-4">
           <div className="bg-green-50 rounded-lg p-4">
             <div className="flex justify-between items-center">

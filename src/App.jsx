@@ -321,6 +321,25 @@ function App() {
 
           {/* Action Buttons Container */}
           <div className="fixed bottom-6 right-6 flex flex-col gap-4 items-center z-10">
+            {/* Currency Selector Button */}
+            <div className="relative">
+              <CurrencySelect
+                value={selectedCurrency.code}
+                onChange={setSelectedCurrency}
+                renderButton={({ selectedCurrency, onClick }) => (
+                  <button
+                    onClick={onClick}
+                    className="bg-white text-gray-700 p-4 rounded-full shadow-lg hover:bg-gray-50 transition-colors border border-gray-200"
+                    aria-label="Change Currency"
+                  >
+                    <div className="flex items-center text-lg font-medium">
+                      {selectedCurrency.symbol}
+                    </div>
+                  </button>
+                )}
+              />
+            </div>
+
             {/* Filter Button */}
             <FilterButton 
               onApplyFilters={handleApplyFilters}
