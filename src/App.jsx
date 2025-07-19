@@ -25,16 +25,6 @@ function App() {
     return savedFilters ? JSON.parse(savedFilters) : null;
   });
 
-  // Handle user login
-  const handleLogin = (userData) => {
-    if (!userData?.profile?.email || !userData?.accessToken) {
-      setError('Invalid login data. Please try signing in again.');
-      return;
-    }
-    setUser(userData);
-    setError(null);
-  };
-
   // Handle click outside for menu
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -47,15 +37,15 @@ function App() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Initialize currency state with default INR
+  // Add currency state with user's locale detection
   const [selectedCurrency, setSelectedCurrency] = useState(() => {
-    const defaultCurrency = { code: 'INR', symbol: '₹', name: 'Indian Rupee' };
-    
     try {
-      if (!user?.profile?.email) return defaultCurrency;
+      // Default to INR
+      const defaultCurrency = currencies.find(c => c.code === 'INR');
+      if (!user) return defaultCurrency;
 
       // Try to get country from user's email domain
-      const emailDomain = user.profile.email.split('@')[1];
+      const emailDomain = user.email.split('@')[1];
       const countryMap = {
         'gmail.com': 'IN',
         'outlook.com': 'US',
@@ -68,35 +58,38 @@ function App() {
 
       // Map country codes to currencies
       const currencyByRegion = {
-        'IN': { code: 'INR', symbol: '₹', name: 'Indian Rupee' },
-        'US': { code: 'USD', symbol: '$', name: 'US Dollar' },
-        'GB': { code: 'GBP', symbol: '£', name: 'British Pound' },
-        'EU': { code: 'EUR', symbol: '€', name: 'Euro' },
-        'JP': { code: 'JPY', symbol: '¥', name: 'Japanese Yen' },
-        'AU': { code: 'AUD', symbol: 'A$', name: 'Australian Dollar' },
-        'CA': { code: 'CAD', symbol: 'C$', name: 'Canadian Dollar' },
-        'SG': { code: 'SGD', symbol: 'S$', name: 'Singapore Dollar' }
+        'IN': 'INR',
+        'US': 'USD',
+        'GB': 'GBP',
+        'EU': 'EUR',
+        'JP': 'JPY',
+        'AU': 'AUD',
+        'CA': 'CAD',
+        'SG': 'SGD'
       };
 
       // Try to get country from email domain
       const countryCode = countryMap[emailDomain];
-      if (countryCode && currencyByRegion[countryCode]) {
-        return currencyByRegion[countryCode];
+      if (countryCode) {
+        const currencyCode = currencyByRegion[countryCode];
+        const currency = currencies.find(c => c.code === currencyCode);
+        if (currency) return currency;
       }
 
       // If no match found, try browser's locale
       const userLocale = navigator.language;
       const userRegion = new Intl.Locale(userLocale).region;
-      if (userRegion && currencyByRegion[userRegion]) {
-        return currencyByRegion[userRegion];
+      const localeCurrencyCode = currencyByRegion[userRegion];
+      if (localeCurrencyCode) {
+        const currency = currencies.find(c => c.code === localeCurrencyCode);
+        if (currency) return currency;
       }
 
       // Default to INR if no matches found
       return defaultCurrency;
     } catch (error) {
-      console.error('Error setting currency:', error);
       // Default to INR if any error occurs
-      return defaultCurrency;
+      return currencies.find(c => c.code === 'INR');
     }
   });
 
@@ -164,6 +157,35 @@ function App() {
     return () => clearInterval(intervalId);
   }, [spreadsheetId, user]);
 
+  const handleAddExpense = async (expense) => {
+    try {
+      if (!user?.email) {
+        throw new Error('Please sign in to add transactions.');
+      }
+
+      setError(null);
+      // Close form immediately
+      setShowAddForm(false);
+      // Show loading state
+      setIsSubmitting(true);
+      
+      await appendExpense({
+        spreadsheetId,
+        accessToken: user.accessToken,
+        entry: expense, // Use the expense object as is (contains form email)
+        currentUserEmail: user.email // Only used for tracking who created the transaction
+      });
+      
+      // Refresh expenses
+      await fetchExpenses();
+    } catch (err) {
+      console.error('Error adding expense:', err);
+      setError(err.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const handleUpdateExpense = async (rowIndex, expense) => {
     try {
       setError(null);
@@ -230,158 +252,209 @@ function App() {
     setShowFilters(true);
   };
 
-  // Handle currency change
   const handleCurrencyChange = (currency) => {
     setSelectedCurrency(currency);
     setIsMenuOpen(false);
   };
 
-  const handleAddExpense = async (entry) => {
-    try {
-      if (!user?.profile?.email) {
-        throw new Error('Please sign in to add transactions.');
-      }
-
-      setError(null);
-      setShowAddForm(false);
-      setIsMenuOpen(false);
-      setIsSubmitting(true);
-
-      await appendExpense({
-        spreadsheetId,
-        accessToken: user.accessToken,
-        entry, // Use the entry as is, with the form's email
-        currentUserEmail: user.profile.email // Use profile.email consistently
-      });
-
-      await fetchExpenses();
-    } catch (error) {
-      console.error('Error adding expense:', error);
-      setError(error.message);
-      setShowAddForm(true);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50">
       {!user ? (
-        <LoginButton onLogin={handleLogin} />
+        <div className="flex flex-col items-center justify-center min-h-[60vh]">
+          <h1 className="text-3xl sm:text-4xl font-bold mb-8 text-center">Expense Tracker</h1>
+          <LoginButton onLogin={setUser} />
+        </div>
       ) : (
         <div className="flex flex-col h-screen">
-          {/* Header */}
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold">Expense Tracker</h1>
-            <div className="flex items-center gap-4">
-              <div className="text-sm text-gray-600">
-                {user.profile.email}
-              </div>
-              <CurrencySelect
-                value={selectedCurrency.code}
-                onChange={handleCurrencyChange}
-              />
-              <button
-                onClick={() => setUser(null)}
-                className="text-gray-600 hover:text-gray-800"
-              >
-                Sign Out
-              </button>
-            </div>
-          </div>
-
-          {/* Menu Button */}
-          <div ref={menuRef} className="fixed bottom-4 right-4 z-50">
-            <button
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
-              </svg>
-            </button>
-
-            {/* Action Icons */}
-            {isMenuOpen && (
-              <div className="absolute bottom-16 right-0 bg-white rounded-lg shadow-xl p-2 flex flex-col gap-2">
-                <button
-                  onClick={() => {
-                    setShowAddForm(true);
-                    setIsMenuOpen(false);
-                  }}
-                  className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                  </svg>
-                  Add Transaction
-                </button>
-                <button
-                  onClick={() => {
-                    setShowFilters(true);
-                    setIsMenuOpen(false);
-                  }}
-                  className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
-                  </svg>
-                  Filter
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* Main Content */}
-          <div className="flex-1 overflow-hidden">
-            {error && (
-              <div className="mb-4 p-4 bg-red-50 text-red-600 rounded-lg">
-                {error}
-              </div>
-            )}
-
-            {showAddForm && (
-              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                <div className="bg-white rounded-lg p-6 w-full max-w-lg mx-4">
-                  <ExpenseForm
-                    onSubmit={handleAddExpense}
-                    currentUserEmail={user.profile.email}
-                    expenses={expenses}
-                  />
+          {/* Fixed Header */}
+          <div className="flex-none bg-white border-b border-gray-200">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                <h1 className="text-xl sm:text-2xl font-bold">Expense Tracker</h1>
+                <div className="flex items-center gap-4">
                   <button
-                    onClick={() => setShowAddForm(false)}
-                    className="mt-4 w-full bg-gray-200 hover:bg-gray-300 text-gray-800 py-2 px-4 rounded"
+                    onClick={fetchExpenses}
+                    disabled={isRefreshing}
+                    className="text-gray-600 hover:text-gray-800 disabled:opacity-50 text-sm sm:text-base"
                   >
-                    Cancel
+                    {isRefreshing ? 'Refreshing...' : 'Refresh'}
+                  </button>
+                  <button
+                    onClick={() => setUser(null)}
+                    className="text-gray-600 hover:text-gray-800 text-sm sm:text-base"
+                  >
+                    Sign Out
                   </button>
                 </div>
               </div>
-            )}
-
-            {showFilters && (
-              <FilterPopup
-                onClose={() => setShowFilters(false)}
-                onApply={handleApplyFilters}
-                initialFilters={activeFilters}
-                expenses={expenses}
-              />
-            )}
-
-            <ExpenseTable
-              expenses={expenses}
-              currentUserEmail={user.profile.email}
-              onUpdate={handleUpdateExpense}
-              onDelete={handleDeleteExpense}
-              activeFilters={activeFilters}
-              currency={selectedCurrency}
-            />
-
-            <TotalSection
-              expenses={expenses}
-              currentUserEmail={user.profile.email}
-              currency={selectedCurrency}
-            />
+            </div>
           </div>
+
+          {/* Fixed Total Section */}
+          <div className="flex-none bg-white border-b border-gray-200">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+              {error && (
+                <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4 rounded-r-lg">
+                  <div className="flex">
+                    <div className="flex-shrink-0">
+                      <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                    <div className="ml-3">
+                      <p className="text-sm text-red-700">{error}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Total Section */}
+              {expenses.length > 0 && (
+                <TotalSection 
+                  expenses={expenses} 
+                  currentUserEmail={user.email}
+                  currency={selectedCurrency}
+                />
+              )}
+            </div>
+          </div>
+
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-hidden">
+            <div className="h-full overflow-auto">
+              {isLoading || isSubmitting ? (
+                <div className="flex justify-center items-center py-12">
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+                    <p className="text-gray-600">{isSubmitting ? 'Adding transaction...' : 'Loading...'}</p>
+                  </div>
+                </div>
+              ) : (
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                  <ExpenseTable
+                    expenses={expenses}
+                    onEdit={handleUpdateExpense}
+                    onDelete={handleDeleteExpense}
+                    currentUserEmail={user.email}
+                    activeFilters={activeFilters}
+                    currency={selectedCurrency}
+                  />
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Action Buttons Container */}
+          <div className="fixed bottom-6 right-6 flex flex-col gap-4 items-center z-[100]">
+            {/* Menu Button and Action Buttons */}
+            <div className="relative" ref={menuRef}>
+              {isMenuOpen && (
+                <div 
+                  className="fixed inset-0 bg-black bg-opacity-10 -z-10"
+                  aria-hidden="true"
+                />
+              )}
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className={`bg-white text-gray-700 p-4 rounded-full shadow-lg hover:bg-gray-50 transition-all duration-300 border border-gray-200 ${isMenuOpen ? 'rotate-90' : ''}`}
+                aria-label="Menu"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+
+              {/* Action Buttons */}
+              <div 
+                className={`absolute bottom-full right-0 mb-4 flex flex-col gap-4 transition-all duration-300 origin-bottom-right ${
+                  isMenuOpen 
+                    ? 'transform scale-100 opacity-100' 
+                    : 'transform scale-95 opacity-0 pointer-events-none'
+                }`}
+              >
+                {/* Currency Selector Button */}
+                <div className="relative">
+                  <CurrencySelect
+                    value={selectedCurrency.code}
+                    onChange={handleCurrencyChange}
+                    renderButton={({ selectedCurrency, onClick }) => (
+                      <button
+                        onClick={onClick}
+                        className="bg-white text-gray-700 w-14 h-14 rounded-full shadow-lg hover:bg-gray-50 transition-colors border border-gray-200 flex items-center justify-center"
+                        aria-label="Change Currency"
+                      >
+                        <span className="text-lg font-medium">{selectedCurrency.symbol}</span>
+                      </button>
+                    )}
+                  />
+                </div>
+
+                {/* Filter Button */}
+                <button
+                  onClick={handleFilterClick}
+                  className={`w-14 h-14 rounded-full shadow-lg transition-colors flex items-center justify-center ${
+                    activeFilters
+                      ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+                  }`}
+                  aria-label="Filter Transactions"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                  </svg>
+                </button>
+
+                {/* Add Transaction Button */}
+                <button
+                  onClick={handleAddTransaction}
+                  className="bg-indigo-600 w-14 h-14 rounded-full shadow-lg hover:bg-indigo-700 transition-colors flex items-center justify-center"
+                  aria-label="Add Transaction"
+                >
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Filter Popup */}
+          {showFilters && (
+            <FilterPopup
+              onClose={() => setShowFilters(false)}
+              onApplyFilters={handleApplyFilters}
+              initialFilters={activeFilters}
+              expenses={expenses}
+            />
+          )}
+
+          {/* Add Transaction Modal */}
+          {showAddForm && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[200]">
+              <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-auto">
+                <div className="p-6">
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-xl font-semibold text-gray-900">Add Transaction</h2>
+                    <button
+                      onClick={() => setShowAddForm(false)}
+                      className="text-gray-400 hover:text-gray-500"
+                    >
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                  <ExpenseForm
+                    onSubmit={handleAddExpense}
+                    onClose={() => setShowAddForm(false)}
+                    currentUserEmail={user.email}
+                    expenses={expenses}
+                    isSubmitting={isSubmitting}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -82,6 +82,10 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
   const submit = e => {
     e.preventDefault();
     try {
+      if (!currentUserEmail) {
+        throw new Error('User email not available. Please try signing out and signing in again.');
+      }
+
       // Validate required fields
       if (!form.name.trim() || !form.email.trim()) {
         throw new Error('Name and email are required.');
@@ -100,7 +104,7 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
           ? new Date(form.transactionDate).toISOString()
           : new Date().toISOString(),
         name: form.name.trim(),
-        userEmail: form.email.trim(), // Use the email entered in the form
+        userEmail: form.email.trim(),
         type: form.type,
         amount: amount,
         description: form.description?.trim() || '',
