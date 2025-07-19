@@ -37,14 +37,26 @@ async function gFetch(url, accessToken, method='GET', body) {
       method,
       headers: {
         'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'Origin': window.location.origin
       },
+      mode: 'cors',
+      credentials: 'include',
       ...(body && { body: JSON.stringify(body) })
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       console.error('API Error Response:', errorData);
+      
+      // Handle specific error cases
+      if (response.status === 401) {
+        throw new Error('Authentication expired. Please sign out and sign in again.');
+      }
+      if (response.status === 403) {
+        throw new Error('You don\'t have permission to perform this action. Please check your Google Sheets permissions.');
+      }
+      
       const error = new Error(
         `API Error: ${response.status} - ${errorData.error?.message || response.statusText}`
       );
@@ -56,6 +68,12 @@ async function gFetch(url, accessToken, method='GET', body) {
     return response.json();
   } catch (error) {
     console.error('API Request Failed:', error);
+    
+    // Handle network errors and CORS issues
+    if (error.name === 'TypeError' && error.message === 'Failed to fetch') {
+      throw new Error('Network error. Please check your internet connection and try again. If the problem persists, try signing out and signing back in.');
+    }
+    
     const readableError = new Error(getReadableError(error, url));
     readableError.originalError = error;
     throw readableError;
@@ -239,12 +257,12 @@ export async function appendExpense({ spreadsheetId, accessToken, entry, current
   
   // Find the correct position to insert the new transaction
   const newTransactionTime = new Date(entry.timestamp).getTime();
-  let insertIndex = 2; // Start after header row
+  let insertIndex = 1; // Start after header row
   
   for (let i = 0; i < existingTransactions.length; i++) {
     const currentTransactionTime = new Date(existingTransactions[i].timestamp).getTime();
     if (newTransactionTime > currentTransactionTime) {
-      insertIndex = i + 2; // +2 for header row and 0-based index
+      insertIndex = i + 1;
       break;
     }
   }
@@ -255,7 +273,7 @@ export async function appendExpense({ spreadsheetId, accessToken, entry, current
   
   const balance = calculateBalance([...chronologicalTransactions, entry], currentUserEmail, entry.userEmail);
 
-  const values = [[
+  const values = [
     entry.id,
     entry.timestamp,
     entry.userEmail,
@@ -265,15 +283,53 @@ export async function appendExpense({ spreadsheetId, accessToken, entry, current
     entry.description,
     balance,
     entry.phone || ''
-  ]];
+  ];
 
-  // Insert the new row at the correct position
-  return gFetch(
-    `${SHEETS_URL}/${spreadsheetId}/values/A${insertIndex}:I${insertIndex}?valueInputOption=RAW&insertDataOption=INSERT_ROWS`,
+  // Use batchUpdate to insert the row at the correct position
+  const request = {
+    requests: [
+      {
+        insertDimension: {
+          range: {
+            sheetId: 0, // Assuming first sheet
+            dimension: 'ROWS',
+            startIndex: insertIndex + 1, // +1 for header row
+            endIndex: insertIndex + 2
+          }
+        }
+      },
+      {
+        updateCells: {
+          rows: [
+            {
+              values: values.map(value => ({
+                userEnteredValue: {
+                  stringValue: value.toString()
+                }
+              }))
+            }
+          ],
+          fields: 'userEnteredValue',
+          start: {
+            sheetId: 0,
+            rowIndex: insertIndex + 1,
+            columnIndex: 0
+          }
+        }
+      }
+    ]
+  };
+
+  // Execute the batch update
+  await gFetch(
+    `${SHEETS_URL}/${spreadsheetId}:batchUpdate`,
     accessToken,
     'POST',
-    { values }
+    request
   );
+
+  // Refresh the data to get updated balances
+  return fetchAllRows({ spreadsheetId, accessToken });
 }
 
 export async function fetchAllRows({ spreadsheetId, accessToken }) {
