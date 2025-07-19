@@ -50,12 +50,14 @@ async function gFetch(url, accessToken, method='GET', body) {
       method,
       headers,
       mode: 'cors',
-      // Only include credentials for specific endpoints that require it
-      ...(url.includes('sheets.googleapis.com') && {
-        credentials: 'include'
-      }),
       ...(body && { body: JSON.stringify(body) })
     };
+
+    // For preflight requests
+    if (method !== 'GET') {
+      requestOptions.headers['Access-Control-Request-Headers'] = 'authorization,content-type';
+      requestOptions.headers['Access-Control-Request-Method'] = method;
+    }
 
     const response = await fetch(url, requestOptions);
 
@@ -312,47 +314,12 @@ export async function appendExpense({ spreadsheetId, accessToken, entry, current
     entry.phone || ''
   ];
 
-  // Use batchUpdate to insert the row at the correct position
-  const request = {
-    requests: [
-      {
-        insertDimension: {
-          range: {
-            sheetId: 0, // Assuming first sheet
-            dimension: 'ROWS',
-            startIndex: insertIndex + 1, // +1 for header row
-            endIndex: insertIndex + 2
-          }
-        }
-      },
-      {
-        updateCells: {
-          rows: [
-            {
-              values: values.map(value => ({
-                userEnteredValue: {
-                  stringValue: value.toString()
-                }
-              }))
-            }
-          ],
-          fields: 'userEnteredValue',
-          start: {
-            sheetId: 0,
-            rowIndex: insertIndex + 1,
-            columnIndex: 0
-          }
-        }
-      }
-    ]
-  };
-
-  // Execute the batch update
+  // Use values.update instead of batchUpdate for better CORS support
   await gFetch(
-    `${SHEETS_URL}/${spreadsheetId}:batchUpdate`,
+    `${SHEETS_URL}/${spreadsheetId}/values/A${insertIndex + 2}:I${insertIndex + 2}?valueInputOption=RAW`,
     accessToken,
-    'POST',
-    request
+    'PUT',
+    { values: [values] }
   );
 
   // Refresh the data to get updated balances
