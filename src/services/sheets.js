@@ -237,6 +237,18 @@ export async function appendExpense({ spreadsheetId, accessToken, entry, current
   // First get all existing transactions to calculate the new balance
   const existingTransactions = await fetchAllRows({ spreadsheetId, accessToken });
   
+  // Find the correct position to insert the new transaction
+  const newTransactionTime = new Date(entry.timestamp).getTime();
+  let insertIndex = 2; // Start after header row
+  
+  for (let i = 0; i < existingTransactions.length; i++) {
+    const currentTransactionTime = new Date(existingTransactions[i].timestamp).getTime();
+    if (newTransactionTime > currentTransactionTime) {
+      insertIndex = i + 2; // +2 for header row and 0-based index
+      break;
+    }
+  }
+  
   // Sort transactions chronologically for balance calculation
   const chronologicalTransactions = [...existingTransactions]
     .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
@@ -255,8 +267,9 @@ export async function appendExpense({ spreadsheetId, accessToken, entry, current
     entry.phone || ''
   ]];
 
+  // Insert the new row at the correct position
   return gFetch(
-    `${SHEETS_URL}/${spreadsheetId}/values/A1:I1:append?valueInputOption=RAW`,
+    `${SHEETS_URL}/${spreadsheetId}/values/A${insertIndex}:I${insertIndex}?valueInputOption=RAW&insertDataOption=INSERT_ROWS`,
     accessToken,
     'POST',
     { values }

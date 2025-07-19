@@ -9,8 +9,13 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
     type: 'debit',
     amount: '',
     description: '',
-    phone: ''
+    phone: '',
+    transactionDate: '' // Will store date in ISO format
   });
+  
+  // Get current date-time in ISO format for max date validation
+  const maxDateTime = new Date().toISOString().slice(0, 16);
+
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState({ name: '', email: '', phone: '' });
 
@@ -76,9 +81,14 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
         throw new Error('User email not available. Please try signing out and signing in again.');
       }
 
+      // If no transaction date is provided, use current date-time
+      const timestamp = form.transactionDate 
+        ? new Date(form.transactionDate).toISOString()
+        : new Date().toISOString();
+
       const entry = { 
         id: crypto.randomUUID(), 
-        timestamp: new Date().toISOString(), 
+        timestamp,
         userEmail: form.email,
         ...form,
         amount: parseFloat(form.amount)
@@ -91,7 +101,8 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
         type: 'debit',
         amount: '',
         description: '',
-        phone: ''
+        phone: '',
+        transactionDate: ''
       });
       setSearchTerm({ name: '', email: '', phone: '' });
       setError(null);
@@ -143,6 +154,17 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
             onSearch={handleSearch('phone')}
             onSelectResult={handleSelect}
           />
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Previous Date</label>
+            <input
+              type="datetime-local"
+              max={maxDateTime}
+              value={form.transactionDate}
+              onChange={(e) => setForm(prev => ({ ...prev, transactionDate: e.target.value }))}
+              className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+            />
+          </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
