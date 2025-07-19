@@ -528,8 +528,8 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
                   </tr>
                   {isExpanded && (
                     <tr className="bg-gray-50">
-                      <td colSpan="6" className="px-6 py-4">
-                        <div className="grid grid-cols-2 gap-4 text-sm">
+                      <td colSpan="6" className="px-4 py-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           <div>
                             <span className="text-gray-500">Date:</span>
                             <span className="ml-2 text-gray-900">{dateStr}</span>
@@ -543,7 +543,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
                             <span className="ml-2 text-gray-900">{expense.phone || 'Not provided'}</span>
                           </div>
                           {expense.description && (
-                            <div className="col-span-2">
+                            <div className="col-span-1 sm:col-span-2">
                               <span className="text-gray-500">Description:</span>
                               <span className="ml-2 text-gray-900">{expense.description}</span>
                             </div>
