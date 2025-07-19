@@ -104,7 +104,7 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
           ? new Date(form.transactionDate).toISOString()
           : new Date().toISOString(),
         name: form.name.trim(),
-        userEmail: form.email.trim(),
+        userEmail: form.email.trim(), // Use the email entered in the form
         type: form.type,
         amount: amount,
         description: form.description?.trim() || '',

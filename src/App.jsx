@@ -157,31 +157,6 @@ function App() {
     return () => clearInterval(intervalId);
   }, [spreadsheetId, user]);
 
-  const handleAddExpense = async (expense) => {
-    try {
-      setError(null);
-      // Close form immediately
-      setShowAddForm(false);
-      // Show loading state
-      setIsSubmitting(true);
-      
-      await appendExpense({
-        spreadsheetId,
-        accessToken: user.accessToken,
-        entry: expense,
-        currentUserEmail: user.profile.email
-      });
-      
-      // Refresh expenses
-      await fetchExpenses();
-    } catch (err) {
-      console.error('Error adding expense:', err);
-      setError(err.message);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   const handleUpdateExpense = async (rowIndex, expense) => {
     try {
       setError(null);
@@ -251,6 +226,29 @@ function App() {
   const handleCurrencyChange = (currency) => {
     setSelectedCurrency(currency);
     setIsMenuOpen(false);
+  };
+
+  const handleAddExpense = async (entry) => {
+    try {
+      setError(null);
+      setShowAddForm(false);
+      setIsSubmitting(true);
+
+      await appendExpense({
+        spreadsheetId,
+        accessToken: user.accessToken,
+        entry, // Use the entry as is, with the form's email
+        currentUserEmail: user.email // This is used to track who created the transaction
+      });
+
+      await fetchExpenses();
+    } catch (error) {
+      console.error('Error adding expense:', error);
+      setError(error.message);
+      setShowAddForm(true);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -443,7 +441,7 @@ function App() {
                   <ExpenseForm
                     onSubmit={handleAddExpense}
                     onClose={() => setShowAddForm(false)}
-                    currentUserEmail={user.email}
+                    currentUserEmail={user?.email}
                     expenses={expenses}
                     isSubmitting={isSubmitting}
                   />
