@@ -40,7 +40,10 @@ export default function CurrencySelect({ value, onChange }) {
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center gap-2 px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
       >
-        <span className="font-medium">{selectedCurrency.symbol} {selectedCurrency.code}</span>
+        <span className="font-medium flex items-center gap-2">
+          <span className="text-lg">{selectedCurrency.symbol}</span>
+          <span>{selectedCurrency.code}</span>
+        </span>
         <svg 
           className={`w-4 h-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} 
           fill="none" 
@@ -59,7 +62,7 @@ export default function CurrencySelect({ value, onChange }) {
       )}
       {isOpen && (
         <div className="absolute left-0 mt-1 w-48 bg-white border rounded-lg shadow-lg z-[100]">
-          <div className="max-h-60 overflow-y-auto overscroll-contain">
+          <div className="max-h-[90vh] overflow-y-auto overscroll-contain">
             <div className="sticky top-0 bg-white border-b z-10">
               <input
                 type="text"
@@ -77,13 +80,12 @@ export default function CurrencySelect({ value, onChange }) {
                     onChange(currency);
                     setIsOpen(false);
                   }}
-                  className={`w-full flex items-center px-4 py-2 text-sm hover:bg-gray-100 ${
+                  className={`w-full flex items-center px-4 py-3 text-sm hover:bg-gray-100 ${
                     currency.code === value ? 'bg-gray-50 text-indigo-600 font-medium' : 'text-gray-700'
                   }`}
                 >
-                  <span className="mr-2">{currency.symbol}</span>
+                  <span className="mr-2 text-lg">{currency.symbol}</span>
                   <span>{currency.code}</span>
-                  <span className="ml-2 text-gray-500">- {currency.name}</span>
                 </button>
               ))}
             </div>
