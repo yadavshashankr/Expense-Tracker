@@ -97,25 +97,25 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
         throw new Error('Please enter a valid amount greater than 0.');
       }
 
-      // Use current date-time if transactionDate is empty or unchanged
-      const timestamp = form.transactionDate && form.transactionDate.trim() !== '' 
-        ? new Date(form.transactionDate).toISOString()
-        : new Date().toISOString();
-
-      const entry = { 
-        id: crypto.randomUUID(), 
-        timestamp,
-        userEmail: form.email,
+      // Create a single entry with validated data
+      const entry = {
+        id: crypto.randomUUID(),
+        timestamp: form.transactionDate && form.transactionDate.trim() !== '' 
+          ? new Date(form.transactionDate).toISOString()
+          : new Date().toISOString(),
         name: form.name.trim(),
-        email: form.email.trim(),
+        userEmail: form.email.trim(),
         type: form.type,
         amount: amount,
-        description: form.description.trim(),
-        phone: form.phone.trim(),
-        countryCode: form.countryCode
+        description: form.description?.trim() || '',
+        phone: form.phone?.trim() || '',
+        countryCode: form.countryCode || '+91'
       };
 
+      // Submit only after all validations pass
       onSubmit(entry);
+
+      // Reset form only after successful submission
       setForm({
         name: '',
         email: '',

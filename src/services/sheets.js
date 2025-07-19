@@ -281,20 +281,13 @@ async function setTextWrapping(spreadsheetId, accessToken) {
 }
 
 export async function appendExpense({ spreadsheetId, accessToken, entry, currentUserEmail }) {
+  // Validate entry data before proceeding
+  if (!entry.id || !entry.timestamp || !entry.userEmail || !entry.name || !entry.type || isNaN(entry.amount)) {
+    throw new Error('Invalid transaction data. Please check all required fields.');
+  }
+
   // First get all existing transactions to calculate the new balance
   const existingTransactions = await fetchAllRows({ spreadsheetId, accessToken });
-  
-  // Find the correct position to insert the new transaction
-  const newTransactionTime = new Date(entry.timestamp).getTime();
-  let insertIndex = 1; // Start after header row
-  
-  for (let i = 0; i < existingTransactions.length; i++) {
-    const currentTransactionTime = new Date(existingTransactions[i].timestamp).getTime();
-    if (newTransactionTime > currentTransactionTime) {
-      insertIndex = i + 1;
-      break;
-    }
-  }
   
   // Sort transactions chronologically for balance calculation
   const chronologicalTransactions = [...existingTransactions]
@@ -302,28 +295,26 @@ export async function appendExpense({ spreadsheetId, accessToken, entry, current
   
   const balance = calculateBalance([...chronologicalTransactions, entry], currentUserEmail, entry.userEmail);
 
-  const values = [
+  // Ensure all values are properly formatted
+  const values = [[
     entry.id,
     entry.timestamp,
     entry.userEmail,
     entry.name,
     entry.type,
-    entry.amount,
-    entry.description,
-    balance,
+    entry.amount.toFixed(2), // Format amount to 2 decimal places
+    entry.description || '',
+    balance.toFixed(2), // Format balance to 2 decimal places
     entry.phone || ''
-  ];
+  ]];
 
-  // Use values.update instead of batchUpdate for better CORS support
-  await gFetch(
-    `${SHEETS_URL}/${spreadsheetId}/values/A${insertIndex + 2}:I${insertIndex + 2}?valueInputOption=RAW`,
+  // Insert the new row at the correct position
+  return gFetch(
+    `${SHEETS_URL}/${spreadsheetId}/values/A1:I1:append?valueInputOption=RAW`,
     accessToken,
-    'PUT',
-    { values: [values] }
+    'POST',
+    { values }
   );
-
-  // Refresh the data to get updated balances
-  return fetchAllRows({ spreadsheetId, accessToken });
 }
 
 export async function fetchAllRows({ spreadsheetId, accessToken }) {
