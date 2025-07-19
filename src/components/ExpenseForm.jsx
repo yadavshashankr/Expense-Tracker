@@ -1,6 +1,7 @@
 
 import { useState, useMemo } from 'react';
 import SearchableInput from './SearchableInput';
+import CountryCodeSelect from './CountryCodeSelect';
 
 export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
   const [form, setForm] = useState({
@@ -10,12 +11,11 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
     amount: '',
     description: '',
     phone: '',
-    transactionDate: '' // Will store date in ISO format
+    countryCode: '+91', // Default to India
+    transactionDate: ''
   });
   
-  // Get current date-time in ISO format for max date validation
   const maxDateTime = new Date().toISOString().slice(0, 16);
-
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState({ name: '', email: '', phone: '' });
 
@@ -28,6 +28,7 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
         name: expense.name,
         email: expense.userEmail,
         phone: expense.phone || '',
+        countryCode: expense.countryCode || '+91',
         lastUsed: expense.timestamp
       });
     });
@@ -64,7 +65,8 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
       ...prev,
       name: result.name || prev.name,
       email: result.email || prev.email,
-      phone: result.phone || prev.phone
+      phone: result.phone || prev.phone,
+      countryCode: result.countryCode || prev.countryCode
     }));
     setSearchTerm({ name: '', email: '', phone: '' });
   };
@@ -81,7 +83,6 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
         throw new Error('User email not available. Please try signing out and signing in again.');
       }
 
-      // If no transaction date is provided, use current date-time
       const timestamp = form.transactionDate 
         ? new Date(form.transactionDate).toISOString()
         : new Date().toISOString();
@@ -102,6 +103,7 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
         amount: '',
         description: '',
         phone: '',
+        countryCode: '+91',
         transactionDate: ''
       });
       setSearchTerm({ name: '', email: '', phone: '' });
@@ -144,16 +146,29 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
             onSelectResult={handleSelect}
           />
 
-          <SearchableInput
-            label="Phone"
-            type="tel"
-            value={form.phone}
-            onChange={(value) => setForm(prev => ({ ...prev, phone: value }))}
-            placeholder="Enter phone number"
-            searchResults={searchUsers(form.phone, 'phone')}
-            onSearch={handleSearch('phone')}
-            onSelectResult={handleSelect}
-          />
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+            <div className="flex gap-2">
+              <div className="w-32">
+                <CountryCodeSelect
+                  value={form.countryCode}
+                  onChange={(code) => setForm(prev => ({ ...prev, countryCode: code }))}
+                />
+              </div>
+              <div className="flex-1">
+                <SearchableInput
+                  hideLabel
+                  type="tel"
+                  value={form.phone}
+                  onChange={(value) => setForm(prev => ({ ...prev, phone: value }))}
+                  placeholder="Enter phone number"
+                  searchResults={searchUsers(form.phone, 'phone')}
+                  onSearch={handleSearch('phone')}
+                  onSelectResult={handleSelect}
+                />
+              </div>
+            </div>
+          </div>
 
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Previous Date</label>

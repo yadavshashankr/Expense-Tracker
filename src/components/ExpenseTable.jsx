@@ -2,6 +2,36 @@
 import { useState, useMemo } from 'react';
 import React from 'react'; // Added missing import for React
 
+// Import country data for flag display
+const countries = [
+  { code: '+1', flag: '🇺🇸', name: 'United States' },
+  { code: '+91', flag: '🇮🇳', name: 'India' },
+  { code: '+44', flag: '🇬🇧', name: 'United Kingdom' },
+  { code: '+61', flag: '🇦🇺', name: 'Australia' },
+  { code: '+86', flag: '🇨🇳', name: 'China' },
+  { code: '+81', flag: '🇯🇵', name: 'Japan' },
+  { code: '+49', flag: '🇩🇪', name: 'Germany' },
+  { code: '+33', flag: '🇫🇷', name: 'France' },
+  { code: '+39', flag: '🇮🇹', name: 'Italy' },
+  { code: '+7', flag: '🇷🇺', name: 'Russia' },
+  { code: '+82', flag: '🇰🇷', name: 'South Korea' },
+  { code: '+34', flag: '🇪🇸', name: 'Spain' },
+  { code: '+55', flag: '🇧🇷', name: 'Brazil' },
+  { code: '+52', flag: '🇲🇽', name: 'Mexico' },
+  { code: '+65', flag: '🇸🇬', name: 'Singapore' },
+  { code: '+971', flag: '🇦🇪', name: 'UAE' },
+  { code: '+966', flag: '🇸🇦', name: 'Saudi Arabia' },
+  { code: '+20', flag: '🇪🇬', name: 'Egypt' },
+  { code: '+27', flag: '🇿🇦', name: 'South Africa' },
+  { code: '+234', flag: '🇳🇬', name: 'Nigeria' }
+];
+
+// Function to get flag emoji for a country code
+const getCountryFlag = (code) => {
+  const country = countries.find(c => c.code === code);
+  return country ? country.flag : '🌐';
+};
+
 // Utility function for date formatting
 const formatDateTime = (timestamp) => {
   const date = new Date(timestamp);
@@ -549,7 +579,16 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
                           </div>
                           <div>
                             <span className="text-gray-500">Phone:</span>
-                            <span className="ml-2 text-gray-900">{expense.phone || 'Not provided'}</span>
+                            <span className="ml-2 text-gray-900">
+                              {expense.phone ? (
+                                <span className="flex items-center gap-1">
+                                  <span>{getCountryFlag(expense.countryCode || '+91')}</span>
+                                  <span>{expense.countryCode || '+91'}-{expense.phone}</span>
+                                </span>
+                              ) : (
+                                'Not provided'
+                              )}
+                            </span>
                           </div>
                           {expense.description && (
                             <div className="col-span-1 sm:col-span-2">

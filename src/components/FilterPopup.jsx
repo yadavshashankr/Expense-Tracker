@@ -1,10 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
 import SearchableInput from './SearchableInput';
+import CountryCodeSelect from './CountryCodeSelect';
 
 const initialFilterState = {
   name: '',
   email: '',
   phone: '',
+  countryCode: '+91',
   amountMin: '',
   amountMax: '',
   balanceMin: '',
@@ -21,20 +23,9 @@ export default function FilterPopup({ onClose, onApplyFilters, initialFilters, e
 
   useEffect(() => {
     if (initialFilters) {
-      // Ensure we preserve all filter values including phone number
       setFilters({
         ...initialFilterState,
-        name: initialFilters.name || '',
-        email: initialFilters.email || '',
-        phone: initialFilters.phone || '',
-        type: initialFilters.type || 'all',
-        amountMin: initialFilters.amountMin || '',
-        amountMax: initialFilters.amountMax || '',
-        dateFrom: initialFilters.dateFrom || '',
-        dateTo: initialFilters.dateTo || '',
-        description: initialFilters.description || '',
-        balanceMin: initialFilters.balanceMin || '',
-        balanceMax: initialFilters.balanceMax || ''
+        ...initialFilters
       });
     }
   }, [initialFilters]);
@@ -48,6 +39,7 @@ export default function FilterPopup({ onClose, onApplyFilters, initialFilters, e
         name: expense.name,
         email: expense.userEmail,
         phone: expense.phone || '',
+        countryCode: expense.countryCode || '+91',
         lastUsed: expense.timestamp
       });
     });
@@ -89,7 +81,8 @@ export default function FilterPopup({ onClose, onApplyFilters, initialFilters, e
       ...prev,
       name: result.name || prev.name,
       email: result.email || prev.email,
-      phone: result.phone || prev.phone
+      phone: result.phone || prev.phone,
+      countryCode: result.countryCode || prev.countryCode
     }));
     setSearchTerm({ name: '', email: '', phone: '' });
   };
@@ -152,16 +145,27 @@ export default function FilterPopup({ onClose, onApplyFilters, initialFilters, e
 
             {/* Phone */}
             <div>
-              <SearchableInput
-                label="Phone"
-                type="tel"
-                value={filters.phone}
-                onChange={(value) => setFilters(prev => ({ ...prev, phone: value }))}
-                placeholder="Search by phone"
-                searchResults={searchUsers(filters.phone, 'phone')}
-                onSearch={handleSearch('phone')}
-                onSelectResult={handleSelect}
-              />
+              <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+              <div className="flex gap-2">
+                <div className="w-32">
+                  <CountryCodeSelect
+                    value={filters.countryCode}
+                    onChange={(code) => setFilters(prev => ({ ...prev, countryCode: code }))}
+                  />
+                </div>
+                <div className="flex-1">
+                  <SearchableInput
+                    hideLabel
+                    type="tel"
+                    value={filters.phone}
+                    onChange={(value) => setFilters(prev => ({ ...prev, phone: value }))}
+                    placeholder="Search by phone"
+                    searchResults={searchUsers(filters.phone, 'phone')}
+                    onSearch={handleSearch('phone')}
+                    onSelectResult={handleSelect}
+                  />
+                </div>
+              </div>
             </div>
 
             {/* Amount and Balance in one row */}
