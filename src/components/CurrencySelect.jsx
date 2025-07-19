@@ -47,7 +47,7 @@ export default function CurrencySelect({ value, onChange }) {
 
       {isOpen && (
         <div className="absolute left-0 mt-1 w-48 bg-white border rounded-lg shadow-lg z-50">
-          <div className="py-1">
+          <div className="py-1 max-h-[60vh] overflow-y-auto -webkit-overflow-scrolling-touch">
             {currencies.map((currency) => (
               <button
                 key={currency.code}

@@ -25,8 +25,23 @@ function App() {
   // Add currency state with user's locale detection
   const [selectedCurrency, setSelectedCurrency] = useState(() => {
     try {
-      const userLocale = navigator.language;
-      const userRegion = new Intl.Locale(userLocale).region;
+      // Default to INR
+      const defaultCurrency = currencies.find(c => c.code === 'INR');
+      if (!user) return defaultCurrency;
+
+      // Try to get country from user's email domain
+      const emailDomain = user.email.split('@')[1];
+      const countryMap = {
+        'gmail.com': 'IN',
+        'outlook.com': 'US',
+        'hotmail.com': 'US',
+        'yahoo.com': 'US',
+        'yahoo.co.uk': 'GB',
+        'yahoo.co.in': 'IN',
+        'yahoo.co.jp': 'JP'
+      };
+
+      // Map country codes to currencies
       const currencyByRegion = {
         'IN': 'INR',
         'US': 'USD',
@@ -37,10 +52,29 @@ function App() {
         'CA': 'CAD',
         'SG': 'SGD'
       };
-      const defaultCurrencyCode = currencyByRegion[userRegion] || 'INR';
-      return currencies.find(c => c.code === defaultCurrencyCode) || currencies[0];
+
+      // Try to get country from email domain
+      const countryCode = countryMap[emailDomain];
+      if (countryCode) {
+        const currencyCode = currencyByRegion[countryCode];
+        const currency = currencies.find(c => c.code === currencyCode);
+        if (currency) return currency;
+      }
+
+      // If no match found, try browser's locale
+      const userLocale = navigator.language;
+      const userRegion = new Intl.Locale(userLocale).region;
+      const localeCurrencyCode = currencyByRegion[userRegion];
+      if (localeCurrencyCode) {
+        const currency = currencies.find(c => c.code === localeCurrencyCode);
+        if (currency) return currency;
+      }
+
+      // Default to INR if no matches found
+      return defaultCurrency;
     } catch (error) {
-      return currencies[0]; // Default to INR
+      // Default to INR if any error occurs
+      return currencies.find(c => c.code === 'INR');
     }
   });
 

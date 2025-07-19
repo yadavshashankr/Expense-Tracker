@@ -63,7 +63,7 @@ export default function TotalSection({ expenses, currentUserEmail, currency, onC
         >
           <div className="p-4 space-y-4">
             {/* Currency Selector */}
-            <div className="mb-4" onClick={e => e.stopPropagation()}>
+            <div className="mb-4 relative" onClick={e => e.stopPropagation()}>
               <CurrencySelect
                 value={currency.code}
                 onChange={onCurrencyChange}
