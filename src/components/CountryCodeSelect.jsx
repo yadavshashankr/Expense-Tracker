@@ -59,7 +59,9 @@ export default function CountryCodeSelect({ value, onChange, disabled }) {
     country.code.includes(searchTerm)
   );
 
-  const handleSelect = (country) => {
+  const handleSelect = (country, e) => {
+    e.preventDefault();
+    e.stopPropagation();
     setSelectedCountry(country);
     onChange(country.code);
     setIsOpen(false);
@@ -70,7 +72,13 @@ export default function CountryCodeSelect({ value, onChange, disabled }) {
     <div className="relative" ref={dropdownRef}>
       <button
         type="button"
-        onClick={() => !disabled && setIsOpen(!isOpen)}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (!disabled) {
+            setIsOpen(!isOpen);
+          }
+        }}
         className={`w-full flex items-center justify-between px-3 py-2 text-sm border rounded-lg shadow-sm ${
           disabled 
             ? 'bg-gray-100 cursor-not-allowed' 
@@ -89,12 +97,14 @@ export default function CountryCodeSelect({ value, onChange, disabled }) {
       </button>
 
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-white border rounded-lg shadow-lg">
+        <div className="absolute z-[100] w-full mt-1 bg-white border rounded-lg shadow-lg">
           <div className="p-2">
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onClick={(e) => e.stopPropagation()}
+              onTouchStart={(e) => e.stopPropagation()}
               placeholder="Search country..."
               className="w-full px-3 py-1.5 text-sm border rounded focus:outline-none focus:ring-1 focus:ring-indigo-500"
             />
@@ -104,7 +114,8 @@ export default function CountryCodeSelect({ value, onChange, disabled }) {
               <button
                 key={country.code}
                 type="button"
-                onClick={() => handleSelect(country)}
+                onClick={(e) => handleSelect(country, e)}
+                onTouchStart={(e) => e.stopPropagation()}
                 className="w-full flex items-center gap-3 px-3 py-2 text-sm hover:bg-gray-100"
               >
                 <span className="text-xl">{country.flag}</span>
