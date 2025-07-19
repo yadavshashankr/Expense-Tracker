@@ -93,6 +93,11 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
           return false;
         }
 
+        // Phone filter
+        if (activeFilters.phone && !expense.phone?.toLowerCase().includes(activeFilters.phone.toLowerCase())) {
+          return false;
+        }
+
         // Amount range filter
         const amount = parseFloat(expense.amount);
         if (activeFilters.amountMin && amount < parseFloat(activeFilters.amountMin)) {

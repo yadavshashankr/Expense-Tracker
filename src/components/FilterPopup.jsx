@@ -4,6 +4,7 @@ import SearchableInput from './SearchableInput';
 const initialFilterState = {
   name: '',
   email: '',
+  phone: '',
   amountMin: '',
   amountMax: '',
   balanceMin: '',
@@ -16,7 +17,7 @@ const initialFilterState = {
 
 export default function FilterPopup({ onClose, onApplyFilters, initialFilters, expenses }) {
   const [filters, setFilters] = useState(initialFilterState);
-  const [searchTerm, setSearchTerm] = useState({ name: '', email: '' });
+  const [searchTerm, setSearchTerm] = useState({ name: '', email: '', phone: '' });
 
   useEffect(() => {
     if (initialFilters) {
@@ -35,6 +36,7 @@ export default function FilterPopup({ onClose, onApplyFilters, initialFilters, e
       userMap.set(expense.userEmail, {
         name: expense.name,
         email: expense.userEmail,
+        phone: expense.phone || '',
         lastUsed: expense.timestamp
       });
     });
@@ -57,9 +59,12 @@ export default function FilterPopup({ onClose, onApplyFilters, initialFilters, e
         
         if (field === 'name') {
           return user.name.toLowerCase().includes(searchTerm);
-        } else {
+        } else if (field === 'email') {
           return user.email.toLowerCase().includes(searchTerm);
+        } else if (field === 'phone') {
+          return user.phone?.toLowerCase().includes(searchTerm);
         }
+        return false;
       })
       .slice(0, 4); // Limit to 4 results
   };
@@ -71,10 +76,11 @@ export default function FilterPopup({ onClose, onApplyFilters, initialFilters, e
   const handleSelect = (result) => {
     setFilters(prev => ({
       ...prev,
-      name: result.name,
-      email: result.email
+      name: result.name || prev.name,
+      email: result.email || prev.email,
+      phone: result.phone || prev.phone
     }));
-    setSearchTerm({ name: '', email: '' });
+    setSearchTerm({ name: '', email: '', phone: '' });
   };
 
   const handleChange = (field) => (e) => {
@@ -106,8 +112,8 @@ export default function FilterPopup({ onClose, onApplyFilters, initialFilters, e
           </div>
 
           <div className="space-y-3 sm:space-y-4">
-            {/* Name and Email */}
-            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+            {/* Name, Email, and Phone */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
               <div>
                 <SearchableInput
                   label="Name"
@@ -128,6 +134,18 @@ export default function FilterPopup({ onClose, onApplyFilters, initialFilters, e
                   placeholder="Search by email"
                   searchResults={searchUsers(filters.email, 'email')}
                   onSearch={handleSearch('email')}
+                  onSelectResult={handleSelect}
+                />
+              </div>
+              <div>
+                <SearchableInput
+                  label="Phone"
+                  type="tel"
+                  value={filters.phone}
+                  onChange={(value) => setFilters(prev => ({ ...prev, phone: value }))}
+                  placeholder="Search by phone"
+                  searchResults={searchUsers(filters.phone, 'phone')}
+                  onSearch={handleSearch('phone')}
                   onSelectResult={handleSelect}
                 />
               </div>
