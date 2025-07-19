@@ -281,37 +281,32 @@ async function setTextWrapping(spreadsheetId, accessToken) {
 }
 
 export async function appendExpense({ spreadsheetId, accessToken, entry, currentUserEmail }) {
-  // Validate entry data before proceeding
-  if (!entry.id || !entry.timestamp || !entry.userEmail || !entry.name || !entry.type || isNaN(entry.amount)) {
-    throw new Error('Invalid transaction data. Please check all required fields.');
+  if (!spreadsheetId || !accessToken || !entry || !currentUserEmail) {
+    throw new Error('Missing required parameters for appending expense.');
   }
 
-  // First get all existing transactions to calculate the new balance
-  const existingTransactions = await fetchAllRows({ spreadsheetId, accessToken });
-  
-  // Sort transactions chronologically for balance calculation
-  const chronologicalTransactions = [...existingTransactions]
-    .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-  
-  const balance = calculateBalance([...chronologicalTransactions, entry], currentUserEmail, entry.userEmail);
+  // Validate entry has required fields
+  if (!entry.id || !entry.timestamp || !entry.name || !entry.email || !entry.type || !entry.amount) {
+    throw new Error('Invalid expense entry: missing required fields.');
+  }
 
-  // Ensure all values are properly formatted
+  // Format the entry for the sheet
   const values = [[
     entry.id,
     entry.timestamp,
-    entry.userEmail,
+    entry.userEmail, // Use the email from the entry (form email)
     entry.name,
     entry.type,
-    entry.amount.toFixed(2), // Format amount to 2 decimal places
+    entry.amount,
     entry.description || '',
-    balance.toFixed(2), // Format balance to 2 decimal places
-    entry.countryCode || '+91', // Add country code with default
+    '', // Balance will be calculated by the sheet
+    entry.countryCode || '+91',
     entry.phone || ''
   ]];
 
-  // Insert the new row at the correct position
-  return gFetch(
-    `${SHEETS_URL}/${spreadsheetId}/values/A1:J1:append?valueInputOption=RAW`,
+  // Append the row
+  await gFetch(
+    `${SHEETS_URL}/${spreadsheetId}/values/A2:J2:append?valueInputOption=RAW`,
     accessToken,
     'POST',
     { values }

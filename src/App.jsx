@@ -230,15 +230,20 @@ function App() {
 
   const handleAddExpense = async (entry) => {
     try {
+      if (!user?.email) {
+        throw new Error('Please sign in to add transactions.');
+      }
+
       setError(null);
       setShowAddForm(false);
+      setIsMenuOpen(false);
       setIsSubmitting(true);
 
       await appendExpense({
         spreadsheetId,
         accessToken: user.accessToken,
         entry, // Use the entry as is, with the form's email
-        currentUserEmail: user.email // This is used to track who created the transaction
+        currentUserEmail: user.email // Pass logged-in user's email for tracking
       });
 
       await fetchExpenses();
