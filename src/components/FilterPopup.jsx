@@ -21,9 +21,20 @@ export default function FilterPopup({ onClose, onApplyFilters, initialFilters, e
 
   useEffect(() => {
     if (initialFilters) {
+      // Ensure we preserve all filter values including phone number
       setFilters({
         ...initialFilterState,
-        ...initialFilters
+        name: initialFilters.name || '',
+        email: initialFilters.email || '',
+        phone: initialFilters.phone || '',
+        type: initialFilters.type || 'all',
+        amountMin: initialFilters.amountMin || '',
+        amountMax: initialFilters.amountMax || '',
+        dateFrom: initialFilters.dateFrom || '',
+        dateTo: initialFilters.dateTo || '',
+        description: initialFilters.description || '',
+        balanceMin: initialFilters.balanceMin || '',
+        balanceMax: initialFilters.balanceMax || ''
       });
     }
   }, [initialFilters]);

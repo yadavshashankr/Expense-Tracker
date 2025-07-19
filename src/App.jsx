@@ -157,6 +157,7 @@ function App() {
     const hasActiveFilters = Object.values(cleanedFilters).some(value => value !== null);
     const newFilters = hasActiveFilters ? cleanedFilters : null;
     
+    // Save all filters including phone number
     setActiveFilters(newFilters);
     if (newFilters) {
       localStorage.setItem('expenseTrackerFilters', JSON.stringify(newFilters));
@@ -167,7 +168,7 @@ function App() {
 
   // Function to handle opening add transaction popup
   const handleOpenAddForm = () => {
-    // Reset filters when opening add form
+    // Reset all filters including phone number when opening add form
     setActiveFilters(null);
     localStorage.removeItem('expenseTrackerFilters');
     setShowAddForm(true);
