@@ -50,12 +50,11 @@ export default function FilterPopup({ onClose, onApplyFilters, initialFilters, e
 
   // Search function
   const searchUsers = (term, field) => {
-    if (!term || typeof term !== 'string') return [];
+    if (!term || typeof term !== 'string' || !term.trim()) return [];
     
     const trimmedTerm = term.trim();
-    if (!trimmedTerm) return [];
-    
     const searchTerm = trimmedTerm.toLowerCase();
+    
     return uniqueUsers
       .filter(user => {
         if (!user || !user[field]) return false;
@@ -65,7 +64,8 @@ export default function FilterPopup({ onClose, onApplyFilters, initialFilters, e
         } else if (field === 'email') {
           return user.email.toLowerCase().includes(searchTerm);
         } else if (field === 'phone') {
-          return user.phone?.toLowerCase().includes(searchTerm);
+          const userPhone = user.phone || '';
+          return userPhone.toLowerCase().includes(searchTerm);
         }
         return false;
       })

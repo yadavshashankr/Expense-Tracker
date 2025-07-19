@@ -39,17 +39,20 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
 
   // Search function
   const searchUsers = (term, field) => {
-    if (!term.trim()) return [];
+    if (!term || typeof term !== 'string' || !term.trim()) return [];
     
     const searchTerm = term.toLowerCase();
     return uniqueUsers
       .filter(user => {
+        if (!user || !user[field]) return false;
+        
         if (field === 'name') {
           return user.name.toLowerCase().includes(searchTerm);
         } else if (field === 'email') {
           return user.email.toLowerCase().includes(searchTerm);
         } else if (field === 'phone') {
-          return user.phone?.toLowerCase().includes(searchTerm);
+          const userPhone = user.phone || '';
+          return userPhone.toLowerCase().includes(searchTerm);
         }
         return false;
       })
@@ -83,7 +86,8 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
         throw new Error('User email not available. Please try signing out and signing in again.');
       }
 
-      const timestamp = form.transactionDate 
+      // Use current date-time if transactionDate is empty or unchanged
+      const timestamp = form.transactionDate && form.transactionDate.trim() !== '' 
         ? new Date(form.transactionDate).toISOString()
         : new Date().toISOString();
 
