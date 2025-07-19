@@ -5,7 +5,10 @@ import ExpenseForm from './components/ExpenseForm'
 import ExpenseTable from './components/ExpenseTable'
 import TotalSection from './components/TotalSection'
 import FilterButton from './components/FilterButton'
+import FilterPopup from './components/FilterPopup'
 import { ensureUserSheet, fetchAllRows, appendExpense, updateExpenseRow, deleteExpenseRow } from './services/sheets'
+import CurrencySelect from './components/CurrencySelect'
+import { CurrencyProvider, useCurrency } from './context/CurrencyContext'
 
 function App() {
   const [user, setUser] = useState(null)
@@ -175,6 +178,62 @@ function App() {
   };
 
   return (
+    <CurrencyProvider>
+      <AppContent 
+        user={user}
+        setUser={setUser}
+        spreadsheetId={spreadsheetId}
+        setSpreadsheetId={setSpreadsheetId}
+        expenses={expenses}
+        setExpenses={setExpenses}
+        showAddExpense={showAddForm}
+        setShowAddExpense={setShowAddForm}
+        showFilters={false} // FilterPopup is not used in this component
+        setShowFilters={() => {}}
+        activeFilters={activeFilters}
+        setActiveFilters={setActiveFilters}
+        error={error}
+        setError={setError}
+        isLoading={isLoading}
+        isSubmitting={isSubmitting}
+        isRefreshing={isRefreshing}
+        fetchExpenses={fetchExpenses}
+        handleAddExpense={handleAddExpense}
+        handleUpdateExpense={handleUpdateExpense}
+        handleDeleteExpense={handleDeleteExpense}
+        handleApplyFilters={handleApplyFilters}
+        handleOpenAddForm={handleOpenAddForm}
+      />
+    </CurrencyProvider>
+  );
+}
+
+function AppContent({
+  user,
+  setUser,
+  spreadsheetId,
+  setSpreadsheetId,
+  expenses,
+  setExpenses,
+  showAddExpense,
+  setShowAddExpense,
+  showFilters,
+  setShowFilters,
+  activeFilters,
+  setActiveFilters,
+  error,
+  setError,
+  isLoading,
+  isSubmitting,
+  isRefreshing,
+  fetchExpenses,
+  handleAddExpense,
+  handleUpdateExpense,
+  handleDeleteExpense,
+  handleApplyFilters,
+  handleOpenAddForm
+}) {
+  return (
     <div className="min-h-screen bg-gray-50">
       {!user ? (
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
@@ -277,14 +336,14 @@ function App() {
           </div>
 
           {/* Modal */}
-          {showAddForm && (
+          {showAddExpense && (
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
               <div className="bg-white rounded-xl shadow-xl max-w-md w-full max-h-[90vh] overflow-auto">
                 <div className="p-6">
                   <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-semibold text-gray-900">Add Transaction</h2>
                     <button
-                      onClick={() => setShowAddForm(false)}
+                      onClick={() => setShowAddExpense(false)}
                       className="text-gray-400 hover:text-gray-500"
                     >
                       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
