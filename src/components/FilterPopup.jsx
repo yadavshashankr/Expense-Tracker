@@ -88,10 +88,19 @@ export default function FilterPopup({ onClose, onApplyFilters, initialFilters, e
   };
 
   const handleChange = (field) => (e) => {
-    setFilters(prev => ({
-      ...prev,
-      [field]: e.target.value
-    }));
+    if (field === 'dateFrom' || field === 'dateTo') {
+      // Ensure we have a valid date string
+      const dateValue = e.target.value ? e.target.value : '';
+      setFilters(prev => ({
+        ...prev,
+        [field]: dateValue
+      }));
+    } else {
+      setFilters(prev => ({
+        ...prev,
+        [field]: e.target.value
+      }));
+    }
   };
 
   const handleReset = () => {

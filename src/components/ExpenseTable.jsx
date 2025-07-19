@@ -155,6 +155,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
           const expenseDate = new Date(expense.timestamp);
           if (activeFilters.dateFrom) {
             const fromDate = new Date(activeFilters.dateFrom);
+            fromDate.setHours(0, 0, 0, 0); // Start of the day
             if (expenseDate < fromDate) return false;
           }
           if (activeFilters.dateTo) {
