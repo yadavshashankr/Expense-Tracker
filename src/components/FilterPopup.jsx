@@ -109,7 +109,7 @@ export default function FilterPopup({ onClose, onApplyFilters, initialFilters, e
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-[200]">
       <div className="bg-white rounded-xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-auto sm:w-[95%] md:w-[85%]">
         <div className="p-4 sm:p-6">
           <div className="flex justify-between items-center mb-4 sm:mb-6 sticky top-0 bg-white z-10 pb-2 border-b">

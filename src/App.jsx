@@ -334,7 +334,7 @@ function App() {
           </div>
 
           {/* Action Buttons Container */}
-          <div className="fixed bottom-6 right-6 flex flex-col gap-4 items-center z-10">
+          <div className="fixed bottom-6 right-6 flex flex-col gap-4 items-center z-[100]">
             {/* Menu Button and Action Buttons */}
             <div className="relative" ref={menuRef}>
               {isMenuOpen && (
@@ -369,38 +369,53 @@ function App() {
                     renderButton={({ selectedCurrency, onClick }) => (
                       <button
                         onClick={onClick}
-                        className="bg-white text-gray-700 p-4 rounded-full shadow-lg hover:bg-gray-50 transition-colors border border-gray-200"
+                        className="bg-white text-gray-700 w-14 h-14 rounded-full shadow-lg hover:bg-gray-50 transition-colors border border-gray-200 flex items-center justify-center"
                         aria-label="Change Currency"
                       >
-                        <div className="flex items-center text-lg font-medium">
-                          {selectedCurrency.symbol}
-                        </div>
+                        <span className="text-lg font-medium">{selectedCurrency.symbol}</span>
                       </button>
                     )}
                   />
                 </div>
 
                 {/* Filter Button */}
-                <FilterButton 
-                  onApplyFilters={handleApplyFilters}
-                  initialFilters={activeFilters}
-                  isActive={!!activeFilters}
-                  expenses={expenses}
-                />
+                <button
+                  onClick={() => setShowFilters(true)}
+                  className={`w-14 h-14 rounded-full shadow-lg transition-colors flex items-center justify-center ${
+                    activeFilters
+                      ? 'bg-indigo-600 text-white hover:bg-indigo-700'
+                      : 'bg-white text-gray-700 hover:bg-gray-50 border border-gray-200'
+                  }`}
+                  aria-label="Filter Transactions"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                  </svg>
+                </button>
 
                 {/* Add Transaction Button */}
                 <button
                   onClick={handleOpenAddForm}
-                  className="bg-indigo-600 text-white p-4 rounded-full shadow-lg hover:bg-indigo-700 transition-colors"
+                  className="bg-indigo-600 w-14 h-14 rounded-full shadow-lg hover:bg-indigo-700 transition-colors flex items-center justify-center"
                   aria-label="Add Transaction"
                 >
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                   </svg>
                 </button>
               </div>
             </div>
           </div>
+
+          {/* Filter Popup */}
+          {showFilters && (
+            <FilterPopup
+              onClose={() => setShowFilters(false)}
+              onApplyFilters={handleApplyFilters}
+              initialFilters={activeFilters}
+              expenses={expenses}
+            />
+          )}
 
           {/* Modal */}
           {showAddForm && (
