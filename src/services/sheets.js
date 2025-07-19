@@ -2,7 +2,7 @@
 const DRIVE_FILES_URL = 'https://www.googleapis.com/drive/v3/files';
 const SHEETS_URL = 'https://sheets.googleapis.com/v4/spreadsheets';
 
-const headers = [['ID', 'Timestamp', 'User Email', 'Name', 'Type', 'Amount', 'Description', 'Balance', 'Phone']];
+const headers = [['ID', 'Timestamp', 'User Email', 'Name', 'Type', 'Amount', 'Description', 'Balance', 'Country Code', 'Phone']];
 
 function getReadableError(error, url) {
   const isDriveAPI = url.includes('drive.googleapis.com');
@@ -218,7 +218,7 @@ export async function ensureUserSheet({ appName, userName, accessToken }) {
     // Add headers
     console.log('Adding headers to new sheet...');
     await gFetch(
-      `${SHEETS_URL}/${createRes.spreadsheetId}/values/A1:I1?valueInputOption=RAW`,
+      `${SHEETS_URL}/${createRes.spreadsheetId}/values/A1:J1?valueInputOption=RAW`,
       accessToken,
       'PUT',
       { values: headers }
@@ -260,7 +260,7 @@ async function setTextWrapping(spreadsheetId, accessToken) {
           startRowIndex: 0,
           endRowIndex: 1000,
           startColumnIndex: 0,
-          endColumnIndex: 9
+          endColumnIndex: 10
         },
         cell: {
           userEnteredFormat: {
@@ -305,12 +305,13 @@ export async function appendExpense({ spreadsheetId, accessToken, entry, current
     entry.amount.toFixed(2), // Format amount to 2 decimal places
     entry.description || '',
     balance.toFixed(2), // Format balance to 2 decimal places
+    entry.countryCode || '+91', // Add country code with default
     entry.phone || ''
   ]];
 
   // Insert the new row at the correct position
   return gFetch(
-    `${SHEETS_URL}/${spreadsheetId}/values/A1:I1:append?valueInputOption=RAW`,
+    `${SHEETS_URL}/${spreadsheetId}/values/A1:J1:append?valueInputOption=RAW`,
     accessToken,
     'POST',
     { values }
@@ -319,7 +320,7 @@ export async function appendExpense({ spreadsheetId, accessToken, entry, current
 
 export async function fetchAllRows({ spreadsheetId, accessToken }) {
   const response = await gFetch(
-    `${SHEETS_URL}/${spreadsheetId}/values/A2:I`,
+    `${SHEETS_URL}/${spreadsheetId}/values/A2:J`,
     accessToken
   );
 
@@ -334,7 +335,8 @@ export async function fetchAllRows({ spreadsheetId, accessToken }) {
     amount: row[5],
     description: row[6],
     balance: parseFloat(row[7] || 0),
-    phone: row[8] || ''
+    countryCode: row[8] || '+91',
+    phone: row[9] || ''
   }));
 }
 
@@ -356,12 +358,14 @@ export async function updateExpenseRow({ spreadsheetId, accessToken, rowIndex, e
     entry.type,
     entry.amount,
     entry.description,
-    balance
+    balance,
+    entry.countryCode || '+91',
+    entry.phone || ''
   ]];
 
   // Update the row
   return gFetch(
-    `${SHEETS_URL}/${spreadsheetId}/values/A${rowIndex + 2}:H${rowIndex + 2}?valueInputOption=RAW`,
+    `${SHEETS_URL}/${spreadsheetId}/values/A${rowIndex + 2}:J${rowIndex + 2}?valueInputOption=RAW`,
     accessToken,
     'PUT',
     { values }
