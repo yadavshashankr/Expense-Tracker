@@ -38,7 +38,7 @@ export default function CurrencySelect({ value, onChange }) {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3 py-2 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+        className="flex items-center gap-2 px-3 py-2.5 text-sm bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
       >
         <span className="font-medium flex items-center gap-2">
           <span className="text-lg">{selectedCurrency.symbol}</span>
@@ -62,7 +62,7 @@ export default function CurrencySelect({ value, onChange }) {
       )}
       {isOpen && (
         <div className="absolute left-0 mt-1 w-48 bg-white border rounded-lg shadow-lg z-[100]">
-          <div className="max-h-[90vh] overflow-y-auto overscroll-contain">
+          <div className="flex flex-col">
             <div className="sticky top-0 bg-white border-b z-10">
               <input
                 type="text"
@@ -72,7 +72,7 @@ export default function CurrencySelect({ value, onChange }) {
                 className="w-full px-3 py-2 text-sm border-0 focus:ring-0 focus:outline-none"
               />
             </div>
-            <div className="py-1">
+            <div className="overflow-y-auto" style={{ height: '200px' }}>
               {filteredCurrencies.map((currency) => (
                 <button
                   key={currency.code}
