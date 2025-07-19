@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import LoginButton from './components/LoginButton'
 import ExpenseForm from './components/ExpenseForm'
 import ExpenseTable from './components/ExpenseTable'
@@ -21,6 +21,20 @@ function App() {
     const savedFilters = localStorage.getItem('expenseTrackerFilters');
     return savedFilters ? JSON.parse(savedFilters) : null;
   });
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef(null);
+
+  // Handle click outside for menu
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setIsMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Add currency state with user's locale detection
   const [selectedCurrency, setSelectedCurrency] = useState(() => {
@@ -321,43 +335,71 @@ function App() {
 
           {/* Action Buttons Container */}
           <div className="fixed bottom-6 right-6 flex flex-col gap-4 items-center z-10">
-            {/* Currency Selector Button */}
-            <div className="relative">
-              <CurrencySelect
-                value={selectedCurrency.code}
-                onChange={setSelectedCurrency}
-                renderButton={({ selectedCurrency, onClick }) => (
-                  <button
-                    onClick={onClick}
-                    className="bg-white text-gray-700 p-4 rounded-full shadow-lg hover:bg-gray-50 transition-colors border border-gray-200"
-                    aria-label="Change Currency"
-                  >
-                    <div className="flex items-center text-lg font-medium">
-                      {selectedCurrency.symbol}
-                    </div>
-                  </button>
-                )}
-              />
+            {/* Menu Button and Action Buttons */}
+            <div className="relative" ref={menuRef}>
+              {isMenuOpen && (
+                <div 
+                  className="fixed inset-0 bg-black bg-opacity-10 -z-10"
+                  aria-hidden="true"
+                />
+              )}
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className={`bg-white text-gray-700 p-4 rounded-full shadow-lg hover:bg-gray-50 transition-all duration-300 border border-gray-200 ${isMenuOpen ? 'rotate-90' : ''}`}
+                aria-label="Menu"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
+
+              {/* Action Buttons */}
+              <div 
+                className={`absolute bottom-full right-0 mb-4 flex flex-col gap-4 transition-all duration-300 origin-bottom-right ${
+                  isMenuOpen 
+                    ? 'transform scale-100 opacity-100' 
+                    : 'transform scale-95 opacity-0 pointer-events-none'
+                }`}
+              >
+                {/* Currency Selector Button */}
+                <div className="relative">
+                  <CurrencySelect
+                    value={selectedCurrency.code}
+                    onChange={setSelectedCurrency}
+                    renderButton={({ selectedCurrency, onClick }) => (
+                      <button
+                        onClick={onClick}
+                        className="bg-white text-gray-700 p-4 rounded-full shadow-lg hover:bg-gray-50 transition-colors border border-gray-200"
+                        aria-label="Change Currency"
+                      >
+                        <div className="flex items-center text-lg font-medium">
+                          {selectedCurrency.symbol}
+                        </div>
+                      </button>
+                    )}
+                  />
+                </div>
+
+                {/* Filter Button */}
+                <FilterButton 
+                  onApplyFilters={handleApplyFilters}
+                  initialFilters={activeFilters}
+                  isActive={!!activeFilters}
+                  expenses={expenses}
+                />
+
+                {/* Add Transaction Button */}
+                <button
+                  onClick={handleOpenAddForm}
+                  className="bg-indigo-600 text-white p-4 rounded-full shadow-lg hover:bg-indigo-700 transition-colors"
+                  aria-label="Add Transaction"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                </button>
+              </div>
             </div>
-
-            {/* Filter Button */}
-            <FilterButton 
-              onApplyFilters={handleApplyFilters}
-              initialFilters={activeFilters}
-              isActive={!!activeFilters}
-              expenses={expenses}
-            />
-
-            {/* Add Transaction Button */}
-            <button
-              onClick={handleOpenAddForm}
-              className="bg-indigo-600 text-white p-4 rounded-full shadow-lg hover:bg-indigo-700 transition-colors"
-              aria-label="Add Transaction"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-              </svg>
-            </button>
           </div>
 
           {/* Modal */}
