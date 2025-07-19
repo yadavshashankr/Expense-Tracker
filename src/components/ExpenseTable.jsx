@@ -114,26 +114,34 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
     if (activeFilters) {
       filtered = filtered.filter(expense => {
         // Name filter
-        if (activeFilters.name && !expense.name.toLowerCase().includes(activeFilters.name.toLowerCase())) {
+        if (activeFilters.name && !expense.name?.toLowerCase().includes(activeFilters.name.toLowerCase())) {
           return false;
         }
 
         // Email filter
-        if (activeFilters.email && !expense.userEmail.toLowerCase().includes(activeFilters.email.toLowerCase())) {
+        if (activeFilters.email && !expense.userEmail?.toLowerCase().includes(activeFilters.email.toLowerCase())) {
           return false;
         }
 
         // Phone filter
-        if (activeFilters.phone && !expense.phone?.toLowerCase().includes(activeFilters.phone.toLowerCase())) {
+        if (activeFilters.phone) {
+          const expensePhone = expense.phone || '';
+          if (!expensePhone.toLowerCase().includes(activeFilters.phone.toLowerCase())) {
+            return false;
+          }
+        }
+
+        // Country code filter
+        if (activeFilters.countryCode && expense.countryCode !== activeFilters.countryCode) {
           return false;
         }
 
         // Amount range filter
         const amount = parseFloat(expense.amount);
-        if (activeFilters.amountMin && amount < parseFloat(activeFilters.amountMin)) {
+        if (activeFilters.amountMin && !isNaN(parseFloat(activeFilters.amountMin)) && amount < parseFloat(activeFilters.amountMin)) {
           return false;
         }
-        if (activeFilters.amountMax && amount > parseFloat(activeFilters.amountMax)) {
+        if (activeFilters.amountMax && !isNaN(parseFloat(activeFilters.amountMax)) && amount > parseFloat(activeFilters.amountMax)) {
           return false;
         }
 
@@ -157,8 +165,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
         }
 
         // Description filter
-        if (activeFilters.description && 
-            !expense.description?.toLowerCase().includes(activeFilters.description.toLowerCase())) {
+        if (activeFilters.description && !expense.description?.toLowerCase().includes(activeFilters.description.toLowerCase())) {
           return false;
         }
 

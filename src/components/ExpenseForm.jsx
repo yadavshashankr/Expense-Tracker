@@ -86,6 +86,17 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
         throw new Error('User email not available. Please try signing out and signing in again.');
       }
 
+      // Validate required fields
+      if (!form.name.trim() || !form.email.trim()) {
+        throw new Error('Name and email are required.');
+      }
+
+      // Validate amount
+      const amount = parseFloat(form.amount);
+      if (isNaN(amount) || amount <= 0) {
+        throw new Error('Please enter a valid amount greater than 0.');
+      }
+
       // Use current date-time if transactionDate is empty or unchanged
       const timestamp = form.transactionDate && form.transactionDate.trim() !== '' 
         ? new Date(form.transactionDate).toISOString()
@@ -95,8 +106,13 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
         id: crypto.randomUUID(), 
         timestamp,
         userEmail: form.email,
-        ...form,
-        amount: parseFloat(form.amount)
+        name: form.name.trim(),
+        email: form.email.trim(),
+        type: form.type,
+        amount: amount,
+        description: form.description.trim(),
+        phone: form.phone.trim(),
+        countryCode: form.countryCode
       };
 
       onSubmit(entry);
