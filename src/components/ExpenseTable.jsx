@@ -323,7 +323,16 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
             </div>
             <div className="flex justify-between items-center text-gray-600">
               <span>Phone:</span>
-              <span className="font-medium text-gray-900">{expense.phone || 'Not provided'}</span>
+              <span className="font-medium text-gray-900 inline-flex items-center">
+                {expense.phone ? (
+                  <>
+                    <span className="text-lg mr-1">{getCountryFlag(expense.countryCode || '+91')}</span>
+                    <span>{(expense.countryCode || '+91')}-{expense.phone}</span>
+                  </>
+                ) : (
+                  'Not provided'
+                )}
+              </span>
             </div>
             {expense.description && (
               <div className="flex justify-between items-center text-gray-600">
@@ -586,12 +595,12 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
                           </div>
                           <div>
                             <span className="text-gray-500">Phone:</span>
-                            <span className="ml-2 text-gray-900">
+                            <span className="ml-2 text-gray-900 inline-flex items-center">
                               {expense.phone ? (
-                                <span className="flex items-center gap-1">
-                                  <span>{getCountryFlag(expense.countryCode || '+91')}</span>
-                                  <span>{expense.countryCode || '+91'}-{expense.phone}</span>
-                                </span>
+                                <>
+                                  <span className="text-lg mr-1">{getCountryFlag(expense.countryCode || '+91')}</span>
+                                  <span>{(expense.countryCode || '+91')}-{expense.phone}</span>
+                                </>
                               ) : (
                                 'Not provided'
                               )}
