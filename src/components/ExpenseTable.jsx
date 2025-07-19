@@ -279,6 +279,10 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
               <span>Time:</span>
               <span className="font-medium text-gray-900">{timeStr}</span>
             </div>
+            <div className="flex justify-between items-center text-gray-600">
+              <span>Phone:</span>
+              <span className="font-medium text-gray-900">{expense.phone || 'Not provided'}</span>
+            </div>
             {expense.description && (
               <div className="flex justify-between items-center text-gray-600">
                 <span>Description:</span>
