@@ -16,6 +16,12 @@ export default function CurrencySelect({ value, onChange }) {
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
   const selectedCurrency = currencies.find(c => c.code === value) || currencies[0];
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filteredCurrencies = currencies.filter(currency =>
+    currency.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    currency.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -46,24 +52,41 @@ export default function CurrencySelect({ value, onChange }) {
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 mt-1 w-48 bg-white border rounded-lg shadow-lg z-50">
-          <div className="py-1 max-h-[60vh] overflow-y-auto -webkit-overflow-scrolling-touch">
-            {currencies.map((currency) => (
-              <button
-                key={currency.code}
-                onClick={() => {
-                  onChange(currency);
-                  setIsOpen(false);
-                }}
-                className={`w-full flex items-center px-4 py-2 text-sm hover:bg-gray-100 ${
-                  currency.code === value ? 'bg-gray-50 text-indigo-600 font-medium' : 'text-gray-700'
-                }`}
-              >
-                <span className="mr-2">{currency.symbol}</span>
-                <span>{currency.code}</span>
-                <span className="ml-2 text-gray-500">- {currency.name}</span>
-              </button>
-            ))}
+        <div 
+          className="fixed inset-0 bg-transparent touch-none"
+          onClick={() => setIsOpen(false)}
+        />
+      )}
+      {isOpen && (
+        <div className="absolute left-0 mt-1 w-48 bg-white border rounded-lg shadow-lg z-[100]">
+          <div className="max-h-60 overflow-y-auto overscroll-contain">
+            <div className="sticky top-0 bg-white border-b z-10">
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Search currency..."
+                className="w-full px-3 py-2 text-sm border-0 focus:ring-0 focus:outline-none"
+              />
+            </div>
+            <div className="py-1">
+              {filteredCurrencies.map((currency) => (
+                <button
+                  key={currency.code}
+                  onClick={() => {
+                    onChange(currency);
+                    setIsOpen(false);
+                  }}
+                  className={`w-full flex items-center px-4 py-2 text-sm hover:bg-gray-100 ${
+                    currency.code === value ? 'bg-gray-50 text-indigo-600 font-medium' : 'text-gray-700'
+                  }`}
+                >
+                  <span className="mr-2">{currency.symbol}</span>
+                  <span>{currency.code}</span>
+                  <span className="ml-2 text-gray-500">- {currency.name}</span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       )}
