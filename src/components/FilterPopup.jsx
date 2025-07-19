@@ -112,8 +112,8 @@ export default function FilterPopup({ onClose, onApplyFilters, initialFilters, e
           </div>
 
           <div className="space-y-3 sm:space-y-4">
-            {/* Name, Email, and Phone */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+            {/* Name and Email */}
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <SearchableInput
                   label="Name"
@@ -137,18 +137,20 @@ export default function FilterPopup({ onClose, onApplyFilters, initialFilters, e
                   onSelectResult={handleSelect}
                 />
               </div>
-              <div>
-                <SearchableInput
-                  label="Phone"
-                  type="tel"
-                  value={filters.phone}
-                  onChange={(value) => setFilters(prev => ({ ...prev, phone: value }))}
-                  placeholder="Search by phone"
-                  searchResults={searchUsers(filters.phone, 'phone')}
-                  onSearch={handleSearch('phone')}
-                  onSelectResult={handleSelect}
-                />
-              </div>
+            </div>
+
+            {/* Phone */}
+            <div>
+              <SearchableInput
+                label="Phone"
+                type="tel"
+                value={filters.phone}
+                onChange={(value) => setFilters(prev => ({ ...prev, phone: value }))}
+                placeholder="Search by phone"
+                searchResults={searchUsers(filters.phone, 'phone')}
+                onSearch={handleSearch('phone')}
+                onSelectResult={handleSelect}
+              />
             </div>
 
             {/* Amount and Balance in one row */}
