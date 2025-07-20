@@ -280,9 +280,6 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
     const runningBalance = runningBalances[index].runningBalance;
     const isExpanded = expandedItems.has(expense.id);
     
-    const amountFontClass = fontSizes.get(`amount-${expense.id}`) || 'text-[12px] md:text-sm';
-    const balanceFontClass = fontSizes.get(`balance-${expense.id}`) || 'text-[12px] md:text-sm';
-    
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-100">
         <div 
@@ -297,27 +294,31 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
           {/* First Divider */}
           <div className="w-px self-stretch bg-gray-200"></div>
           
-          {/* Amount Section - Fixed width */}
-          <div className="flex-shrink-0 w-[33%] flex items-center justify-end">
-            <span 
-              className={`${expense.type === 'credit' ? 'text-green-600' : 'text-red-600'} font-medium whitespace-nowrap ${amountFontClass}`}
-            >
-              {expense.type === 'credit' ? '+' : '-'}{currency.symbol}{formatAmount(Math.abs(expense.amount), currency)}
-            </span>
+          {/* Amount and Balance Section - Combined with fixed width */}
+          <div className="flex-1 grid grid-cols-2 gap-1">
+            {/* Amount */}
+            <div className="flex items-center justify-end">
+              <span 
+                className={`${expense.type === 'credit' ? 'text-green-600' : 'text-red-600'} font-medium whitespace-nowrap text-[10px] md:text-sm`}
+              >
+                {expense.type === 'credit' ? '+' : '-'}{currency.symbol}{formatAmount(Math.abs(expense.amount), currency)}
+              </span>
+            </div>
+            
+            {/* Balance */}
+            <div className="flex items-center justify-end gap-1">
+              <span 
+                className={`${runningBalance >= 0 ? 'text-green-600' : 'text-red-600'} font-medium whitespace-nowrap text-[10px] md:text-sm`}
+              >
+                {runningBalance >= 0 ? '+' : '-'}{currency.symbol}{formatAmount(Math.abs(runningBalance), currency)}
+              </span>
+            </div>
           </div>
-          
-          {/* Second Divider */}
-          <div className="w-px self-stretch bg-gray-200"></div>
-          
-          {/* Balance Section - Remaining space */}
-          <div className="flex-1 flex items-center justify-end gap-1">
-            <span 
-              className={`${runningBalance >= 0 ? 'text-green-600' : 'text-red-600'} font-medium whitespace-nowrap ${balanceFontClass}`}
-            >
-              {runningBalance >= 0 ? '+' : '-'}{currency.symbol}{formatAmount(Math.abs(runningBalance), currency)}
-            </span>
+
+          {/* Arrow - Fixed position */}
+          <div className="flex-shrink-0 flex items-center">
             <svg 
-              className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+              className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
               fill="none" 
               stroke="currentColor" 
               viewBox="0 0 24 24"
