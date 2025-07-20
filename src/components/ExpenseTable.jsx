@@ -29,7 +29,9 @@ const countries = [
 
 // Function to get flag emoji for a country code
 const getCountryFlag = (code) => {
+  console.log('getCountryFlag called with code:', code, 'type:', typeof code);
   const country = countries.find(c => c.code === code);
+  console.log('Found country:', country);
   return country ? country.flag : '🌐';
 };
 
