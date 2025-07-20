@@ -416,34 +416,38 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
 
   // Mobile List Header Component
   const MobileListHeader = () => (
-    <div className="flex items-stretch min-h-[48px] px-3 py-3 gap-2 bg-gray-50 rounded-lg">
-      {/* Name Label - Reduced width */}
-      <div className="flex-shrink-0 w-[28%] flex items-center">
-        <span className="text-xs font-medium text-gray-500 uppercase">Name</span>
-      </div>
-      
-      {/* First Divider */}
-      <div className="w-px self-stretch bg-gray-200"></div>
-      
-      {/* Amount Section - Fixed width */}
-      <div className="flex-shrink-0 w-[33%] flex items-center justify-end">
-        <span className="text-xs font-medium text-gray-500 uppercase">Amount</span>
-      </div>
-      
-      {/* Second Divider */}
-      <div className="w-px self-stretch bg-gray-200"></div>
-      
-      {/* Balance Section - Remaining space */}
-      <div className="flex-1 flex items-center justify-end gap-1">
-        <span className="text-xs font-medium text-gray-500 uppercase">Balance</span>
-        <svg 
-          className="w-4 h-4 text-gray-400 flex-shrink-0 invisible"
-          fill="none" 
-          stroke="currentColor" 
-          viewBox="0 0 24 24"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-        </svg>
+    <div className="bg-white rounded-lg shadow-sm border border-gray-100">
+      <div 
+        className="flex items-stretch min-h-[48px] cursor-pointer px-3 py-3 gap-2"
+      >
+        {/* Name Section - Reduced width */}
+        <div className="flex-shrink-0 w-[28%] flex items-center">
+          <h3 className="font-medium text-gray-500 text-xs uppercase">Name</h3>
+        </div>
+        
+        {/* First Divider */}
+        <div className="w-px self-stretch bg-gray-200"></div>
+        
+        {/* Amount Section - Fixed width */}
+        <div className="flex-shrink-0 w-[33%] flex items-center justify-end">
+          <span className="font-medium text-gray-500 text-xs uppercase whitespace-nowrap">Amount</span>
+        </div>
+        
+        {/* Second Divider */}
+        <div className="w-px self-stretch bg-gray-200"></div>
+        
+        {/* Balance Section - Remaining space */}
+        <div className="flex-1 flex items-center justify-end gap-1">
+          <span className="font-medium text-gray-500 text-xs uppercase whitespace-nowrap">Balance</span>
+          <svg 
+            className={`w-4 h-4 text-gray-400 flex-shrink-0 invisible`}
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
       </div>
     </div>
   );
