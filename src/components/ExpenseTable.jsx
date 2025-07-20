@@ -434,10 +434,16 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
       <div className="w-px self-stretch bg-gray-200"></div>
       
       {/* Balance Section - Remaining space */}
-      <div className="flex-1 flex items-center justify-end">
+      <div className="flex-1 flex items-center justify-end gap-1">
         <span className="text-xs font-medium text-gray-500 uppercase">Balance</span>
-        {/* Space for arrow */}
-        <div className="flex-shrink-0 w-4 ml-2"></div>
+        <svg 
+          className="w-4 h-4 text-gray-400 flex-shrink-0 invisible"
+          fill="none" 
+          stroke="currentColor" 
+          viewBox="0 0 24 24"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
       </div>
     </div>
   );
