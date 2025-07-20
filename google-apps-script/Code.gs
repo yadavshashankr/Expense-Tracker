@@ -13,6 +13,17 @@ const ALLOWED_ORIGINS = [
 ];
 
 /**
+ * Set CORS headers for the response
+ * Note: Google Apps Script handles CORS automatically for web apps
+ * This function is a placeholder for potential future customization
+ */
+function setCorsHeaders(response) {
+  // Google Apps Script automatically handles CORS for web apps
+  // No manual header setting needed
+  return response;
+}
+
+/**
  * Main entry point for POST requests from the frontend
  */
 function doPost(e) {
@@ -56,6 +67,7 @@ function doPost(e) {
         return ContentService.createTextOutput(JSON.stringify({ error: 'Invalid action' }))
           .setMimeType(ContentService.MimeType.JSON);
     }
+    
   } catch (error) {
     console.error('Error in doPost:', error);
     return ContentService.createTextOutput(JSON.stringify({ error: error.toString() }))

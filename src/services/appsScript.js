@@ -2,7 +2,7 @@
 // This service handles all communication with the Google Apps Script backend
 
 // Google Apps Script Web App URL
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwRAvkrQ7BW1KlRM29Tj11clCjwT0845OWwvamHXPALA9yI8g-d0kGdJyitQ9V-TQDrWA/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxwMoz_dEPAED10GMxlTXvAvaJ6gdkfDkzyBbT0UyagNbpSbXrRTA8kTiCF_UqFur-y1w/exec';
 
 /**
  * Generic function to call Google Apps Script
@@ -15,6 +15,7 @@ async function callAppsScript(action, data) {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Accept': 'application/json',
       },
       body: JSON.stringify({
         action,
