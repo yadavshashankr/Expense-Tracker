@@ -6,7 +6,7 @@ import ExpenseTable from './components/ExpenseTable'
 import TotalSection from './components/TotalSection'
 import CurrencySelect, { currencies } from './components/CurrencySelect'
 import FilterPopup from './components/FilterPopup'
-import { addExpense, getExpenses, updateExpense, deleteExpense, ensureUserSheet } from './services/appsScript'
+import { addExpense, getExpenses, updateExpense, deleteExpense, ensureUserSheet, testConnection } from './services/appsScript'
 
 function App() {
   const [user, setUser] = useState(null)
@@ -251,6 +251,20 @@ function App() {
     setIsMenuOpen(false);
   };
 
+  // Test Apps Script connection
+  const handleTestConnection = async () => {
+    try {
+      setError(null);
+      console.log('Testing Apps Script connection...');
+      const result = await testConnection();
+      console.log('Connection test result:', result);
+      alert('Connection test successful! Check console for details.');
+    } catch (err) {
+      console.error('Connection test failed:', err);
+      setError('Connection test failed: ' + err.message);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {!user ? (
@@ -266,6 +280,12 @@ function App() {
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                 <h1 className="text-xl sm:text-2xl font-bold">Expense Tracker</h1>
                 <div className="flex items-center gap-4">
+                  <button
+                    onClick={handleTestConnection}
+                    className="text-blue-600 hover:text-blue-800 text-sm sm:text-base"
+                  >
+                    Test Connection
+                  </button>
                   <button
                     onClick={fetchExpenses}
                     disabled={isRefreshing}

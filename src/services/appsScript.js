@@ -11,7 +11,7 @@ async function callAppsScript(action, data) {
   try {
     console.log(`Calling Apps Script with action: ${action}`, data);
     
-    // Use JSONP-like approach for Google Apps Script to avoid CORS issues
+    // Enhanced error handling and debugging for CORS issues
     const response = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
       mode: 'cors',
@@ -25,8 +25,21 @@ async function callAppsScript(action, data) {
       })
     });
     
+    console.log(`Response status: ${response.status}`);
+    console.log(`Response headers:`, Object.fromEntries(response.headers.entries()));
+    
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorText = await response.text();
+      console.error(`HTTP error response: ${errorText}`);
+      throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+    }
+    
+    // Check if response is JSON
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      const textResponse = await response.text();
+      console.error(`Non-JSON response: ${textResponse}`);
+      throw new Error(`Expected JSON response but got: ${contentType}`);
     }
     
     const result = await response.json();
@@ -39,6 +52,15 @@ async function callAppsScript(action, data) {
     return result;
   } catch (error) {
     console.error(`Error calling Apps Script (${action}):`, error);
+    
+    // Enhanced error logging for CORS issues
+    if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
+      console.error('CORS Error detected. Please check:');
+      console.error('1. Apps Script deployment settings (Who has access: Anyone)');
+      console.error('2. Apps Script URL is correct');
+      console.error('3. No OAuth2 conflicts in Google Cloud Console');
+    }
+    
     throw new Error(`Apps Script call failed: ${error.message}`);
   }
 }
@@ -94,19 +116,37 @@ export async function ensureUserSheet(userEmail) {
  */
 export async function testConnection() {
   try {
+    console.log('Testing Apps Script connection...');
+    console.log('URL:', APPS_SCRIPT_URL);
+    
     const response = await fetch(APPS_SCRIPT_URL, {
       method: 'GET',
       mode: 'cors'
     });
     
+    console.log(`Test response status: ${response.status}`);
+    console.log(`Test response headers:`, Object.fromEntries(response.headers.entries()));
+    
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      const errorText = await response.text();
+      console.error(`Test HTTP error response: ${errorText}`);
+      throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
     }
     
     const result = await response.json();
+    console.log('Test connection successful:', result);
     return result;
   } catch (error) {
     console.error('Error testing Apps Script connection:', error);
+    
+    // Enhanced error logging for CORS issues
+    if (error.message.includes('Failed to fetch') || error.message.includes('CORS')) {
+      console.error('CORS Error detected in test connection. Please check:');
+      console.error('1. Apps Script deployment settings (Who has access: Anyone)');
+      console.error('2. Apps Script URL is correct');
+      console.error('3. No OAuth2 conflicts in Google Cloud Console');
+    }
+    
     throw new Error(`Connection test failed: ${error.message}`);
   }
 } 
