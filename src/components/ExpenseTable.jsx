@@ -416,12 +416,33 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
 
   // Mobile List Header Component
   const MobileListHeader = () => (
-    <div className="bg-gray-50 border-y border-gray-200 px-3 py-2 flex items-center gap-2 text-sm font-medium text-gray-500 sticky top-0 z-10">
-      <div className="flex-shrink-0 w-[28%] text-center">Name</div>
-      <div className="w-px self-stretch bg-gray-300"></div>
-      <div className="flex-shrink-0 w-[33%] text-center">Amount</div>
-      <div className="w-px self-stretch bg-gray-300"></div>
-      <div className="flex-1 text-right pr-5">Balance</div>
+    <div className="flex items-center px-3 py-2 bg-gray-50 rounded-lg">
+      {/* Name Label - Reduced width */}
+      <div className="flex-shrink-0 w-[28%]">
+        <span className="text-xs font-medium text-gray-500 uppercase">Name</span>
+      </div>
+      
+      {/* First Divider */}
+      <div className="w-px self-stretch bg-gray-200"></div>
+      
+      {/* Amount and Balance Labels */}
+      <div className="flex-1 flex items-center">
+        {/* Amount Label */}
+        <div className="flex-1 flex justify-end">
+          <span className="text-xs font-medium text-gray-500 uppercase">Amount</span>
+        </div>
+
+        {/* Second Divider */}
+        <div className="w-px self-stretch bg-gray-200 mx-2"></div>
+
+        {/* Balance Label */}
+        <div className="flex-1 flex justify-end">
+          <span className="text-xs font-medium text-gray-500 uppercase">Balance</span>
+        </div>
+
+        {/* Space for arrow */}
+        <div className="flex-shrink-0 w-4 ml-2"></div>
+      </div>
     </div>
   );
 
