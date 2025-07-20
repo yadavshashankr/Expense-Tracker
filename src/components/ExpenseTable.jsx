@@ -477,6 +477,14 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
    {/* Balance */}
    <div className="flex-1 flex items-center justify-end">
    <span className="font-medium text-gray-500 text-xs uppercase whitespace-nowrap">Balance</span>
+   <svg 
+            className={`w-4 h-4 text-gray-400 flex-shrink-0 invisible`}
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+          </svg>
    </div>
    </div>
       </div>
