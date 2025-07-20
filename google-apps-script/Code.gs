@@ -14,13 +14,19 @@ const ALLOWED_ORIGINS = [
 
 /**
  * Set CORS headers for the response
- * Note: Google Apps Script handles CORS automatically for web apps
- * This function is a placeholder for potential future customization
  */
 function setCorsHeaders(response) {
-  // Google Apps Script automatically handles CORS for web apps
-  // No manual header setting needed
+  // In Google Apps Script, we need to use a different approach
+  // We'll return the response as is and let the deployment handle CORS
   return response;
+}
+
+/**
+ * Handle OPTIONS requests (CORS preflight)
+ */
+function doOptions(e) {
+  return ContentService.createTextOutput('')
+    .setMimeType(ContentService.MimeType.TEXT);
 }
 
 /**

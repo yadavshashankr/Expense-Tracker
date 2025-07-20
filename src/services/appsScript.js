@@ -2,7 +2,7 @@
 // This service handles all communication with the Google Apps Script backend
 
 // Google Apps Script Web App URL
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxwMoz_dEPAED10GMxlTXvAvaJ6gdkfDkzyBbT0UyagNbpSbXrRTA8kTiCF_UqFur-y1w/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzywNivcPg_Nql8ioqQ7jar1Wnt0OPI_25NFjzS6riktembq7L3wm2k5FRi9HJVfo6Jaw/exec';
 
 /**
  * Generic function to call Google Apps Script
@@ -11,11 +11,12 @@ async function callAppsScript(action, data) {
   try {
     console.log(`Calling Apps Script with action: ${action}`, data);
     
+    // Use a different approach to avoid CORS issues
     const response = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
+      mode: 'cors',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
       },
       body: JSON.stringify({
         action,
@@ -93,7 +94,8 @@ export async function ensureUserSheet(userEmail) {
 export async function testConnection() {
   try {
     const response = await fetch(APPS_SCRIPT_URL, {
-      method: 'GET'
+      method: 'GET',
+      mode: 'cors'
     });
     
     if (!response.ok) {
