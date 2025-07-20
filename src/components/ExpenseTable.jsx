@@ -429,7 +429,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
         <div className="w-px self-stretch bg-gray-200"></div>
         
         {/* Amount Section - Fixed width */}
-        <div className="flex-shrink-0 w-[33%] flex items-center justify-end">
+        <div className="flex-shrink-0 w-[28%] flex items-center justify-end">
           <span className="font-medium text-gray-500 text-xs uppercase whitespace-nowrap">Amount</span>
         </div>
         
