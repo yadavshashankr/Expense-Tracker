@@ -416,9 +416,9 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
 
   // Mobile List Header Component
   const MobileListHeader = () => (
-    <div className="flex items-center px-3 py-2 bg-gray-50 rounded-lg">
+    <div className="flex items-stretch min-h-[48px] px-3 py-3 gap-2 bg-gray-50 rounded-lg">
       {/* Name Label - Reduced width */}
-      <div className="flex-shrink-0 w-[28%]">
+      <div className="flex-shrink-0 w-[28%] flex items-center">
         <span className="text-xs font-medium text-gray-500 uppercase">Name</span>
       </div>
       
