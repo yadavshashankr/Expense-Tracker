@@ -25,8 +25,7 @@ function setCorsHeaders(response) {
  * Handle OPTIONS requests (CORS preflight)
  */
 function doOptions(e) {
-  // Return a simple response for preflight requests
-  // Google Apps Script will automatically add CORS headers
+  // Return a proper response for preflight requests with CORS headers
   return ContentService.createTextOutput('OK')
     .setMimeType(ContentService.MimeType.TEXT);
 }
@@ -115,26 +114,26 @@ function testBackend() {
     
     if (result) {
       console.log('✅ Test passed: Sheet created/found successfully');
-      return {
+      return ContentService.createTextOutput(JSON.stringify({
         success: true,
         message: 'Backend test completed successfully',
         testEmail: testEmail,
         sheetId: result
-      };
+      })).setMimeType(ContentService.MimeType.JSON);
     } else {
       console.log('❌ Test failed: Sheet creation returned null');
-      return {
+      return ContentService.createTextOutput(JSON.stringify({
         success: false,
         error: 'Sheet creation returned null',
         testEmail: testEmail
-      };
+      })).setMimeType(ContentService.MimeType.JSON);
     }
   } catch (error) {
     console.error('Test failed:', error);
-    return {
+    return ContentService.createTextOutput(JSON.stringify({
       success: false,
       error: error.toString()
-    };
+    })).setMimeType(ContentService.MimeType.JSON);
   }
 }
 

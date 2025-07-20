@@ -2,7 +2,7 @@
 // This service handles all communication with the Google Apps Script backend
 
 // Google Apps Script Web App URL
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby1v-0Ipo4f1fPzLSgyw0U8cSqYN3OKP69g7Oyjk2MLluZTl4byuExh_01XYPmn8839/exec';
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw725GMxCP9n69T8lDt3NjuZDYoesYYqJoib9Zwu5iccxyHs0qxSauSZj4LshUyhTBVQg/exec';
 
 /**
  * Generic function to call Google Apps Script
