@@ -214,28 +214,19 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
   const fontSizes = useMemo(() => {
     const sizes = new Map();
     
-    const getResponsiveFontClass = (text) => {
-      // Increased sizes by 25%
-      if (text.length > 14) return 'text-[10px] md:text-sm'; // was 8px
-      if (text.length > 12) return 'text-[11px] md:text-sm'; // was 9px
-      if (text.length > 10) return 'text-[12px] md:text-sm'; // was 10px
-      if (text.length > 8) return 'text-sm md:text-sm';      // was xs
-      return 'text-sm';
+    const getResponsiveFontClass = (amount) => {
+      const formattedAmount = formatAmount(Math.abs(amount), currency);
+      // Use consistent font size for all amounts
+      return 'text-[12px] md:text-sm';
     };
 
-    expenses.forEach(expense => {
-      const formattedAmount = formatAmount(expense.amount, currency);
-      const formattedBalance = formatAmount(
-        calculateRunningBalance([expense], currentUserEmail, expense.userEmail, 0),
-        currency
-      );
-      
-      sizes.set(`amount-${expense.id}`, getResponsiveFontClass(formattedAmount));
-      sizes.set(`balance-${expense.id}`, getResponsiveFontClass(formattedBalance));
+    runningBalances.forEach(expense => {
+      sizes.set(`amount-${expense.id}`, getResponsiveFontClass(expense.amount));
+      sizes.set(`balance-${expense.id}`, getResponsiveFontClass(expense.runningBalance));
     });
 
     return sizes;
-  }, [expenses, currency, currentUserEmail]); // Only recalculate when these dependencies change
+  }, [expenses, currency, currentUserEmail, runningBalances]); // Include runningBalances in dependencies
 
   // Balance display component
   const BalanceDisplay = ({ balance }) => {
@@ -289,8 +280,8 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
     const runningBalance = runningBalances[index].runningBalance;
     const isExpanded = expandedItems.has(expense.id);
     
-    const amountFontClass = fontSizes.get(`amount-${expense.id}`) || 'text-sm';
-    const balanceFontClass = fontSizes.get(`balance-${expense.id}`) || 'text-sm';
+    const amountFontClass = fontSizes.get(`amount-${expense.id}`) || 'text-[12px] md:text-sm';
+    const balanceFontClass = fontSizes.get(`balance-${expense.id}`) || 'text-[12px] md:text-sm';
     
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-100">
@@ -311,7 +302,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
             <span 
               className={`${expense.type === 'credit' ? 'text-green-600' : 'text-red-600'} font-medium whitespace-nowrap ${amountFontClass}`}
             >
-              {expense.type === 'credit' ? '+' : '-'}{currency.symbol}{formatAmount(expense.amount, currency)}
+              {expense.type === 'credit' ? '+' : '-'}{currency.symbol}{formatAmount(Math.abs(expense.amount), currency)}
             </span>
           </div>
           
@@ -323,7 +314,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
             <span 
               className={`${runningBalance >= 0 ? 'text-green-600' : 'text-red-600'} font-medium whitespace-nowrap ${balanceFontClass}`}
             >
-              {runningBalance >= 0 ? '+' : '-'}{currency.symbol}{formatAmount(runningBalance, currency)}
+              {runningBalance >= 0 ? '+' : '-'}{currency.symbol}{formatAmount(Math.abs(runningBalance), currency)}
             </span>
             <svg 
               className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
