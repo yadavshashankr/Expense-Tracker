@@ -210,48 +210,6 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
     return balances.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
   }, [filteredAndSortedExpenses, currentUserEmail, activeFilters]);
 
-  // Memoize font size calculations for all amounts
-  const fontSizes = useMemo(() => {
-    const sizes = new Map();
-    
-    const calculateFontSize = (isMobile, amount) => {
-      const formattedAmount = formatAmount(amount, currency);
-      if (isMobile) {
-        if (formattedAmount.length > 14) return 'text-[10px] md:text-base';
-        if (formattedAmount.length > 12) return 'text-[11px] md:text-base';
-        if (formattedAmount.length > 10) return 'text-xs md:text-base';
-        if (formattedAmount.length > 8) return 'text-sm md:text-base';
-        return 'text-base';
-      } else {
-        // Desktop always uses base size
-        return 'text-base';
-      }
-    };
-
-    expenses.forEach(expense => {
-      // Calculate for amount
-      const mobileAmountKey = `mobile-amount-${expense.id}`;
-      const desktopAmountKey = `desktop-amount-${expense.id}`;
-      sizes.set(mobileAmountKey, calculateFontSize(true, expense.amount));
-      sizes.set(desktopAmountKey, calculateFontSize(false, expense.amount));
-
-      // Calculate for running balance
-      const runningBalance = calculateRunningBalance([expense], currentUserEmail, expense.userEmail, 0);
-      const mobileBalanceKey = `mobile-balance-${expense.id}`;
-      const desktopBalanceKey = `desktop-balance-${expense.id}`;
-      sizes.set(mobileBalanceKey, calculateFontSize(true, runningBalance));
-      sizes.set(desktopBalanceKey, calculateFontSize(false, runningBalance));
-    });
-
-    return sizes;
-  }, [expenses, currency, currentUserEmail]);
-
-  // Helper function to get font size from memoized map
-  const getAmountFontClass = (isMobile, amount, id, isBalance = false) => {
-    const key = `${isMobile ? 'mobile' : 'desktop'}-${isBalance ? 'balance' : 'amount'}-${id}`;
-    return fontSizes.get(key) || (isMobile ? 'text-base' : 'text-base');
-  };
-
   // Balance display component
   const BalanceDisplay = ({ balance }) => {
     const isPositive = balance >= 0;
@@ -303,8 +261,6 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
     const { dateStr, timeStr } = formatDateTime(expense.timestamp);
     const runningBalance = runningBalances[index].runningBalance;
     const isExpanded = expandedItems.has(expense.id);
-    const amountFontClass = getAmountFontClass(true, expense.amount, expense.id);
-    const balanceFontClass = getAmountFontClass(true, runningBalance, expense.id, true);
     
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-100">
@@ -322,7 +278,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
           
           {/* Amount Section - Fixed width */}
           <div className="flex-shrink-0 w-[33%] flex items-center justify-end">
-            <span className={`${expense.type === 'credit' ? 'text-green-600' : 'text-red-600'} font-medium whitespace-nowrap ${amountFontClass}`}>
+            <span className={`${expense.type === 'credit' ? 'text-green-600' : 'text-red-600'} font-medium text-sm whitespace-nowrap`}>
               {expense.type === 'credit' ? '+' : '-'}{currency.symbol}{formatAmount(expense.amount, currency)}
             </span>
           </div>
@@ -332,19 +288,17 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
           
           {/* Balance Section - Remaining space */}
           <div className="flex-1 flex items-center justify-end gap-1">
-            <span className={`${runningBalance >= 0 ? 'text-green-600' : 'text-red-600'} font-medium whitespace-nowrap ${balanceFontClass}`}>
+            <span className={`${runningBalance >= 0 ? 'text-green-600' : 'text-red-600'} font-medium text-sm whitespace-nowrap`}>
               {runningBalance >= 0 ? '+' : '-'}{currency.symbol}{formatAmount(runningBalance, currency)}
             </span>
-            <div className="flex-shrink-0">
-              <svg 
-                className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
-                fill="none" 
-                stroke="currentColor" 
-                viewBox="0 0 24 24"
-              >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </div>
+            <svg 
+              className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+              fill="none" 
+              stroke="currentColor" 
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
           </div>
         </div>
 
@@ -567,8 +521,6 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
             {runningBalances.map((expense) => {
               const { dateStr, timeStr } = formatDateTime(expense.timestamp);
               const isExpanded = expandedItems.has(expense.id);
-              const amountFontClass = getAmountFontClass(false, expense.amount, expense.id);
-              const balanceFontClass = getAmountFontClass(false, expense.runningBalance, expense.id, true);
               return (
                 <React.Fragment key={expense.id}>
                   <tr 
@@ -584,27 +536,15 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
                         {expense.type}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right font-medium">
-                      <span className={`${expense.type === 'credit' ? 'text-green-600' : 'text-red-600'} ${amountFontClass}`}>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium">
+                      <span className={expense.type === 'credit' ? 'text-green-600' : 'text-red-600'}>
                         {expense.type === 'credit' ? '+' : '-'}{currency.symbol}{formatAmount(expense.amount, currency)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right font-medium">
-                      <div className="flex items-center justify-end gap-1">
-                        <span className={`${expense.runningBalance >= 0 ? 'text-green-600' : 'text-red-600'} ${balanceFontClass}`}>
-                          {expense.runningBalance >= 0 ? '+' : '-'}{currency.symbol}{formatAmount(expense.runningBalance, currency)}
-                        </span>
-                        <div className="flex-shrink-0">
-                          <svg 
-                            className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
-                            fill="none" 
-                            stroke="currentColor" 
-                            viewBox="0 0 24 24"
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                          </svg>
-                        </div>
-                      </div>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium">
+                      <span className={expense.runningBalance >= 0 ? 'text-green-600' : 'text-red-600'}>
+                        {expense.runningBalance >= 0 ? '+' : '-'}{currency.symbol}{formatAmount(expense.runningBalance, currency)}
+                      </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end items-center gap-3">
@@ -632,6 +572,14 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
                             </button>
                           </>
                         )}
+                        <svg 
+                          className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                          fill="none" 
+                          stroke="currentColor" 
+                          viewBox="0 0 24 24"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
                       </div>
                     </td>
                   </tr>
