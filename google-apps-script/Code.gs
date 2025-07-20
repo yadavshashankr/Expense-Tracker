@@ -39,11 +39,14 @@ function doPost(e) {
     console.log('POST request received:', e);
     console.log('POST parameters:', e.parameter);
     console.log('POST data:', e.postData);
+    console.log('POST data type:', e.postData ? e.postData.type : 'none');
+    console.log('POST data contents:', e.postData ? e.postData.contents : 'none');
     
     let action, data;
     
-    // Handle form data (from FormData)
+    // Handle form data (from FormData) - check both parameter and postData
     if (e.parameter && e.parameter.action) {
+      console.log('Processing FormData from parameters');
       action = e.parameter.action;
       data = {};
       
@@ -53,24 +56,70 @@ function doPost(e) {
           try {
             // Try to parse as JSON first
             data[key] = JSON.parse(e.parameter[key]);
+            console.log(`Parsed ${key} as JSON:`, data[key]);
           } catch (parseError) {
             // If not JSON, use as string
             data[key] = e.parameter[key];
+            console.log(`Used ${key} as string:`, data[key]);
           }
         }
       });
     }
+    // Handle multipart form data
+    else if (e.postData && e.postData.type && e.postData.type.includes('multipart')) {
+      console.log('Processing multipart form data');
+      // For multipart form data, we need to parse it differently
+      const formData = e.postData.contents;
+      console.log('Form data contents:', formData);
+      
+      // Extract action from form data
+      const actionMatch = formData.match(/name="action"\s*\r?\n\r?\n([^\r\n]+)/);
+      if (actionMatch) {
+        action = actionMatch[1];
+        console.log('Extracted action from form data:', action);
+        
+        data = {};
+        // Extract other fields
+        const userEmailMatch = formData.match(/name="userEmail"\s*\r?\n\r?\n([^\r\n]+)/);
+        if (userEmailMatch) data.userEmail = userEmailMatch[1];
+        
+        const expenseMatch = formData.match(/name="expense"\s*\r?\n\r?\n([^\r\n]+)/);
+        if (expenseMatch) {
+          try {
+            data.expense = JSON.parse(expenseMatch[1]);
+          } catch (e) {
+            data.expense = expenseMatch[1];
+          }
+        }
+        
+        const recipientEmailMatch = formData.match(/name="recipientEmail"\s*\r?\n\r?\n([^\r\n]+)/);
+        if (recipientEmailMatch) data.recipientEmail = recipientEmailMatch[1];
+      }
+    }
     // Handle JSON data (fallback)
     else if (e.postData && e.postData.contents) {
+      console.log('Processing JSON data');
       const jsonData = JSON.parse(e.postData.contents);
       action = jsonData.action;
       data = jsonData;
     }
     else {
       console.error('Invalid request: missing action or data');
+      console.error('Available data:', {
+        hasParameter: !!e.parameter,
+        parameterKeys: e.parameter ? Object.keys(e.parameter) : [],
+        hasPostData: !!e.postData,
+        postDataType: e.postData ? e.postData.type : 'none'
+      });
       return ContentService.createTextOutput(JSON.stringify({ 
         error: 'Invalid request: missing action or data',
-        message: 'This endpoint expects a POST request with form data or JSON'
+        message: 'This endpoint expects a POST request with form data or JSON',
+        debug: {
+          hasParameter: !!e.parameter,
+          parameterKeys: e.parameter ? Object.keys(e.parameter) : [],
+          hasPostData: !!e.postData,
+          postDataType: e.postData ? e.postData.type : 'none'
+        }
       }))
       .setMimeType(ContentService.MimeType.JSON);
     }
