@@ -436,7 +436,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
         <div className="w-px self-stretch bg-gray-200 mx-2"></div>
 
         {/* Balance Label */}
-        <div className="flex-1 flex justify-end">
+        <div className="flex-1 flex justify-end pr-[2px]">
           <span className="text-xs font-medium text-gray-500 uppercase">Balance</span>
         </div>
 
