@@ -257,13 +257,20 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
   };
 
   // Helper function to determine font size class based on amount length
-  const getAmountFontClass = (amount) => {
+  const getAmountFontClass = (isMobile, amount) => {
     const formattedAmount = formatAmount(amount, currency);
-    if (formattedAmount.length > 14) return 'text-[10px]';
-    if (formattedAmount.length > 12) return 'text-[11px]';
-    if (formattedAmount.length > 10) return 'text-xs';
-    if (formattedAmount.length > 8) return 'text-sm';
-    return 'text-base';
+    if (isMobile) {
+      if (formattedAmount.length > 14) return 'text-[10px]';
+      if (formattedAmount.length > 12) return 'text-[11px]';
+      if (formattedAmount.length > 10) return 'text-xs';
+      if (formattedAmount.length > 8) return 'text-sm';
+      return 'text-base';
+    } else {
+      // Desktop sizes
+      if (formattedAmount.length > 12) return 'text-xs';
+      if (formattedAmount.length > 8) return 'text-sm';
+      return 'text-base';
+    }
   };
 
   // Mobile Card View Component
@@ -271,8 +278,8 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
     const { dateStr, timeStr } = formatDateTime(expense.timestamp);
     const runningBalance = runningBalances[index].runningBalance;
     const isExpanded = expandedItems.has(expense.id);
-    const amountFontClass = getAmountFontClass(expense.amount);
-    const balanceFontClass = getAmountFontClass(runningBalance);
+    const amountFontClass = getAmountFontClass(true, expense.amount);
+    const balanceFontClass = getAmountFontClass(true, runningBalance);
     
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-100">
@@ -535,8 +542,8 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
             {runningBalances.map((expense) => {
               const { dateStr, timeStr } = formatDateTime(expense.timestamp);
               const isExpanded = expandedItems.has(expense.id);
-              const amountFontClass = getAmountFontClass(expense.amount);
-              const balanceFontClass = getAmountFontClass(expense.runningBalance);
+              const amountFontClass = getAmountFontClass(false, expense.amount);
+              const balanceFontClass = getAmountFontClass(false, expense.runningBalance);
               return (
                 <React.Fragment key={expense.id}>
                   <tr 
