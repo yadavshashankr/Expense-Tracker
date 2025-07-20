@@ -516,22 +516,48 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
 
   return (
     <div className="space-y-3">
-      {/* Mobile List View */}
-      <div className="md:hidden">
-        <div className="sticky top-0 z-10">
-          <MobileListHeader />
-        </div>
-        <div className="space-y-2 mt-2">
-          {runningBalances.map((expense, index) => (
-            <div key={expense.id}>
-              {editingId === expense.id ? (
-                <EditForm expense={expense} />
-              ) : (
-                <MobileExpenseCard expense={expense} index={index} />
-              )}
+      {/* Mobile View */}
+      <div className="md:hidden space-y-3">
+        {/* Header */}
+        <div className="flex items-center px-3 py-2 bg-gray-50 rounded-lg">
+          {/* Name Label - Reduced width */}
+          <div className="flex-shrink-0 w-[28%]">
+            <span className="text-xs font-medium text-gray-500 uppercase">Name</span>
+          </div>
+
+          {/* First Divider */}
+          <div className="w-px self-stretch bg-gray-200"></div>
+
+          {/* Amount and Balance Labels */}
+          <div className="flex-1 flex items-center">
+            {/* Amount Label */}
+            <div className="flex-1 flex justify-end">
+              <span className="text-xs font-medium text-gray-500 uppercase">Amount</span>
             </div>
-          ))}
+
+            {/* Second Divider */}
+            <div className="w-px self-stretch bg-gray-200 mx-2"></div>
+
+            {/* Balance Label */}
+            <div className="flex-1 flex justify-center">
+              <span className="text-xs font-medium text-gray-500 uppercase">Balance</span>
+            </div>
+
+            {/* Space for arrow */}
+            <div className="flex-shrink-0 w-4 ml-2"></div>
+          </div>
         </div>
+
+        {/* List Items */}
+        {runningBalances.map((expense, index) => (
+          <div
+            key={expense.id}
+            onClick={() => toggleItemExpand(expense.id)}
+            className="cursor-pointer"
+          >
+            <MobileExpenseCard expense={expense} index={index} />
+          </div>
+        ))}
       </div>
 
       {/* Desktop Table View */}
