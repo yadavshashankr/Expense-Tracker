@@ -5,14 +5,20 @@ const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxhuFUb
 async function callAppsScript(functionName, args) {
   try {
     console.log(`Calling Apps Script function: ${functionName} with args:`, args);
-    const response = await fetch(APPS_SCRIPT_WEB_APP_URL, {
-      method: 'POST',
+    
+    // Use JSONP-like approach to bypass CORS
+    const url = new URL(APPS_SCRIPT_WEB_APP_URL);
+    url.searchParams.set('function', functionName);
+    url.searchParams.set('args', encodeURIComponent(JSON.stringify(args)));
+    
+    console.log('Calling URL:', url.toString());
+    console.log('Function parameter:', url.searchParams.get('function'));
+    console.log('Args parameter:', url.searchParams.get('args'));
+    
+    const response = await fetch(url.toString(), {
+      method: 'GET',
       mode: 'cors',
       credentials: 'omit',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ function: functionName, args: args }),
     });
 
     if (!response.ok) {
