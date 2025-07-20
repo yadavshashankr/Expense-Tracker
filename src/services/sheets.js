@@ -1,6 +1,6 @@
 // src/services/sheets.js (Frontend file)
 
-const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbz2y3dKTuxLzmvTBXcp4yPpabgVoEGykjNwLLbog-BiQtiA5vEnuhAuC84tY_FByyZx3A/exec';
+const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzraWctb1r5wvofbFKDbPd7B07uOuN5SR_Sp6h6-oJxxsZrH13SKDdeQpr5-DD_R7baxQ/exec';
 
 async function callAppsScript(functionName, args) {
   try {
@@ -33,7 +33,7 @@ async function callAppsScript(functionName, args) {
     console.error('Error calling Apps Script:', error);
     // Add more descriptive error message
     if (error.message === 'Failed to fetch') {
-      throw new Error('Unable to connect to Google Apps Script. Please check if you are signed in and have granted necessary permissions.');
+      throw new Error('CORS Error: Unable to connect to Google Apps Script. Please ensure the Apps Script has proper CORS headers and is deployed correctly.');
     }
     throw error;
   }
