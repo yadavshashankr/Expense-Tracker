@@ -217,15 +217,13 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
     const calculateFontSize = (isMobile, amount) => {
       const formattedAmount = formatAmount(amount, currency);
       if (isMobile) {
-        if (formattedAmount.length > 14) return 'text-[10px]';
-        if (formattedAmount.length > 12) return 'text-[11px]';
-        if (formattedAmount.length > 10) return 'text-xs';
-        if (formattedAmount.length > 8) return 'text-sm';
+        if (formattedAmount.length > 14) return 'text-[10px] md:text-base';
+        if (formattedAmount.length > 12) return 'text-[11px] md:text-base';
+        if (formattedAmount.length > 10) return 'text-xs md:text-base';
+        if (formattedAmount.length > 8) return 'text-sm md:text-base';
         return 'text-base';
       } else {
-        // Desktop sizes
-        if (formattedAmount.length > 12) return 'text-xs';
-        if (formattedAmount.length > 8) return 'text-sm';
+        // Desktop always uses base size
         return 'text-base';
       }
     };

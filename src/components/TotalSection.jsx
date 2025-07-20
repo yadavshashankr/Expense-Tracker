@@ -23,9 +23,10 @@ export default function TotalSection({ expenses, currentUserEmail, currency }) {
   const fontSizes = useMemo(() => {
     const calculateFontSize = (amount) => {
       const formattedAmount = formatAmount(amount, currency);
-      if (formattedAmount.length > 14) return 'text-lg md:text-2xl';
-      if (formattedAmount.length > 12) return 'text-xl md:text-2xl';
-      if (formattedAmount.length > 8) return 'text-2xl md:text-3xl';
+      // Only adjust font size for mobile, keep desktop size consistent
+      if (formattedAmount.length > 14) return 'text-lg md:text-4xl';
+      if (formattedAmount.length > 12) return 'text-xl md:text-4xl';
+      if (formattedAmount.length > 8) return 'text-2xl md:text-4xl';
       return 'text-2xl md:text-4xl';
     };
 
