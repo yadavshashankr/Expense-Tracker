@@ -19,8 +19,10 @@ async function callAppsScript(action, data) {
     Object.keys(data).forEach(key => {
       if (typeof data[key] === 'object') {
         formData.append(key, JSON.stringify(data[key]));
+        console.log(`FormData: ${key} = ${JSON.stringify(data[key])}`);
       } else {
         formData.append(key, data[key]);
+        console.log(`FormData: ${key} = ${data[key]}`);
       }
     });
     

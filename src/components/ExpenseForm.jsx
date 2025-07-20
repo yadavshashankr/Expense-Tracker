@@ -51,7 +51,7 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
         } else if (field === 'email') {
           return user.email.toLowerCase().includes(searchTerm);
         } else if (field === 'phone') {
-          const userPhone = user.phone || '';
+          const userPhone = (user.phone || '').toString();
           return userPhone.toLowerCase().includes(searchTerm);
         }
         return false;

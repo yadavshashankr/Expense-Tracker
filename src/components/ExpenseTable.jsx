@@ -126,7 +126,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
 
         // Phone filter
         if (activeFilters.phone) {
-          const expensePhone = expense.phone || '';
+          const expensePhone = (expense.phone || '').toString();
           if (!expensePhone.toLowerCase().includes(activeFilters.phone.toLowerCase())) {
             return false;
           }
