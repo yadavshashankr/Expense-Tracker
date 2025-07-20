@@ -415,69 +415,36 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
   };
 
   // Mobile List Header Component
-  // const MobileListHeader = () => (
-  //   <div className="bg-white rounded-lg shadow-sm border border-gray-100">
-  //     <div 
-  //       className="flex items-stretch min-h-[48px] cursor-pointer px-3 py-3 gap-2"
-  //     >
-  //       {/* Name Section - Reduced width */}
-  //       <div className="flex-shrink-0 w-[28%] flex items-center">
-  //         <h3 className="font-medium text-gray-500 text-xs uppercase">Name</h3>
-  //       </div>
-        
-  //       {/* First Divider */}
-  //       <div className="w-px self-stretch bg-gray-200"></div>
-        
-  //       {/* Amount Section - Fixed width */}
-  //       <div className="flex-shrink-0 w-[28%] flex items-center justify-end">
-  //         <span className="font-medium text-gray-500 text-xs uppercase whitespace-nowrap">Amount</span>
-  //       </div>
-        
-  //       {/* Second Divider */}
-  //       <div className="w-px self-stretch bg-gray-200"></div>
-        
-  //       {/* Balance Section - Remaining space */}
-  //       <div className="flex-1 flex items-center justify-end gap-1">
-  //         <span className="font-medium text-gray-500 text-xs uppercase whitespace-nowrap">Balance</span>
-  //         <svg 
-  //           className={`w-4 h-4 text-gray-400 flex-shrink-0 invisible`}
-  //           fill="none" 
-  //           stroke="currentColor" 
-  //           viewBox="0 0 24 24"
-  //         >
-  //           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-  //         </svg>
-  //       </div>
-  //     </div>
-  //   </div>
-  // );
-
-
   const MobileListHeader = () => (
     <div className="bg-white rounded-lg shadow-sm border border-gray-100">
       <div className="flex items-stretch min-h-[48px] cursor-pointer px-3 py-3 gap-2">
-          {/* Name Section - Reduced width */}
-   <div className="flex-shrink-0 w-[28%] flex items-center">
-   <h3 className="font-medium text-gray-500 text-xs uppercase">Name</h3>
- </div>
- 
- {/* First Divider */}
- <div className="w-px self-stretch bg-gray-200"></div>
- 
- {/* Amount and Balance Section - Combined with fixed width */}
- <div className="flex-1 flex items-center">
-   {/* Amount */}
-   <div className="flex-1 flex items-center justify-end">
-   <span className="font-medium text-gray-500 text-xs uppercase whitespace-nowrap">Amount</span>
-   </div>
-   
-   {/* Second Divider */}
-   <div className="w-px self-stretch bg-gray-200 mx-2"></div>
-   
-   {/* Balance */}
-   <div className="flex-1 flex items-center justify-end">
-   <span className="font-medium text-gray-500 text-xs uppercase whitespace-nowrap">Balance</span>
-   <svg 
+        {/* Name Section - Reduced width */}
+        <div className="flex-shrink-0 w-[28%] flex items-center">
+          <h3 className="font-medium text-gray-500 text-xs uppercase">Name</h3>
+        </div>
+        
+        {/* First Divider */}
+        <div className="w-px self-stretch bg-gray-200"></div>
+        
+        {/* Amount and Balance Section - Combined with fixed width */}
+        <div className="flex-1 flex items-center">
+          {/* Amount */}
+          <div className="flex-1 flex items-center justify-end">
+            <span className="font-medium text-gray-500 text-xs uppercase whitespace-nowrap">Amount</span>
+          </div>
+          
+          {/* Second Divider */}
+          <div className="w-px self-stretch bg-gray-200 mx-2"></div>
+          
+          {/* Balance */}
+          <div className="flex-1 flex items-center justify-end">
+            <span className="font-medium text-gray-500 text-xs uppercase whitespace-nowrap">Balance</span>
+          </div>
+        </div>
+
+        {/* Arrow - Fixed position */}
+        <div className="flex-shrink-0 flex items-center ml-2">
+          <svg 
             className={`w-4 h-4 text-gray-400 flex-shrink-0 invisible`}
             fill="none" 
             stroke="currentColor" 
@@ -485,8 +452,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
           >
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
           </svg>
-   </div>
-   </div>
+        </div>
       </div>
     </div>
   );
