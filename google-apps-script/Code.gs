@@ -16,8 +16,8 @@ const ALLOWED_ORIGINS = [
  * Set CORS headers for the response
  */
 function setCorsHeaders(response) {
-  // In Google Apps Script, we need to use a different approach
-  // We'll return the response as is and let the deployment handle CORS
+  // Google Apps Script automatically handles CORS for web app deployments
+  // We just need to ensure proper MIME type and content
   return response;
 }
 
@@ -25,7 +25,9 @@ function setCorsHeaders(response) {
  * Handle OPTIONS requests (CORS preflight)
  */
 function doOptions(e) {
-  return ContentService.createTextOutput('')
+  // Return a simple response for preflight requests
+  // Google Apps Script will automatically add CORS headers
+  return ContentService.createTextOutput('OK')
     .setMimeType(ContentService.MimeType.TEXT);
 }
 
@@ -40,7 +42,8 @@ function doPost(e) {
       return ContentService.createTextOutput(JSON.stringify({ 
         error: 'Invalid request: missing postData',
         message: 'This endpoint expects a POST request with JSON data'
-      })).setMimeType(ContentService.MimeType.JSON);
+      }))
+      .setMimeType(ContentService.MimeType.JSON);
     }
     
     const data = JSON.parse(e.postData.contents);
@@ -48,31 +51,34 @@ function doPost(e) {
     
     console.log(`Received action: ${action}`, data);
     
+    let result;
     switch(action) {
       case 'addExpense':
-        return ContentService.createTextOutput(JSON.stringify(addExpense(data)))
-          .setMimeType(ContentService.MimeType.JSON);
+        result = addExpense(data);
+        break;
       
       case 'getExpenses':
-        return ContentService.createTextOutput(JSON.stringify(getExpenses(data)))
-          .setMimeType(ContentService.MimeType.JSON);
+        result = getExpenses(data);
+        break;
       
       case 'updateExpense':
-        return ContentService.createTextOutput(JSON.stringify(updateExpense(data)))
-          .setMimeType(ContentService.MimeType.JSON);
+        result = updateExpense(data);
+        break;
       
       case 'deleteExpense':
-        return ContentService.createTextOutput(JSON.stringify(deleteExpense(data)))
-          .setMimeType(ContentService.MimeType.JSON);
+        result = deleteExpense(data);
+        break;
       
       case 'ensureUserSheet':
-        return ContentService.createTextOutput(JSON.stringify(ensureUserSheet(data)))
-          .setMimeType(ContentService.MimeType.JSON);
+        result = ensureUserSheet(data);
+        break;
       
       default:
-        return ContentService.createTextOutput(JSON.stringify({ error: 'Invalid action' }))
-          .setMimeType(ContentService.MimeType.JSON);
+        result = { error: 'Invalid action' };
     }
+    
+    return ContentService.createTextOutput(JSON.stringify(result))
+      .setMimeType(ContentService.MimeType.JSON);
     
   } catch (error) {
     console.error('Error in doPost:', error);
@@ -89,7 +95,8 @@ function doGet(e) {
     status: 'Expense Tracker Apps Script Backend is running',
     timestamp: new Date().toISOString(),
     message: 'Use POST requests with JSON data for actual operations'
-  })).setMimeType(ContentService.MimeType.JSON);
+  }))
+  .setMimeType(ContentService.MimeType.JSON);
 }
 
 /**
