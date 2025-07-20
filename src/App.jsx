@@ -158,11 +158,10 @@ function App() {
       // Show loading state
       setIsSubmitting(true);
       
-      // Add expense using Apps Script (includes cross-user functionality)
+      // Add expense using Apps Script
       await addExpense(
         user.profile.email, // Current user's email
-        expense, // Expense data
-        expense.userEmail // Recipient email (if different from current user)
+        expense // Expense data
       );
       
       // Refresh expenses

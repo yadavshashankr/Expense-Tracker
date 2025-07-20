@@ -73,13 +73,12 @@ async function callAppsScript(action, data) {
 }
 
 /**
- * Add expense to user's sheet and create mirrored transaction for recipient
+ * Add expense to user's sheet
  */
-export async function addExpense(userEmail, expense, recipientEmail = null) {
+export async function addExpense(userEmail, expense) {
   return callAppsScript('addExpense', {
     userEmail,
-    expense,
-    recipientEmail
+    expense
   });
 }
 

@@ -252,11 +252,11 @@ function testBackend() {
 }
 
 /**
- * Add expense to user's sheet and create mirrored transaction for recipient
+ * Add expense to user's sheet
  */
 function addExpense(data) {
   try {
-    const { userEmail, expense, recipientEmail } = data;
+    const { userEmail, expense } = data;
     
     if (!userEmail || !expense) {
       return { error: 'Missing required data: userEmail and expense' };
@@ -292,45 +292,6 @@ function addExpense(data) {
     
     // Add to user's sheet
     userSheetData.appendRow(rowData);
-    
-    // If there's a recipient and it's not the same user, create mirrored transaction
-    if (recipientEmail && recipientEmail !== userEmail) {
-      const recipientSheetId = ensureUserSheetInternal(recipientEmail);
-      if (recipientSheetId) {
-        const recipientSheet = SpreadsheetApp.openById(recipientSheetId);
-        const recipientSheetData = recipientSheet.getActiveSheet();
-        
-        // Create mirrored transaction
-        const mirroredExpense = {
-          ...expense,
-          userEmail: userEmail, // The logged-in user's email
-          name: userEmail, // Use email as name for simplicity
-          type: expense.type === 'debit' ? 'credit' : 'debit', // Reverse the type
-          id: `${expense.id}-mirror` // Ensure unique ID
-        };
-        
-        // Calculate balance for recipient's sheet
-        const recipientTransactions = getAllTransactionsFromSheet(recipientSheetData);
-        const recipientBalance = calculateBalance(recipientTransactions, recipientEmail, mirroredExpense.userEmail);
-        
-        // Prepare mirrored row data
-        const mirroredRowData = [
-          mirroredExpense.id,
-          mirroredExpense.timestamp,
-          mirroredExpense.userEmail,
-          mirroredExpense.name,
-          mirroredExpense.type,
-          mirroredExpense.amount,
-          mirroredExpense.description || '',
-          recipientBalance,
-          mirroredExpense.countryCode || '+91',
-          mirroredExpense.phone || ''
-        ];
-        
-        // Add to recipient's sheet
-        recipientSheetData.appendRow(mirroredRowData);
-      }
-    }
     
     return { 
       success: true, 
