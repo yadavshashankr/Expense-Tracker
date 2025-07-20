@@ -26,7 +26,8 @@ function setCorsHeaders(response) {
  */
 function doOptions(e) {
   // Return a proper response for preflight requests with CORS headers
-  return ContentService.createTextOutput('OK')
+  // This should automatically add CORS headers for preflight requests
+  return ContentService.createTextOutput('')
     .setMimeType(ContentService.MimeType.TEXT);
 }
 
@@ -87,15 +88,45 @@ function doPost(e) {
 }
 
 /**
- * Handle GET requests (for testing)
+ * Handle GET requests (for testing and read-only operations)
  */
 function doGet(e) {
-  return ContentService.createTextOutput(JSON.stringify({ 
-    status: 'Expense Tracker Apps Script Backend is running',
-    timestamp: new Date().toISOString(),
-    message: 'Use POST requests with JSON data for actual operations'
-  }))
-  .setMimeType(ContentService.MimeType.JSON);
+  try {
+    // If no parameters, return status info
+    if (!e || !e.parameter || !e.parameter.action) {
+      return ContentService.createTextOutput(JSON.stringify({ 
+        status: 'Expense Tracker Apps Script Backend is running',
+        timestamp: new Date().toISOString(),
+        message: 'Use POST requests with JSON data for actual operations'
+      }))
+      .setMimeType(ContentService.MimeType.JSON);
+    }
+    
+    const action = e.parameter.action;
+    console.log(`GET request with action: ${action}`, e.parameter);
+    
+    let result;
+    switch(action) {
+      case 'getExpenses':
+        result = getExpenses({ userEmail: e.parameter.userEmail });
+        break;
+      
+      case 'ensureUserSheet':
+        result = ensureUserSheet({ userEmail: e.parameter.userEmail });
+        break;
+      
+      default:
+        result = { error: 'Invalid action for GET request' };
+    }
+    
+    return ContentService.createTextOutput(JSON.stringify(result))
+      .setMimeType(ContentService.MimeType.JSON);
+      
+  } catch (error) {
+    console.error('Error in doGet:', error);
+    return ContentService.createTextOutput(JSON.stringify({ error: error.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
 }
 
 /**
