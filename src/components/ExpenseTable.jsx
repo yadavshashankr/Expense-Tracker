@@ -262,6 +262,21 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
     const runningBalance = runningBalances[index].runningBalance;
     const isExpanded = expandedItems.has(expense.id);
     
+    const formattedAmount = formatAmount(expense.amount, currency);
+    const formattedBalance = formatAmount(runningBalance, currency);
+    
+    // Calculate font size class based on length
+    const getResponsiveFontClass = (text) => {
+      if (text.length > 14) return 'text-[8px] md:text-sm';
+      if (text.length > 12) return 'text-[9px] md:text-sm';
+      if (text.length > 10) return 'text-[10px] md:text-sm';
+      if (text.length > 8) return 'text-xs md:text-sm';
+      return 'text-sm';
+    };
+
+    const amountFontClass = getResponsiveFontClass(formattedAmount);
+    const balanceFontClass = getResponsiveFontClass(formattedBalance);
+    
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-100">
         <div 
@@ -279,13 +294,9 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
           {/* Amount Section - Fixed width */}
           <div className="flex-shrink-0 w-[33%] flex items-center justify-end">
             <span 
-              className={`${expense.type === 'credit' ? 'text-green-600' : 'text-red-600'} font-medium whitespace-nowrap md:text-sm`}
-              style={{ 
-                fontSize: 'clamp(10px, 3.2vw, 14px)',
-                lineHeight: '1.2'
-              }}
+              className={`${expense.type === 'credit' ? 'text-green-600' : 'text-red-600'} font-medium whitespace-nowrap ${amountFontClass}`}
             >
-              {expense.type === 'credit' ? '+' : '-'}{currency.symbol}{formatAmount(expense.amount, currency)}
+              {expense.type === 'credit' ? '+' : '-'}{currency.symbol}{formattedAmount}
             </span>
           </div>
           
@@ -295,13 +306,9 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
           {/* Balance Section - Remaining space */}
           <div className="flex-1 flex items-center justify-end gap-1">
             <span 
-              className={`${runningBalance >= 0 ? 'text-green-600' : 'text-red-600'} font-medium whitespace-nowrap md:text-sm`}
-              style={{ 
-                fontSize: 'clamp(10px, 3.2vw, 14px)',
-                lineHeight: '1.2'
-              }}
+              className={`${runningBalance >= 0 ? 'text-green-600' : 'text-red-600'} font-medium whitespace-nowrap ${balanceFontClass}`}
             >
-              {runningBalance >= 0 ? '+' : '-'}{currency.symbol}{formatAmount(runningBalance, currency)}
+              {runningBalance >= 0 ? '+' : '-'}{currency.symbol}{formattedBalance}
             </span>
             <svg 
               className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}

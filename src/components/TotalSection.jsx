@@ -17,6 +17,19 @@ export default function TotalSection({ expenses, currentUserEmail, currency }) {
   const balance = totals.credit - totals.debit;
   const isPositive = balance >= 0;
 
+  // Calculate font size class based on length
+  const getResponsiveFontClass = (amount) => {
+    const formattedAmount = formatAmount(amount, currency);
+    if (formattedAmount.length > 14) return 'text-lg md:text-2xl';
+    if (formattedAmount.length > 12) return 'text-xl md:text-2xl';
+    if (formattedAmount.length > 10) return 'text-2xl md:text-2xl';
+    return 'text-2xl md:text-2xl';
+  };
+
+  const creditFontClass = getResponsiveFontClass(totals.credit);
+  const debitFontClass = getResponsiveFontClass(totals.debit);
+  const balanceFontClass = getResponsiveFontClass(Math.abs(balance));
+
   // Handle click outside
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -42,13 +55,7 @@ export default function TotalSection({ expenses, currentUserEmail, currency }) {
               Net Balance
             </h3>
             <div className="flex items-center gap-2">
-              <p 
-                className={`font-bold ${isPositive ? 'text-green-600' : 'text-red-600'} md:text-2xl`}
-                style={{ 
-                  fontSize: 'clamp(16px, 5vw, 24px)',
-                  lineHeight: '1.2'
-                }}
-              >
+              <p className={`font-bold ${isPositive ? 'text-green-600' : 'text-red-600'} ${balanceFontClass}`}>
                 {isPositive ? '+' : '-'}{currency.symbol}{formatAmount(balance, currency)}
               </p>
               <div 
@@ -71,13 +78,7 @@ export default function TotalSection({ expenses, currentUserEmail, currency }) {
             <div className="bg-green-50 rounded-lg p-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-sm font-medium text-green-800">Total Credit</h3>
-                <p 
-                  className="font-bold text-green-600 text-right md:text-2xl"
-                  style={{ 
-                    fontSize: 'clamp(16px, 5vw, 24px)',
-                    lineHeight: '1.2'
-                  }}
-                >
+                <p className={`font-bold text-green-600 text-right ${creditFontClass}`}>
                   +{currency.symbol}{formatAmount(totals.credit, currency)}
                 </p>
               </div>
@@ -86,13 +87,7 @@ export default function TotalSection({ expenses, currentUserEmail, currency }) {
             <div className="bg-red-50 rounded-lg p-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-sm font-medium text-red-800">Total Debit</h3>
-                <p 
-                  className="font-bold text-red-600 text-right md:text-2xl"
-                  style={{ 
-                    fontSize: 'clamp(16px, 5vw, 24px)',
-                    lineHeight: '1.2'
-                  }}
-                >
+                <p className={`font-bold text-red-600 text-right ${debitFontClass}`}>
                   -{currency.symbol}{formatAmount(totals.debit, currency)}
                 </p>
               </div>
