@@ -1,14 +1,18 @@
 // src/services/sheets.js (Frontend file)
 
-const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzrsE84Ng3z2klgxhHKf7jC77DZotLGnrQmL0EkZ97N97KEIjX7nX89pjH4xwJrX6FH/exec'; // *** IMPORTANT: Replace with your actual deployed Apps Script Web App URL ***
+const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzrsE84Ng3z2klgxhHKf7jC77DZotLGnrQmL0EkZ97N97KEIjX7nX89pjH4xwJrX6FH/exec';
 
 async function callAppsScript(functionName, args) {
   try {
     console.log(`Calling Apps Script function: ${functionName} with args:`, args);
+    
+    // Add CORS headers to the request
     const response = await fetch(APPS_SCRIPT_WEB_APP_URL, {
       method: 'POST',
+      mode: 'cors', // Enable CORS
       headers: {
         'Content-Type': 'application/json',
+        'Origin': window.location.origin,
       },
       body: JSON.stringify({ function: functionName, args: args }),
     });
@@ -27,26 +31,30 @@ async function callAppsScript(functionName, args) {
     return data.data;
   } catch (error) {
     console.error('Error calling Apps Script:', error);
+    // Add more descriptive error message
+    if (error.message === 'Failed to fetch') {
+      throw new Error('Unable to connect to Google Apps Script. Please check if you are signed in and have granted necessary permissions.');
+    }
     throw error;
   }
 }
 
-export async function ensureUserSheet({ appName, userName, accessToken }) { // accessToken is no longer used for GAS calls
+export async function ensureUserSheet({ appName, userName }) {
   return callAppsScript('ensureUserSheet', { appName, userName });
 }
 
-export async function appendExpense({ spreadsheetId, accessToken, entry, currentUserEmail }) { // accessToken is no longer used for GAS calls
+export async function appendExpense({ spreadsheetId, entry, currentUserEmail }) {
   return callAppsScript('appendExpense', { spreadsheetId, entry, currentUserEmail });
 }
 
-export async function fetchAllRows({ spreadsheetId, accessToken }) { // accessToken is no longer used for GAS calls
+export async function fetchAllRows({ spreadsheetId }) {
   return callAppsScript('fetchAllRows', { spreadsheetId });
 }
 
-export async function updateExpenseRow({ spreadsheetId, accessToken, rowIndex, entry, currentUserEmail }) { // accessToken is no longer used for GAS calls
+export async function updateExpenseRow({ spreadsheetId, rowIndex, entry, currentUserEmail }) {
   return callAppsScript('updateExpenseRow', { spreadsheetId, rowIndex, entry, currentUserEmail });
 }
 
-export async function deleteExpenseRow({ spreadsheetId, accessToken, rowIndex }) { // accessToken is no longer used for GAS calls
+export async function deleteExpenseRow({ spreadsheetId, rowIndex }) {
   return callAppsScript('deleteExpenseRow', { spreadsheetId, rowIndex });
 }
