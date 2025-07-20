@@ -256,11 +256,21 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
     });
   };
 
+  // Helper function to determine font size class based on amount length
+  const getAmountFontClass = (amount) => {
+    const formattedAmount = formatAmount(amount, currency);
+    if (formattedAmount.length > 12) return 'text-xs';
+    if (formattedAmount.length > 8) return 'text-sm';
+    return 'text-base';
+  };
+
   // Mobile Card View Component
   const MobileExpenseCard = ({ expense, index }) => {
     const { dateStr, timeStr } = formatDateTime(expense.timestamp);
     const runningBalance = runningBalances[index].runningBalance;
     const isExpanded = expandedItems.has(expense.id);
+    const amountFontClass = getAmountFontClass(expense.amount);
+    const balanceFontClass = getAmountFontClass(runningBalance);
     
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-100">
@@ -278,7 +288,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
           
           {/* Amount Section - Fixed width */}
           <div className="flex-shrink-0 w-[33%] flex items-center justify-end">
-            <span className={`${expense.type === 'credit' ? 'text-green-600' : 'text-red-600'} font-medium text-sm whitespace-nowrap`}>
+            <span className={`${expense.type === 'credit' ? 'text-green-600' : 'text-red-600'} font-medium whitespace-nowrap ${amountFontClass}`}>
               {expense.type === 'credit' ? '+' : '-'}{currency.symbol}{formatAmount(expense.amount, currency)}
             </span>
           </div>
@@ -288,7 +298,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
           
           {/* Balance Section - Remaining space */}
           <div className="flex-1 flex items-center justify-end gap-1">
-            <span className={`${runningBalance >= 0 ? 'text-green-600' : 'text-red-600'} font-medium text-sm whitespace-nowrap`}>
+            <span className={`${runningBalance >= 0 ? 'text-green-600' : 'text-red-600'} font-medium whitespace-nowrap ${balanceFontClass}`}>
               {runningBalance >= 0 ? '+' : '-'}{currency.symbol}{formatAmount(runningBalance, currency)}
             </span>
             <svg 
@@ -521,6 +531,8 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
             {runningBalances.map((expense) => {
               const { dateStr, timeStr } = formatDateTime(expense.timestamp);
               const isExpanded = expandedItems.has(expense.id);
+              const amountFontClass = getAmountFontClass(expense.amount);
+              const balanceFontClass = getAmountFontClass(expense.runningBalance);
               return (
                 <React.Fragment key={expense.id}>
                   <tr 
@@ -536,13 +548,13 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
                         {expense.type}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium">
-                      <span className={expense.type === 'credit' ? 'text-green-600' : 'text-red-600'}>
+                    <td className="px-6 py-4 whitespace-nowrap text-right font-medium">
+                      <span className={`${expense.type === 'credit' ? 'text-green-600' : 'text-red-600'} ${amountFontClass}`}>
                         {expense.type === 'credit' ? '+' : '-'}{currency.symbol}{formatAmount(expense.amount, currency)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium">
-                      <span className={expense.runningBalance >= 0 ? 'text-green-600' : 'text-red-600'}>
+                    <td className="px-6 py-4 whitespace-nowrap text-right font-medium">
+                      <span className={`${expense.runningBalance >= 0 ? 'text-green-600' : 'text-red-600'} ${balanceFontClass}`}>
                         {expense.runningBalance >= 0 ? '+' : '-'}{currency.symbol}{formatAmount(expense.runningBalance, currency)}
                       </span>
                     </td>

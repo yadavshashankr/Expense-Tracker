@@ -17,6 +17,14 @@ export default function TotalSection({ expenses, currentUserEmail, currency }) {
   const balance = totals.credit - totals.debit;
   const isPositive = balance >= 0;
 
+  // Helper function to determine font size class based on amount length
+  const getAmountFontClass = (amount) => {
+    const formattedAmount = formatAmount(amount, currency);
+    if (formattedAmount.length > 12) return 'text-lg sm:text-xl';
+    if (formattedAmount.length > 8) return 'text-xl sm:text-2xl';
+    return 'text-2xl sm:text-3xl';
+  };
+
   // Handle click outside
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -42,7 +50,7 @@ export default function TotalSection({ expenses, currentUserEmail, currency }) {
               Net Balance
             </h3>
             <div className="flex items-center gap-2">
-              <p className={`text-xl font-bold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+              <p className={`font-bold ${isPositive ? 'text-green-600' : 'text-red-600'} ${getAmountFontClass(balance)}`}>
                 {isPositive ? '+' : '-'}{currency.symbol}{formatAmount(balance, currency)}
               </p>
               <div 
@@ -65,7 +73,7 @@ export default function TotalSection({ expenses, currentUserEmail, currency }) {
             <div className="bg-green-50 rounded-lg p-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-sm font-medium text-green-800">Total Credit</h3>
-                <p className="text-2xl font-bold text-green-600 text-right">
+                <p className={`font-bold text-green-600 text-right ${getAmountFontClass(totals.credit)}`}>
                   +{currency.symbol}{formatAmount(totals.credit, currency)}
                 </p>
               </div>
@@ -74,7 +82,7 @@ export default function TotalSection({ expenses, currentUserEmail, currency }) {
             <div className="bg-red-50 rounded-lg p-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-sm font-medium text-red-800">Total Debit</h3>
-                <p className="text-2xl font-bold text-red-600 text-right">
+                <p className={`font-bold text-red-600 text-right ${getAmountFontClass(totals.debit)}`}>
                   -{currency.symbol}{formatAmount(totals.debit, currency)}
                 </p>
               </div>
@@ -89,7 +97,7 @@ export default function TotalSection({ expenses, currentUserEmail, currency }) {
           <div className="bg-green-50 rounded-lg p-4">
             <div className="flex justify-between items-center">
               <h3 className="text-sm font-medium text-green-800">Total Credit</h3>
-              <p className="text-2xl font-bold text-green-600 text-right">
+              <p className={`font-bold text-green-600 text-right ${getAmountFontClass(totals.credit)}`}>
                 +{currency.symbol}{formatAmount(totals.credit, currency)}
               </p>
             </div>
@@ -98,7 +106,7 @@ export default function TotalSection({ expenses, currentUserEmail, currency }) {
           <div className="bg-red-50 rounded-lg p-4">
             <div className="flex justify-between items-center">
               <h3 className="text-sm font-medium text-red-800">Total Debit</h3>
-              <p className="text-2xl font-bold text-red-600 text-right">
+              <p className={`font-bold text-red-600 text-right ${getAmountFontClass(totals.debit)}`}>
                 -{currency.symbol}{formatAmount(totals.debit, currency)}
               </p>
             </div>
@@ -110,7 +118,7 @@ export default function TotalSection({ expenses, currentUserEmail, currency }) {
                 Net Balance
               </h3>
               <span className="flex items-center gap-2">
-                <p className={`text-2xl font-bold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                <p className={`font-bold ${isPositive ? 'text-green-600' : 'text-red-600'} ${getAmountFontClass(balance)}`}>
                   {isPositive ? '+' : '-'}{currency.symbol}{formatAmount(balance, currency)}
                 </p>
                 {isPositive ? (
