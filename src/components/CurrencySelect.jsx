@@ -1,16 +1,86 @@
 import { useState, useEffect, useRef } from 'react';
 
-// Currency data with symbols and codes
+// Currency data with symbols, codes, and formatting
 export const currencies = [
-  { code: 'INR', symbol: '₹', name: 'Indian Rupee' },
-  { code: 'USD', symbol: '$', name: 'US Dollar' },
-  { code: 'EUR', symbol: '€', name: 'Euro' },
-  { code: 'GBP', symbol: '£', name: 'British Pound' },
-  { code: 'JPY', symbol: '¥', name: 'Japanese Yen' },
-  { code: 'AUD', symbol: 'A$', name: 'Australian Dollar' },
-  { code: 'CAD', symbol: 'C$', name: 'Canadian Dollar' },
-  { code: 'SGD', symbol: 'S$', name: 'Singapore Dollar' }
+  { 
+    code: 'INR', 
+    symbol: '₹', 
+    name: 'Indian Rupee',
+    locale: 'en-IN', // Uses Indian number system (1,00,000.00)
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  },
+  { 
+    code: 'USD', 
+    symbol: '$', 
+    name: 'US Dollar',
+    locale: 'en-US', // Uses Western number system (100,000.00)
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  },
+  { 
+    code: 'EUR', 
+    symbol: '€', 
+    name: 'Euro',
+    locale: 'de-DE', // Uses European system (100.000,00)
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  },
+  { 
+    code: 'GBP', 
+    symbol: '£', 
+    name: 'British Pound',
+    locale: 'en-GB', // Uses Western system (100,000.00)
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  },
+  { 
+    code: 'JPY', 
+    symbol: '¥', 
+    name: 'Japanese Yen',
+    locale: 'ja-JP', // No decimals (100,000)
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  },
+  { 
+    code: 'AUD', 
+    symbol: 'A$', 
+    name: 'Australian Dollar',
+    locale: 'en-AU', // Uses Western system (100,000.00)
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  },
+  { 
+    code: 'CAD', 
+    symbol: 'C$', 
+    name: 'Canadian Dollar',
+    locale: 'en-CA', // Uses Western system (100,000.00)
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  },
+  { 
+    code: 'SGD', 
+    symbol: 'S$', 
+    name: 'Singapore Dollar',
+    locale: 'en-SG', // Uses Western system (100,000.00)
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }
 ];
+
+// Helper function to format amount according to currency
+export const formatAmount = (amount, currency) => {
+  try {
+    return new Intl.NumberFormat(currency.locale, {
+      minimumFractionDigits: currency.minimumFractionDigits,
+      maximumFractionDigits: currency.maximumFractionDigits,
+      useGrouping: true
+    }).format(Math.abs(amount));
+  } catch (error) {
+    console.error('Error formatting amount:', error);
+    return Math.abs(amount).toFixed(2); // Fallback to basic formatting
+  }
+};
 
 export default function CurrencySelect({ value, onChange, renderButton }) {
   const [isOpen, setIsOpen] = useState(false);

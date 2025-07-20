@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { formatAmount } from './CurrencySelect';
 
 export default function TotalSection({ expenses, currentUserEmail, currency }) {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -42,7 +43,7 @@ export default function TotalSection({ expenses, currentUserEmail, currency }) {
             </h3>
             <div className="flex items-center gap-2">
               <p className={`text-xl font-bold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                {isPositive ? '+' : '-'}{currency.symbol}{Math.abs(balance).toFixed(2)}
+                {isPositive ? '+' : '-'}{currency.symbol}{formatAmount(balance, currency)}
               </p>
               <div 
                 className="text-gray-400 transition-transform duration-300"
@@ -65,7 +66,7 @@ export default function TotalSection({ expenses, currentUserEmail, currency }) {
               <div className="flex justify-between items-center">
                 <h3 className="text-sm font-medium text-green-800">Total Credit</h3>
                 <p className="text-2xl font-bold text-green-600 text-right">
-                  +{currency.symbol}{totals.credit.toFixed(2)}
+                  +{currency.symbol}{formatAmount(totals.credit, currency)}
                 </p>
               </div>
             </div>
@@ -74,7 +75,7 @@ export default function TotalSection({ expenses, currentUserEmail, currency }) {
               <div className="flex justify-between items-center">
                 <h3 className="text-sm font-medium text-red-800">Total Debit</h3>
                 <p className="text-2xl font-bold text-red-600 text-right">
-                  -{currency.symbol}{totals.debit.toFixed(2)}
+                  -{currency.symbol}{formatAmount(totals.debit, currency)}
                 </p>
               </div>
             </div>
@@ -89,7 +90,7 @@ export default function TotalSection({ expenses, currentUserEmail, currency }) {
             <div className="flex justify-between items-center">
               <h3 className="text-sm font-medium text-green-800">Total Credit</h3>
               <p className="text-2xl font-bold text-green-600 text-right">
-                +{currency.symbol}{totals.credit.toFixed(2)}
+                +{currency.symbol}{formatAmount(totals.credit, currency)}
               </p>
             </div>
           </div>
@@ -98,7 +99,7 @@ export default function TotalSection({ expenses, currentUserEmail, currency }) {
             <div className="flex justify-between items-center">
               <h3 className="text-sm font-medium text-red-800">Total Debit</h3>
               <p className="text-2xl font-bold text-red-600 text-right">
-                -{currency.symbol}{totals.debit.toFixed(2)}
+                -{currency.symbol}{formatAmount(totals.debit, currency)}
               </p>
             </div>
           </div>
@@ -110,7 +111,7 @@ export default function TotalSection({ expenses, currentUserEmail, currency }) {
               </h3>
               <span className="flex items-center gap-2">
                 <p className={`text-2xl font-bold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
-                  {isPositive ? '+' : '-'}{currency.symbol}{Math.abs(balance).toFixed(2)}
+                  {isPositive ? '+' : '-'}{currency.symbol}{formatAmount(balance, currency)}
                 </p>
                 {isPositive ? (
                   <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

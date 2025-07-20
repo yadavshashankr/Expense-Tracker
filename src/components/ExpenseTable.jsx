@@ -1,6 +1,7 @@
 
 import { useState, useMemo } from 'react';
 import React from 'react'; // Added missing import for React
+import { formatAmount } from './CurrencySelect';
 
 // Import country data for flag display
 const countries = [
@@ -215,7 +216,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
     return (
       <div className="flex items-center gap-1">
         <span className={`${isPositive ? 'text-green-600' : 'text-red-600'} font-medium`}>
-          {isPositive ? '+' : '-'}₹{Math.abs(balance).toFixed(2)}
+          {isPositive ? '+' : '-'}{currency.symbol}{formatAmount(balance, currency)}
         </span>
       </div>
     );
@@ -278,7 +279,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
           {/* Amount Section - Fixed width */}
           <div className="flex-shrink-0 w-[33%] flex items-center justify-end">
             <span className={`${expense.type === 'credit' ? 'text-green-600' : 'text-red-600'} font-medium text-sm whitespace-nowrap`}>
-              {expense.type === 'credit' ? '+' : '-'}{currency.symbol}{Math.abs(expense.amount).toFixed(2)}
+              {expense.type === 'credit' ? '+' : '-'}{currency.symbol}{formatAmount(expense.amount, currency)}
             </span>
           </div>
           
@@ -288,7 +289,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
           {/* Balance Section - Remaining space */}
           <div className="flex-1 flex items-center justify-end gap-1">
             <span className={`${runningBalance >= 0 ? 'text-green-600' : 'text-red-600'} font-medium text-sm whitespace-nowrap`}>
-              {runningBalance >= 0 ? '+' : '-'}{currency.symbol}{Math.abs(runningBalance).toFixed(2)}
+              {runningBalance >= 0 ? '+' : '-'}{currency.symbol}{formatAmount(runningBalance, currency)}
             </span>
             <svg 
               className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
@@ -537,12 +538,12 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium">
                       <span className={expense.type === 'credit' ? 'text-green-600' : 'text-red-600'}>
-                        {expense.type === 'credit' ? '+' : '-'}{currency.symbol}{Math.abs(expense.amount).toFixed(2)}
+                        {expense.type === 'credit' ? '+' : '-'}{currency.symbol}{formatAmount(expense.amount, currency)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-right font-medium">
                       <span className={expense.runningBalance >= 0 ? 'text-green-600' : 'text-red-600'}>
-                        {expense.runningBalance >= 0 ? '+' : '-'}{currency.symbol}{Math.abs(expense.runningBalance).toFixed(2)}
+                        {expense.runningBalance >= 0 ? '+' : '-'}{currency.symbol}{formatAmount(expense.runningBalance, currency)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
