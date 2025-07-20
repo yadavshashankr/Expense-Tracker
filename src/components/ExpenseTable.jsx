@@ -278,7 +278,13 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
           
           {/* Amount Section - Fixed width */}
           <div className="flex-shrink-0 w-[33%] flex items-center justify-end">
-            <span className={`${expense.type === 'credit' ? 'text-green-600' : 'text-red-600'} font-medium text-sm whitespace-nowrap`}>
+            <span 
+              className={`${expense.type === 'credit' ? 'text-green-600' : 'text-red-600'} font-medium whitespace-nowrap md:text-sm`}
+              style={{ 
+                fontSize: 'clamp(10px, 3.2vw, 14px)',
+                lineHeight: '1.2'
+              }}
+            >
               {expense.type === 'credit' ? '+' : '-'}{currency.symbol}{formatAmount(expense.amount, currency)}
             </span>
           </div>
@@ -288,7 +294,13 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
           
           {/* Balance Section - Remaining space */}
           <div className="flex-1 flex items-center justify-end gap-1">
-            <span className={`${runningBalance >= 0 ? 'text-green-600' : 'text-red-600'} font-medium text-sm whitespace-nowrap`}>
+            <span 
+              className={`${runningBalance >= 0 ? 'text-green-600' : 'text-red-600'} font-medium whitespace-nowrap md:text-sm`}
+              style={{ 
+                fontSize: 'clamp(10px, 3.2vw, 14px)',
+                lineHeight: '1.2'
+              }}
+            >
               {runningBalance >= 0 ? '+' : '-'}{currency.symbol}{formatAmount(runningBalance, currency)}
             </span>
             <svg 

@@ -42,7 +42,13 @@ export default function TotalSection({ expenses, currentUserEmail, currency }) {
               Net Balance
             </h3>
             <div className="flex items-center gap-2">
-              <p className={`text-xl font-bold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+              <p 
+                className={`font-bold ${isPositive ? 'text-green-600' : 'text-red-600'} md:text-2xl`}
+                style={{ 
+                  fontSize: 'clamp(16px, 5vw, 24px)',
+                  lineHeight: '1.2'
+                }}
+              >
                 {isPositive ? '+' : '-'}{currency.symbol}{formatAmount(balance, currency)}
               </p>
               <div 
@@ -65,7 +71,13 @@ export default function TotalSection({ expenses, currentUserEmail, currency }) {
             <div className="bg-green-50 rounded-lg p-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-sm font-medium text-green-800">Total Credit</h3>
-                <p className="text-2xl font-bold text-green-600 text-right">
+                <p 
+                  className="font-bold text-green-600 text-right md:text-2xl"
+                  style={{ 
+                    fontSize: 'clamp(16px, 5vw, 24px)',
+                    lineHeight: '1.2'
+                  }}
+                >
                   +{currency.symbol}{formatAmount(totals.credit, currency)}
                 </p>
               </div>
@@ -74,7 +86,13 @@ export default function TotalSection({ expenses, currentUserEmail, currency }) {
             <div className="bg-red-50 rounded-lg p-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-sm font-medium text-red-800">Total Debit</h3>
-                <p className="text-2xl font-bold text-red-600 text-right">
+                <p 
+                  className="font-bold text-red-600 text-right md:text-2xl"
+                  style={{ 
+                    fontSize: 'clamp(16px, 5vw, 24px)',
+                    lineHeight: '1.2'
+                  }}
+                >
                   -{currency.symbol}{formatAmount(totals.debit, currency)}
                 </p>
               </div>
