@@ -1,13 +1,14 @@
 // src/services/sheets.js (Frontend file)
 
-const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyG53s7fwIHidlpPa1vwAdOw8koGKfKHJ2T5VIAa4LFnYxLSZaRshJfr6SFK2n9Xh8uWQ/exec';
+const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxhuFUbUra8YiWtCNKGMvvxg9YSxSgEVy7s9INY1oM50IP_wRYxYS3V4qS7TZ-FP5vgxA/exec';
 
 async function callAppsScript(functionName, args) {
   try {
     console.log(`Calling Apps Script function: ${functionName} with args:`, args);
     const response = await fetch(APPS_SCRIPT_WEB_APP_URL, {
       method: 'POST',
-      mode: 'no-cors', // This bypasses CORS for Google Apps Script
+      mode: 'cors',
+      credentials: 'omit',
       headers: {
         'Content-Type': 'application/json',
       },
