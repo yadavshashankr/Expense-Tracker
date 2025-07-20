@@ -210,6 +210,50 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
     return balances.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
   }, [filteredAndSortedExpenses, currentUserEmail, activeFilters]);
 
+  // Memoize font size calculations for all amounts
+  const fontSizes = useMemo(() => {
+    const sizes = new Map();
+    
+    const calculateFontSize = (isMobile, amount) => {
+      const formattedAmount = formatAmount(amount, currency);
+      if (isMobile) {
+        if (formattedAmount.length > 14) return 'text-[10px]';
+        if (formattedAmount.length > 12) return 'text-[11px]';
+        if (formattedAmount.length > 10) return 'text-xs';
+        if (formattedAmount.length > 8) return 'text-sm';
+        return 'text-base';
+      } else {
+        // Desktop sizes
+        if (formattedAmount.length > 12) return 'text-xs';
+        if (formattedAmount.length > 8) return 'text-sm';
+        return 'text-base';
+      }
+    };
+
+    expenses.forEach(expense => {
+      // Calculate for amount
+      const mobileAmountKey = `mobile-amount-${expense.id}`;
+      const desktopAmountKey = `desktop-amount-${expense.id}`;
+      sizes.set(mobileAmountKey, calculateFontSize(true, expense.amount));
+      sizes.set(desktopAmountKey, calculateFontSize(false, expense.amount));
+
+      // Calculate for running balance
+      const runningBalance = calculateRunningBalance([expense], currentUserEmail, expense.userEmail, 0);
+      const mobileBalanceKey = `mobile-balance-${expense.id}`;
+      const desktopBalanceKey = `desktop-balance-${expense.id}`;
+      sizes.set(mobileBalanceKey, calculateFontSize(true, runningBalance));
+      sizes.set(desktopBalanceKey, calculateFontSize(false, runningBalance));
+    });
+
+    return sizes;
+  }, [expenses, currency, currentUserEmail]);
+
+  // Helper function to get font size from memoized map
+  const getAmountFontClass = (isMobile, amount, id, isBalance = false) => {
+    const key = `${isMobile ? 'mobile' : 'desktop'}-${isBalance ? 'balance' : 'amount'}-${id}`;
+    return fontSizes.get(key) || (isMobile ? 'text-base' : 'text-base');
+  };
+
   // Balance display component
   const BalanceDisplay = ({ balance }) => {
     const isPositive = balance >= 0;
@@ -256,30 +300,13 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
     });
   };
 
-  // Helper function to determine font size class based on amount length
-  const getAmountFontClass = (isMobile, amount) => {
-    const formattedAmount = formatAmount(amount, currency);
-    if (isMobile) {
-      if (formattedAmount.length > 14) return 'text-[10px]';
-      if (formattedAmount.length > 12) return 'text-[11px]';
-      if (formattedAmount.length > 10) return 'text-xs';
-      if (formattedAmount.length > 8) return 'text-sm';
-      return 'text-base';
-    } else {
-      // Desktop sizes
-      if (formattedAmount.length > 12) return 'text-xs';
-      if (formattedAmount.length > 8) return 'text-sm';
-      return 'text-base';
-    }
-  };
-
   // Mobile Card View Component
   const MobileExpenseCard = ({ expense, index }) => {
     const { dateStr, timeStr } = formatDateTime(expense.timestamp);
     const runningBalance = runningBalances[index].runningBalance;
     const isExpanded = expandedItems.has(expense.id);
-    const amountFontClass = getAmountFontClass(true, expense.amount);
-    const balanceFontClass = getAmountFontClass(true, runningBalance);
+    const amountFontClass = getAmountFontClass(true, expense.amount, expense.id);
+    const balanceFontClass = getAmountFontClass(true, runningBalance, expense.id, true);
     
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-100">
@@ -542,8 +569,8 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
             {runningBalances.map((expense) => {
               const { dateStr, timeStr } = formatDateTime(expense.timestamp);
               const isExpanded = expandedItems.has(expense.id);
-              const amountFontClass = getAmountFontClass(false, expense.amount);
-              const balanceFontClass = getAmountFontClass(false, expense.runningBalance);
+              const amountFontClass = getAmountFontClass(false, expense.amount, expense.id);
+              const balanceFontClass = getAmountFontClass(false, expense.runningBalance, expense.id, true);
               return (
                 <React.Fragment key={expense.id}>
                   <tr 

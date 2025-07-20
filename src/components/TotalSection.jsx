@@ -1,30 +1,40 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { formatAmount } from './CurrencySelect';
 
 export default function TotalSection({ expenses, currentUserEmail, currency }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const totals = expenses.reduce((acc, expense) => {
-    const amount = parseFloat(expense.amount);
-    if (expense.type === 'credit') {
-      acc.credit += amount;
-    } else {
-      acc.debit += amount;
-    }
-    return acc;
-  }, { credit: 0, debit: 0 });
+  const totals = useMemo(() => {
+    return expenses.reduce((acc, expense) => {
+      const amount = parseFloat(expense.amount);
+      if (expense.type === 'credit') {
+        acc.credit += amount;
+      } else {
+        acc.debit += amount;
+      }
+      return acc;
+    }, { credit: 0, debit: 0 });
+  }, [expenses]);
 
   const balance = totals.credit - totals.debit;
   const isPositive = balance >= 0;
 
-  // Helper function to determine font size class based on amount length
-  const getAmountFontClass = (amount) => {
-    const formattedAmount = formatAmount(amount, currency);
-    if (formattedAmount.length > 14) return 'text-lg md:text-2xl';
-    if (formattedAmount.length > 12) return 'text-xl md:text-2xl';
-    if (formattedAmount.length > 8) return 'text-2xl md:text-3xl';
-    return 'text-2xl md:text-4xl';
-  };
+  // Memoize font size calculations
+  const fontSizes = useMemo(() => {
+    const calculateFontSize = (amount) => {
+      const formattedAmount = formatAmount(amount, currency);
+      if (formattedAmount.length > 14) return 'text-lg md:text-2xl';
+      if (formattedAmount.length > 12) return 'text-xl md:text-2xl';
+      if (formattedAmount.length > 8) return 'text-2xl md:text-3xl';
+      return 'text-2xl md:text-4xl';
+    };
+
+    return {
+      credit: calculateFontSize(totals.credit),
+      debit: calculateFontSize(totals.debit),
+      balance: calculateFontSize(Math.abs(balance))
+    };
+  }, [totals, balance, currency]);
 
   // Handle click outside
   useEffect(() => {
@@ -51,7 +61,7 @@ export default function TotalSection({ expenses, currentUserEmail, currency }) {
               Net Balance
             </h3>
             <div className="flex items-center gap-2">
-              <p className={`font-bold ${isPositive ? 'text-green-600' : 'text-red-600'} ${getAmountFontClass(balance)}`}>
+              <p className={`font-bold ${isPositive ? 'text-green-600' : 'text-red-600'} ${fontSizes.balance}`}>
                 {isPositive ? '+' : '-'}{currency.symbol}{formatAmount(balance, currency)}
               </p>
               <div 
@@ -74,7 +84,7 @@ export default function TotalSection({ expenses, currentUserEmail, currency }) {
             <div className="bg-green-50 rounded-lg p-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-sm font-medium text-green-800">Total Credit</h3>
-                <p className={`font-bold text-green-600 text-right ${getAmountFontClass(totals.credit)}`}>
+                <p className={`font-bold text-green-600 text-right ${fontSizes.credit}`}>
                   +{currency.symbol}{formatAmount(totals.credit, currency)}
                 </p>
               </div>
@@ -83,7 +93,7 @@ export default function TotalSection({ expenses, currentUserEmail, currency }) {
             <div className="bg-red-50 rounded-lg p-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-sm font-medium text-red-800">Total Debit</h3>
-                <p className={`font-bold text-red-600 text-right ${getAmountFontClass(totals.debit)}`}>
+                <p className={`font-bold text-red-600 text-right ${fontSizes.debit}`}>
                   -{currency.symbol}{formatAmount(totals.debit, currency)}
                 </p>
               </div>
@@ -98,7 +108,7 @@ export default function TotalSection({ expenses, currentUserEmail, currency }) {
           <div className="bg-green-50 rounded-lg p-4">
             <div className="flex justify-between items-center">
               <h3 className="text-sm font-medium text-green-800">Total Credit</h3>
-              <p className={`font-bold text-green-600 text-right ${getAmountFontClass(totals.credit)}`}>
+              <p className={`font-bold text-green-600 text-right ${fontSizes.credit}`}>
                 +{currency.symbol}{formatAmount(totals.credit, currency)}
               </p>
             </div>
@@ -107,7 +117,7 @@ export default function TotalSection({ expenses, currentUserEmail, currency }) {
           <div className="bg-red-50 rounded-lg p-4">
             <div className="flex justify-between items-center">
               <h3 className="text-sm font-medium text-red-800">Total Debit</h3>
-              <p className={`font-bold text-red-600 text-right ${getAmountFontClass(totals.debit)}`}>
+              <p className={`font-bold text-red-600 text-right ${fontSizes.debit}`}>
                 -{currency.symbol}{formatAmount(totals.debit, currency)}
               </p>
             </div>
@@ -119,7 +129,7 @@ export default function TotalSection({ expenses, currentUserEmail, currency }) {
                 Net Balance
               </h3>
               <span className="flex items-center gap-2">
-                <p className={`font-bold ${isPositive ? 'text-green-600' : 'text-red-600'} ${getAmountFontClass(balance)}`}>
+                <p className={`font-bold ${isPositive ? 'text-green-600' : 'text-red-600'} ${fontSizes.balance}`}>
                   {isPositive ? '+' : '-'}{currency.symbol}{formatAmount(balance, currency)}
                 </p>
                 {isPositive ? (
