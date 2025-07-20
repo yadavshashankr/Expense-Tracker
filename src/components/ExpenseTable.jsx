@@ -425,21 +425,17 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
       {/* First Divider */}
       <div className="w-px self-stretch bg-gray-200"></div>
       
-      {/* Amount and Balance Labels */}
-      <div className="flex-1 flex items-center">
-        {/* Amount Label */}
-        <div className="flex-1 flex justify-end">
-          <span className="text-xs font-medium text-gray-500 uppercase">Amount</span>
-        </div>
-
-        {/* Second Divider */}
-        <div className="w-px self-stretch bg-gray-200 mx-2"></div>
-
-        {/* Balance Label */}
-        <div className="flex-1 flex justify-end">
-          <span className="text-xs font-medium text-gray-500 uppercase">Balance</span>
-        </div>
-
+      {/* Amount Section - Fixed width */}
+      <div className="flex-shrink-0 w-[33%] flex items-center justify-end">
+        <span className="text-xs font-medium text-gray-500 uppercase">Amount</span>
+      </div>
+      
+      {/* Second Divider */}
+      <div className="w-px self-stretch bg-gray-200"></div>
+      
+      {/* Balance Section - Remaining space */}
+      <div className="flex-1 flex items-center justify-end">
+        <span className="text-xs font-medium text-gray-500 uppercase">Balance</span>
         {/* Space for arrow */}
         <div className="flex-shrink-0 w-4 ml-2"></div>
       </div>
