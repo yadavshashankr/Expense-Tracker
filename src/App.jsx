@@ -6,7 +6,7 @@ import ExpenseTable from './components/ExpenseTable'
 import TotalSection from './components/TotalSection'
 import CurrencySelect, { currencies } from './components/CurrencySelect'
 import FilterPopup from './components/FilterPopup'
-import { ensureUserSheet, fetchAllRows, appendExpense, updateExpenseRow, deleteExpenseRow } from './services/sheets'
+import { addExpense, getExpenses, updateExpense, deleteExpense, ensureUserSheet } from './services/appsScript'
 
 function App() {
   const [user, setUser] = useState(null)
@@ -95,15 +95,12 @@ function App() {
 
   // Function to fetch expenses
   const fetchExpenses = async () => {
-    if (!spreadsheetId || !user?.accessToken) return;
+    if (!user?.profile?.email) return;
     
     try {
       setIsRefreshing(true);
-      const rows = await fetchAllRows({
-        spreadsheetId,
-        accessToken: user.accessToken
-      });
-      setExpenses(rows);
+      const result = await getExpenses(user.profile.email);
+      setExpenses(result.expenses || []);
       setError(null);
     } catch (err) {
       console.error('Error fetching expenses:', err);
@@ -115,32 +112,24 @@ function App() {
 
   // Initialize sheet and fetch initial data
   useEffect(() => {
-    if (!user?.accessToken) return;
+    if (!user?.profile?.email) return;
 
     const initializeSheet = async () => {
       try {
         setIsLoading(true);
         setError(null);
-        const sheetId = await ensureUserSheet({
-          appName: 'ExpenseTracker',
-          userName: user.profile.email,
-          accessToken: user.accessToken
-        });
-        setSpreadsheetId(sheetId);
+        
+        // Ensure user sheet exists (Apps Script will create it if needed)
+        const result = await ensureUserSheet(user.profile.email);
+        if (result.sheetId) {
+          setSpreadsheetId(result.sheetId);
+        }
         
         // Fetch initial data
-        const rows = await fetchAllRows({
-          spreadsheetId: sheetId,
-          accessToken: user.accessToken
-        });
-        setExpenses(rows);
+        await fetchExpenses();
       } catch (err) {
-        console.error('Error creating/finding sheet:', err);
+        console.error('Error initializing sheet:', err);
         setError(err.message);
-        // If it's an API enablement issue, we should log out the user
-        if (err.message?.includes('API') && err.message?.includes('not enabled')) {
-          setUser(null);
-        }
       } finally {
         setIsLoading(false);
       }
@@ -151,15 +140,15 @@ function App() {
 
   // Auto-refresh expenses every 30 seconds
   useEffect(() => {
-    if (!spreadsheetId || !user?.accessToken) return;
+    if (!user?.profile?.email) return;
 
     const intervalId = setInterval(fetchExpenses, 30000);
     return () => clearInterval(intervalId);
-  }, [spreadsheetId, user]);
+  }, [user]);
 
   const handleAddExpense = async (expense) => {
     try {
-      if (!user?.accessToken) {
+      if (!user?.profile?.email) {
         throw new Error('Please sign in to add transactions.');
       }
 
@@ -169,12 +158,12 @@ function App() {
       // Show loading state
       setIsSubmitting(true);
       
-      await appendExpense({
-        spreadsheetId,
-        accessToken: user.accessToken,
-        entry: expense, // Use the expense object as is (contains form email)
-        currentUserEmail: user.profile.email // Use profile.email for tracking
-      });
+      // Add expense using Apps Script (includes cross-user functionality)
+      await addExpense(
+        user.profile.email, // Current user's email
+        expense, // Expense data
+        expense.userEmail // Recipient email (if different from current user)
+      );
       
       // Refresh expenses
       await fetchExpenses();
@@ -188,18 +177,16 @@ function App() {
 
   const handleUpdateExpense = async (rowIndex, expense) => {
     try {
-      if (!user?.accessToken) {
+      if (!user?.profile?.email) {
         throw new Error('Please sign in to update transactions.');
       }
 
       setError(null);
-      await updateExpenseRow({
-        spreadsheetId,
-        accessToken: user.accessToken,
+      await updateExpense(
+        user.profile.email,
         rowIndex,
-        entry: expense,
-        currentUserEmail: user.profile.email
-      });
+        expense
+      );
       
       // Refresh expenses
       await fetchExpenses();
@@ -211,16 +198,15 @@ function App() {
 
   const handleDeleteExpense = async (rowIndex) => {
     try {
-      if (!user?.accessToken) {
+      if (!user?.profile?.email) {
         throw new Error('Please sign in to delete transactions.');
       }
 
       setError(null);
-      await deleteExpenseRow({
-        spreadsheetId,
-        accessToken: user.accessToken,
+      await deleteExpense(
+        user.profile.email,
         rowIndex
-      });
+      );
       
       // Refresh expenses
       await fetchExpenses();
