@@ -23,11 +23,11 @@ export default function TotalSection({ expenses, currentUserEmail, currency }) {
   const mobileFontSizes = useMemo(() => {
     const calculateMobileFontSize = (amount) => {
       const formattedAmount = formatAmount(amount, currency);
-      // Only apply smaller sizes on mobile
-      if (formattedAmount.length > 14) return 'text-lg md:text-4xl';
-      if (formattedAmount.length > 12) return 'text-xl md:text-4xl';
-      if (formattedAmount.length > 10) return 'text-2xl md:text-4xl';
-      return 'text-2xl md:text-4xl';
+      // Only apply smaller sizes on mobile, keep desktop size consistent
+      if (formattedAmount.length > 14) return 'text-lg md:text-2xl';
+      if (formattedAmount.length > 12) return 'text-xl md:text-2xl';
+      if (formattedAmount.length > 10) return 'text-2xl md:text-2xl';
+      return 'text-2xl md:text-2xl';
     };
 
     return {
@@ -109,7 +109,7 @@ export default function TotalSection({ expenses, currentUserEmail, currency }) {
           <div className="bg-green-50 rounded-lg p-4">
             <div className="flex justify-between items-center">
               <h3 className="text-sm font-medium text-green-800">Total Credit</h3>
-              <p className="text-4xl font-bold text-green-600 text-right">
+              <p className="text-2xl font-bold text-green-600 text-right">
                 +{currency.symbol}{formatAmount(totals.credit, currency)}
               </p>
             </div>
@@ -118,7 +118,7 @@ export default function TotalSection({ expenses, currentUserEmail, currency }) {
           <div className="bg-red-50 rounded-lg p-4">
             <div className="flex justify-between items-center">
               <h3 className="text-sm font-medium text-red-800">Total Debit</h3>
-              <p className="text-4xl font-bold text-red-600 text-right">
+              <p className="text-2xl font-bold text-red-600 text-right">
                 -{currency.symbol}{formatAmount(totals.debit, currency)}
               </p>
             </div>
@@ -130,7 +130,7 @@ export default function TotalSection({ expenses, currentUserEmail, currency }) {
                 Net Balance
               </h3>
               <span className="flex items-center gap-2">
-                <p className={`text-4xl font-bold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
+                <p className={`text-2xl font-bold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
                   {isPositive ? '+' : '-'}{currency.symbol}{formatAmount(balance, currency)}
                 </p>
                 {isPositive ? (

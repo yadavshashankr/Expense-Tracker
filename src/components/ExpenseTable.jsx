@@ -298,110 +298,105 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
     
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-100">
-        <div 
-          className="flex items-stretch min-h-[48px] cursor-pointer px-3 py-3 gap-2"
-          onClick={() => toggleItemExpand(expense.id)}
-        >
-          {/* Name Section - Reduced width */}
-          <div className="flex-shrink-0 w-[28%] flex items-center">
-            <h3 className="font-medium text-gray-900 break-words">{expense.name}</h3>
-          </div>
-          
-          {/* First Divider */}
-          <div className="w-px self-stretch bg-gray-200"></div>
-          
-          {/* Amount Section - Fixed width */}
-          <div className="flex-shrink-0 w-[33%] flex items-center justify-end">
-            <span className={`${expense.type === 'credit' ? 'text-green-600' : 'text-red-600'} font-medium text-sm whitespace-nowrap ${amountFontClass}`}>
-              {expense.type === 'credit' ? '+' : '-'}{currency.symbol}{formatAmount(expense.amount, currency)}
-            </span>
-          </div>
-          
-          {/* Second Divider */}
-          <div className="w-px self-stretch bg-gray-200"></div>
-          
-          {/* Balance Section - Remaining space */}
-          <div className="flex-1 flex items-center justify-end gap-1">
-            <span className={`${runningBalance >= 0 ? 'text-green-600' : 'text-red-600'} font-medium text-sm whitespace-nowrap ${balanceFontClass}`}>
-              {runningBalance >= 0 ? '+' : '-'}{currency.symbol}{formatAmount(runningBalance, currency)}
-            </span>
-            <svg 
-              className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
-        </div>
+        <div className="p-4">
+          {/* Top Section */}
+          <div className="flex items-center justify-between">
+            {/* Date and Time Section */}
+            <div className="flex-1">
+              <p className="text-sm text-gray-600">{dateStr}</p>
+              <p className="text-xs text-gray-400">{timeStr}</p>
+            </div>
 
-        {/* Expanded Content */}
-        {isExpanded && (
-          <div className="px-4 py-3 border-t border-gray-100 bg-gray-50 space-y-2 text-sm">
-            <div className="flex justify-between items-center text-gray-600">
-              <span>Type:</span>
-              <span className={`font-medium ${expense.type === 'credit' ? 'text-green-600' : 'text-red-600'} capitalize`}>
-                {expense.type}
+            {/* Amount Section - Fixed width */}
+            <div className="flex-shrink-0 w-[33%] flex items-center justify-end">
+              <span className={`${expense.type === 'credit' ? 'text-green-600' : 'text-red-600'} font-medium whitespace-nowrap ${amountFontClass}`}>
+                {expense.type === 'credit' ? '+' : '-'}{currency.symbol}{formatAmount(expense.amount, currency)}
               </span>
             </div>
-            <div className="flex justify-between items-center text-gray-600">
-              <span>Email:</span>
-              <span className="font-medium text-gray-900 break-all">{expense.userEmail}</span>
+
+            {/* Balance Section - Remaining space */}
+            <div className="flex-1 flex items-center justify-end gap-1">
+              <span className={`${runningBalance >= 0 ? 'text-green-600' : 'text-red-600'} font-medium whitespace-nowrap ${balanceFontClass}`}>
+                {runningBalance >= 0 ? '+' : '-'}{currency.symbol}{formatAmount(runningBalance, currency)}
+              </span>
+              <svg 
+                className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
             </div>
-            <div className="flex justify-between items-center text-gray-600">
-              <span>Date:</span>
-              <span className="font-medium text-gray-900">{dateStr}</span>
-            </div>
-            <div className="flex justify-between items-center text-gray-600">
-              <span>Time:</span>
-              <span className="font-medium text-gray-900">{timeStr}</span>
-            </div>
-            <div className="flex justify-between items-center text-gray-600 gap-2">
-              <span className="min-w-[60px]">Phone:</span>
-              <div className="font-medium text-gray-900 inline-flex items-center justify-end flex-shrink-0">
-                {expense.phone ? (
-                  <>
-                    <span className="text-lg mr-1">{getCountryFlag(expense.countryCode || '+91')}</span>
-                    <span className="whitespace-nowrap">{(expense.countryCode || '+91')}-{expense.phone}</span>
-                  </>
-                ) : (
-                  'Not provided'
-                )}
-              </div>
-            </div>
-            {expense.description && (
-              <div className="flex justify-between items-center text-gray-600">
-                <span>Description:</span>
-                <span className="font-medium text-gray-900 text-right">{expense.description}</span>
-              </div>
-            )}
-            {expense.userEmail === currentUserEmail && (
-              <div className="flex justify-end gap-3 mt-3 pt-2 border-t border-gray-200">
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    startEdit(expense);
-                  }}
-                  className="text-indigo-600 hover:text-indigo-700 font-medium text-sm"
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (window.confirm('Are you sure you want to delete this transaction?')) {
-                      onDelete(expense.rowIndex);
-                    }
-                  }}
-                  className="text-red-600 hover:text-red-700 font-medium text-sm"
-                >
-                  Delete
-                </button>
-              </div>
-            )}
           </div>
-        )}
+
+          {/* Expanded Content */}
+          {isExpanded && (
+            <div className="px-4 py-3 border-t border-gray-100 bg-gray-50 space-y-2 text-sm">
+              <div className="flex justify-between items-center text-gray-600">
+                <span>Type:</span>
+                <span className={`font-medium ${expense.type === 'credit' ? 'text-green-600' : 'text-red-600'} capitalize`}>
+                  {expense.type}
+                </span>
+              </div>
+              <div className="flex justify-between items-center text-gray-600">
+                <span>Email:</span>
+                <span className="font-medium text-gray-900 break-all">{expense.userEmail}</span>
+              </div>
+              <div className="flex justify-between items-center text-gray-600">
+                <span>Date:</span>
+                <span className="font-medium text-gray-900">{dateStr}</span>
+              </div>
+              <div className="flex justify-between items-center text-gray-600">
+                <span>Time:</span>
+                <span className="font-medium text-gray-900">{timeStr}</span>
+              </div>
+              <div className="flex justify-between items-center text-gray-600 gap-2">
+                <span className="min-w-[60px]">Phone:</span>
+                <div className="font-medium text-gray-900 inline-flex items-center justify-end flex-shrink-0">
+                  {expense.phone ? (
+                    <>
+                      <span className="text-lg mr-1">{getCountryFlag(expense.countryCode || '+91')}</span>
+                      <span className="whitespace-nowrap">{(expense.countryCode || '+91')}-{expense.phone}</span>
+                    </>
+                  ) : (
+                    'Not provided'
+                  )}
+                </div>
+              </div>
+              {expense.description && (
+                <div className="flex justify-between items-center text-gray-600">
+                  <span>Description:</span>
+                  <span className="font-medium text-gray-900 text-right">{expense.description}</span>
+                </div>
+              )}
+              {expense.userEmail === currentUserEmail && (
+                <div className="flex justify-end gap-3 mt-3 pt-2 border-t border-gray-200">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      startEdit(expense);
+                    }}
+                    className="text-indigo-600 hover:text-indigo-700 font-medium text-sm"
+                  >
+                    Edit
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (window.confirm('Are you sure you want to delete this transaction?')) {
+                        onDelete(expense.rowIndex);
+                      }
+                    }}
+                    className="text-red-600 hover:text-red-700 font-medium text-sm"
+                  >
+                    Delete
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </div>
     );
   };
