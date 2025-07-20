@@ -32,15 +32,22 @@ const getCountryFlag = (code) => {
   console.log('getCountryFlag called with code:', code, 'type:', typeof code);
   
   // Handle edge cases
-  if (!code || typeof code !== 'string') {
-    console.log('Invalid code, returning globe');
+  if (!code) {
+    console.log('No code provided, returning globe');
     return '🌐';
   }
   
-  // Clean the code - remove whitespace and ensure it starts with +
-  const cleanCode = code.toString().trim();
+  // Convert to string and clean the code
+  let cleanCode = code.toString().trim();
   console.log('Clean code:', cleanCode);
   
+  // If it's a number (like 91), convert it to the proper format (+91)
+  if (!isNaN(cleanCode) && cleanCode !== '') {
+    cleanCode = '+' + cleanCode;
+    console.log('Converted numeric code to:', cleanCode);
+  }
+  
+  // Try exact match first
   const country = countries.find(c => c.code === cleanCode);
   console.log('Found country:', country);
   
