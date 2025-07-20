@@ -169,46 +169,12 @@ function App() {
       // Show loading state
       setIsSubmitting(true);
       
-      // Add transaction to logged-in user's sheet
       await appendExpense({
         spreadsheetId,
         accessToken: user.accessToken,
         entry: expense, // Use the expense object as is (contains form email)
         currentUserEmail: user.profile.email // Use profile.email for tracking
       });
-      
-      // If the transaction involves another user (not self), update their sheet too
-      if (expense.userEmail && expense.userEmail !== user.profile.email) {
-        try {
-          // Get or create the recipient's sheet
-          const recipientSheetId = await ensureUserSheet({
-            appName: 'ExpenseTracker',
-            userName: expense.userEmail, // The email of the person with whom the transaction occurred
-            accessToken: user.accessToken // The logged-in user's access token
-          });
-
-          // Create mirrored transaction for the recipient
-          const mirroredExpense = {
-            ...expense, // Copy existing expense details
-            userEmail: user.profile.email, // This is the logged-in user's email for the recipient's sheet
-            name: user.profile.name || user.profile.email, // Use logged-in user's name
-            type: expense.type === 'debit' ? 'credit' : 'debit', // Reverse the transaction type
-            id: `${expense.id}-mirror`, // Ensure a unique ID for the mirrored transaction
-          };
-
-          // Append the mirrored transaction to the recipient's sheet
-          await appendExpense({
-            spreadsheetId: recipientSheetId,
-            accessToken: user.accessToken,
-            entry: mirroredExpense,
-            currentUserEmail: mirroredExpense.userEmail // This is the logged-in user's email
-          });
-        } catch (recipientError) {
-          console.error('Error updating recipient sheet:', recipientError);
-          // Don't fail the entire transaction if recipient sheet update fails
-          // Just log the error and continue
-        }
-      }
       
       // Refresh expenses
       await fetchExpenses();
