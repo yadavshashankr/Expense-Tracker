@@ -4155,3 +4155,6 @@
 /node_modules/yaml/util.js
 /node_modules/.package-lock.json
 /package-lock.json
+
+# Service account credentials
+expense-tracker-465819-7eb73db096aa.json
