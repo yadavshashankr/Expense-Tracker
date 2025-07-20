@@ -1,6 +1,6 @@
 // src/services/sheets.js (Frontend file)
 
-const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzv34nyQV-TRALo8yJQnu7aoKdCOZWhGMpW9waAhG8Qfec3IQLPBO11zRTZfvxLeXfuAQ/exec';
+const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzCtvCzqA3_86HOC-SQyiaM--Vw-T1NmidcsTpQbk49aT6YqOC1b5Gc88gkSV-1u-100A/exec';
 
 async function callAppsScript(functionName, args) {
   try {
