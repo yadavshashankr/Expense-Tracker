@@ -1,18 +1,18 @@
 // src/services/sheets.js (Frontend file)
 
-const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzraWctb1r5wvofbFKDbPd7B07uOuN5SR_Sp6h6-oJxxsZrH13SKDdeQpr5-DD_R7baxQ/exec';
+const APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbxb25qAATshbl--a9VIXupIly7YGmGAtaqZjkyo1W0GnOtxJG3Mn8SHIX2ZRDQK2OCscA/exec';
 
 async function callAppsScript(functionName, args) {
   try {
     console.log(`Calling Apps Script function: ${functionName} with args:`, args);
     
-    // Add CORS headers to the request
+    // Try with different CORS approach
     const response = await fetch(APPS_SCRIPT_WEB_APP_URL, {
       method: 'POST',
-      mode: 'cors', // Enable CORS
+      mode: 'cors',
+      credentials: 'omit', // Don't send credentials
       headers: {
         'Content-Type': 'application/json',
-        'Origin': window.location.origin,
       },
       body: JSON.stringify({ function: functionName, args: args }),
     });
