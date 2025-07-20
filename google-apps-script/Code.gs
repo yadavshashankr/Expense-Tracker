@@ -36,18 +36,44 @@ function doOptions(e) {
  */
 function doPost(e) {
   try {
-    // Check if event object exists and has postData
-    if (!e || !e.postData || !e.postData.contents) {
-      console.error('Invalid request: missing postData');
+    console.log('POST request received:', e);
+    console.log('POST parameters:', e.parameter);
+    console.log('POST data:', e.postData);
+    
+    let action, data;
+    
+    // Handle form data (from FormData)
+    if (e.parameter && e.parameter.action) {
+      action = e.parameter.action;
+      data = {};
+      
+      // Parse all parameters
+      Object.keys(e.parameter).forEach(key => {
+        if (key !== 'action') {
+          try {
+            // Try to parse as JSON first
+            data[key] = JSON.parse(e.parameter[key]);
+          } catch (parseError) {
+            // If not JSON, use as string
+            data[key] = e.parameter[key];
+          }
+        }
+      });
+    }
+    // Handle JSON data (fallback)
+    else if (e.postData && e.postData.contents) {
+      const jsonData = JSON.parse(e.postData.contents);
+      action = jsonData.action;
+      data = jsonData;
+    }
+    else {
+      console.error('Invalid request: missing action or data');
       return ContentService.createTextOutput(JSON.stringify({ 
-        error: 'Invalid request: missing postData',
-        message: 'This endpoint expects a POST request with JSON data'
+        error: 'Invalid request: missing action or data',
+        message: 'This endpoint expects a POST request with form data or JSON'
       }))
       .setMimeType(ContentService.MimeType.JSON);
     }
-    
-    const data = JSON.parse(e.postData.contents);
-    const action = data.action;
     
     console.log(`Received action: ${action}`, data);
     
@@ -92,8 +118,12 @@ function doPost(e) {
  */
 function doGet(e) {
   try {
+    console.log('GET request received:', e);
+    console.log('GET parameters:', e.parameter);
+    
     // If no parameters, return status info
     if (!e || !e.parameter || !e.parameter.action) {
+      console.log('No action parameter, returning status info');
       return ContentService.createTextOutput(JSON.stringify({ 
         status: 'Expense Tracker Apps Script Backend is running',
         timestamp: new Date().toISOString(),
@@ -108,17 +138,21 @@ function doGet(e) {
     let result;
     switch(action) {
       case 'getExpenses':
+        console.log('Processing getExpenses with userEmail:', e.parameter.userEmail);
         result = getExpenses({ userEmail: e.parameter.userEmail });
         break;
       
       case 'ensureUserSheet':
+        console.log('Processing ensureUserSheet with userEmail:', e.parameter.userEmail);
         result = ensureUserSheet({ userEmail: e.parameter.userEmail });
         break;
       
       default:
+        console.log('Invalid action for GET request:', action);
         result = { error: 'Invalid action for GET request' };
     }
     
+    console.log('GET result:', result);
     return ContentService.createTextOutput(JSON.stringify(result))
       .setMimeType(ContentService.MimeType.JSON);
       

@@ -11,18 +11,23 @@ async function callAppsScript(action, data) {
   try {
     console.log(`Calling Apps Script with action: ${action}`, data);
     
-    // Enhanced error handling and debugging for CORS issues
+    // Try using form data instead of JSON to avoid CORS preflight
+    const formData = new FormData();
+    formData.append('action', action);
+    
+    // Convert data object to form data
+    Object.keys(data).forEach(key => {
+      if (typeof data[key] === 'object') {
+        formData.append(key, JSON.stringify(data[key]));
+      } else {
+        formData.append(key, data[key]);
+      }
+    });
+    
     const response = await fetch(APPS_SCRIPT_URL, {
       method: 'POST',
       mode: 'cors',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify({
-        action,
-        ...data
-      })
+      body: formData
     });
     
     console.log(`Response status: ${response.status}`);
