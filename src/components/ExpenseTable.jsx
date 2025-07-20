@@ -458,7 +458,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
       <div className="flex items-stretch min-h-[48px] cursor-pointer px-3 py-3 gap-2">
           {/* Name Section - Reduced width */}
    <div className="flex-shrink-0 w-[28%] flex items-center">
-   <h3 className="font-medium text-gray-900 break-words">{expense.name}</h3>
+   <h3 className="font-medium text-gray-500 text-xs uppercase">Name</h3>
  </div>
  
  {/* First Divider */}
@@ -468,11 +468,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
  <div className="flex-1 flex items-center">
    {/* Amount */}
    <div className="flex-1 flex items-center justify-end">
-     <span 
-       className={`${expense.type === 'credit' ? 'text-green-600' : 'text-red-600'} font-medium whitespace-nowrap ${amountFontClass}`}
-     >
-       {expense.type === 'credit' ? '+' : '-'}{currency.symbol}{formatAmount(Math.abs(expense.amount), currency)}
-     </span>
+   <span className="font-medium text-gray-500 text-xs uppercase whitespace-nowrap">Amount</span>
    </div>
    
    {/* Second Divider */}
@@ -480,11 +476,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
    
    {/* Balance */}
    <div className="flex-1 flex items-center justify-end">
-     <span 
-       className={`${runningBalance >= 0 ? 'text-green-600' : 'text-red-600'} font-medium whitespace-nowrap ${balanceFontClass}`}
-     >
-       {runningBalance >= 0 ? '+' : '-'}{currency.symbol}{formatAmount(Math.abs(runningBalance), currency)}
-     </span>
+   <span className="font-medium text-gray-500 text-xs uppercase whitespace-nowrap">Balance</span>
    </div>
    </div>
       </div>
