@@ -1,41 +1,21 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { formatAmount } from './CurrencySelect';
 
 export default function TotalSection({ expenses, currentUserEmail, currency }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const totals = useMemo(() => {
-    return expenses.reduce((acc, expense) => {
-      const amount = parseFloat(expense.amount);
-      if (expense.type === 'credit') {
-        acc.credit += amount;
-      } else {
-        acc.debit += amount;
-      }
-      return acc;
-    }, { credit: 0, debit: 0 });
-  }, [expenses]);
+  const totals = expenses.reduce((acc, expense) => {
+    const amount = parseFloat(expense.amount);
+    if (expense.type === 'credit') {
+      acc.credit += amount;
+    } else {
+      acc.debit += amount;
+    }
+    return acc;
+  }, { credit: 0, debit: 0 });
 
   const balance = totals.credit - totals.debit;
   const isPositive = balance >= 0;
-
-  // Memoize font size calculations for mobile only
-  const mobileFontSizes = useMemo(() => {
-    const calculateMobileFontSize = (amount) => {
-      const formattedAmount = formatAmount(amount, currency);
-      // Only apply smaller sizes on mobile, keep desktop size consistent
-      if (formattedAmount.length > 14) return 'text-lg md:text-2xl';
-      if (formattedAmount.length > 12) return 'text-xl md:text-2xl';
-      if (formattedAmount.length > 10) return 'text-2xl md:text-2xl';
-      return 'text-2xl md:text-2xl';
-    };
-
-    return {
-      credit: calculateMobileFontSize(totals.credit),
-      debit: calculateMobileFontSize(totals.debit),
-      balance: calculateMobileFontSize(Math.abs(balance))
-    };
-  }, [totals, balance, currency]);
 
   // Handle click outside
   useEffect(() => {
@@ -62,7 +42,7 @@ export default function TotalSection({ expenses, currentUserEmail, currency }) {
               Net Balance
             </h3>
             <div className="flex items-center gap-2">
-              <p className={`font-bold ${isPositive ? 'text-green-600' : 'text-red-600'} ${mobileFontSizes.balance}`}>
+              <p className={`text-xl font-bold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
                 {isPositive ? '+' : '-'}{currency.symbol}{formatAmount(balance, currency)}
               </p>
               <div 
@@ -85,7 +65,7 @@ export default function TotalSection({ expenses, currentUserEmail, currency }) {
             <div className="bg-green-50 rounded-lg p-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-sm font-medium text-green-800">Total Credit</h3>
-                <p className={`font-bold text-green-600 text-right ${mobileFontSizes.credit}`}>
+                <p className="text-2xl font-bold text-green-600 text-right">
                   +{currency.symbol}{formatAmount(totals.credit, currency)}
                 </p>
               </div>
@@ -94,7 +74,7 @@ export default function TotalSection({ expenses, currentUserEmail, currency }) {
             <div className="bg-red-50 rounded-lg p-4">
               <div className="flex justify-between items-center">
                 <h3 className="text-sm font-medium text-red-800">Total Debit</h3>
-                <p className={`font-bold text-red-600 text-right ${mobileFontSizes.debit}`}>
+                <p className="text-2xl font-bold text-red-600 text-right">
                   -{currency.symbol}{formatAmount(totals.debit, currency)}
                 </p>
               </div>
