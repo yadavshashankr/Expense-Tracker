@@ -20,9 +20,11 @@ export default function TotalSection({ expenses, currentUserEmail, currency }) {
   // Helper function to determine font size class based on amount length
   const getAmountFontClass = (amount) => {
     const formattedAmount = formatAmount(amount, currency);
+    if (formattedAmount.length > 14) return 'text-base sm:text-lg';
     if (formattedAmount.length > 12) return 'text-lg sm:text-xl';
-    if (formattedAmount.length > 8) return 'text-xl sm:text-2xl';
-    return 'text-2xl sm:text-3xl';
+    if (formattedAmount.length > 10) return 'text-xl sm:text-2xl';
+    if (formattedAmount.length > 8) return 'text-2xl sm:text-3xl';
+    return 'text-3xl sm:text-4xl';
   };
 
   // Handle click outside

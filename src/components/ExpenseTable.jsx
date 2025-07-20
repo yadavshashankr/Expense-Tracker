@@ -259,7 +259,9 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
   // Helper function to determine font size class based on amount length
   const getAmountFontClass = (amount) => {
     const formattedAmount = formatAmount(amount, currency);
-    if (formattedAmount.length > 12) return 'text-xs';
+    if (formattedAmount.length > 14) return 'text-[10px]';
+    if (formattedAmount.length > 12) return 'text-[11px]';
+    if (formattedAmount.length > 10) return 'text-xs';
     if (formattedAmount.length > 8) return 'text-sm';
     return 'text-base';
   };
@@ -301,14 +303,16 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
             <span className={`${runningBalance >= 0 ? 'text-green-600' : 'text-red-600'} font-medium whitespace-nowrap ${balanceFontClass}`}>
               {runningBalance >= 0 ? '+' : '-'}{currency.symbol}{formatAmount(runningBalance, currency)}
             </span>
-            <svg 
-              className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
-              fill="none" 
-              stroke="currentColor" 
-              viewBox="0 0 24 24"
-            >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-            </svg>
+            <div className="flex-shrink-0">
+              <svg 
+                className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                fill="none" 
+                stroke="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
           </div>
         </div>
 
@@ -554,9 +558,21 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right font-medium">
-                      <span className={`${expense.runningBalance >= 0 ? 'text-green-600' : 'text-red-600'} ${balanceFontClass}`}>
-                        {expense.runningBalance >= 0 ? '+' : '-'}{currency.symbol}{formatAmount(expense.runningBalance, currency)}
-                      </span>
+                      <div className="flex items-center justify-end gap-1">
+                        <span className={`${expense.runningBalance >= 0 ? 'text-green-600' : 'text-red-600'} ${balanceFontClass}`}>
+                          {expense.runningBalance >= 0 ? '+' : '-'}{currency.symbol}{formatAmount(expense.runningBalance, currency)}
+                        </span>
+                        <div className="flex-shrink-0">
+                          <svg 
+                            className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
+                            fill="none" 
+                            stroke="currentColor" 
+                            viewBox="0 0 24 24"
+                          >
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </div>
+                      </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div className="flex justify-end items-center gap-3">
@@ -584,14 +600,6 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
                             </button>
                           </>
                         )}
-                        <svg 
-                          className={`w-4 h-4 text-gray-400 flex-shrink-0 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
-                          fill="none" 
-                          stroke="currentColor" 
-                          viewBox="0 0 24 24"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
                       </div>
                     </td>
                   </tr>
