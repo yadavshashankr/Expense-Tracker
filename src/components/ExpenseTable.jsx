@@ -283,7 +283,8 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
     // Calculate font sizes based on amount length
     const getResponsiveFontClass = (amount) => {
       const formattedAmount = formatAmount(Math.abs(amount), currency);
-      if (formattedAmount.length > 8) {
+      // Only reduce font size for amounts larger than 100,000
+      if (formattedAmount.length > 11) {
         return 'text-[10px] md:text-sm';
       }
       return 'text-sm';
@@ -307,9 +308,9 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
           <div className="w-px self-stretch bg-gray-200"></div>
           
           {/* Amount and Balance Section - Combined with fixed width */}
-          <div className="flex-1 grid grid-cols-2 gap-1">
+          <div className="flex-1 flex items-center">
             {/* Amount */}
-            <div className="flex items-center justify-end">
+            <div className="flex-1 flex items-center justify-end">
               <span 
                 className={`${expense.type === 'credit' ? 'text-green-600' : 'text-red-600'} font-medium whitespace-nowrap ${amountFontClass}`}
               >
@@ -317,8 +318,11 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
               </span>
             </div>
             
+            {/* Second Divider */}
+            <div className="w-px self-stretch bg-gray-200 mx-2"></div>
+            
             {/* Balance */}
-            <div className="flex items-center justify-end gap-1">
+            <div className="flex-1 flex items-center justify-end">
               <span 
                 className={`${runningBalance >= 0 ? 'text-green-600' : 'text-red-600'} font-medium whitespace-nowrap ${balanceFontClass}`}
               >
@@ -328,7 +332,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
           </div>
 
           {/* Arrow - Fixed position */}
-          <div className="flex-shrink-0 flex items-center">
+          <div className="flex-shrink-0 flex items-center ml-2">
             <svg 
               className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''}`}
               fill="none" 
