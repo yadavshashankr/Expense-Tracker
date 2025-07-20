@@ -66,10 +66,10 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
   const handleSelect = (result) => {
     setForm(prev => ({
       ...prev,
-      name: result.name || prev.name,
-      email: result.email || prev.email,
-      phone: result.phone || prev.phone,
-      countryCode: result.countryCode || prev.countryCode
+      name: String(result.name || prev.name || ''),
+      email: String(result.email || prev.email || ''),
+      phone: String(result.phone || prev.phone || ''),
+      countryCode: String(result.countryCode || prev.countryCode || '+91')
     }));
     setSearchTerm({ name: '', email: '', phone: '' });
   };
@@ -82,13 +82,25 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
   const submit = e => {
     e.preventDefault();
     try {
+      // Ensure all string fields are actually strings
+      const safeForm = {
+        name: String(form.name || ''),
+        email: String(form.email || ''),
+        type: form.type || 'debit',
+        amount: form.amount || '',
+        description: String(form.description || ''),
+        phone: String(form.phone || ''),
+        countryCode: String(form.countryCode || '+91'),
+        transactionDate: String(form.transactionDate || '')
+      };
+
       // Validate required fields
-      if (!form.name.trim() || !form.email.trim()) {
+      if (!safeForm.name.trim() || !safeForm.email.trim()) {
         throw new Error('Name and email are required.');
       }
 
       // Validate amount
-      const amount = parseFloat(form.amount);
+      const amount = parseFloat(safeForm.amount);
       if (isNaN(amount) || amount <= 0) {
         throw new Error('Please enter a valid amount greater than 0.');
       }
@@ -96,16 +108,16 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
       // Create a single entry with validated data
       const entry = {
         id: crypto.randomUUID(),
-        timestamp: form.transactionDate && form.transactionDate.trim() !== '' 
-          ? new Date(form.transactionDate).toISOString()
+        timestamp: safeForm.transactionDate && safeForm.transactionDate.trim() !== '' 
+          ? new Date(safeForm.transactionDate).toISOString()
           : new Date().toISOString(),
-        name: form.name.trim(),
-        userEmail: form.email.trim(), // Use the email entered in the form
-        type: form.type,
+        name: safeForm.name.trim(),
+        userEmail: safeForm.email.trim(), // Use the email entered in the form
+        type: safeForm.type,
         amount: amount,
-        description: form.description?.trim() || '',
-        phone: form.phone?.trim() || '',
-        countryCode: form.countryCode || '+91'
+        description: safeForm.description.trim(),
+        phone: safeForm.phone.trim(),
+        countryCode: safeForm.countryCode
       };
 
       // Submit only after all validations pass
