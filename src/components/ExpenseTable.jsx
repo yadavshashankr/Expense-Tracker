@@ -30,9 +30,29 @@ const countries = [
 // Function to get flag emoji for a country code
 const getCountryFlag = (code) => {
   console.log('getCountryFlag called with code:', code, 'type:', typeof code);
-  const country = countries.find(c => c.code === code);
+  
+  // Handle edge cases
+  if (!code || typeof code !== 'string') {
+    console.log('Invalid code, returning globe');
+    return '🌐';
+  }
+  
+  // Clean the code - remove whitespace and ensure it starts with +
+  const cleanCode = code.toString().trim();
+  console.log('Clean code:', cleanCode);
+  
+  const country = countries.find(c => c.code === cleanCode);
   console.log('Found country:', country);
-  return country ? country.flag : '🌐';
+  
+  if (country) {
+    return country.flag;
+  }
+  
+  // If not found, try to find by partial match (in case there are formatting issues)
+  const partialMatch = countries.find(c => cleanCode.includes(c.code) || c.code.includes(cleanCode));
+  console.log('Partial match:', partialMatch);
+  
+  return partialMatch ? partialMatch.flag : '🌐';
 };
 
 // Utility function for date formatting
