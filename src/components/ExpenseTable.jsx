@@ -108,6 +108,38 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
   const [draft, setDraft] = useState({});
   const [expandedItems, setExpandedItems] = useState(new Set());
 
+  // Memoize font size calculations for mobile view only
+  const mobileFontSizes = useMemo(() => {
+    const sizes = new Map();
+    
+    const calculateMobileFontSize = (amount) => {
+      const formattedAmount = formatAmount(amount, currency);
+      // Only apply smaller sizes on mobile
+      if (formattedAmount.length > 14) return 'text-[10px] md:text-sm';
+      if (formattedAmount.length > 12) return 'text-[11px] md:text-sm';
+      if (formattedAmount.length > 10) return 'text-xs md:text-sm';
+      if (formattedAmount.length > 8) return 'text-sm';
+      return 'text-sm';
+    };
+
+    expenses.forEach(expense => {
+      // Calculate for amount
+      sizes.set(`amount-${expense.id}`, calculateMobileFontSize(expense.amount));
+      
+      // Calculate for running balance
+      const runningBalance = calculateRunningBalance([expense], currentUserEmail, expense.userEmail, 0);
+      sizes.set(`balance-${expense.id}`, calculateMobileFontSize(runningBalance));
+    });
+
+    return sizes;
+  }, [expenses, currency, currentUserEmail]); // Only recalculate when these dependencies change
+
+  // Helper function to get font size from memoized map
+  const getMobileFontClass = (amount, id, isBalance = false) => {
+    const key = `${isBalance ? 'balance' : 'amount'}-${id}`;
+    return mobileFontSizes.get(key) || 'text-sm';
+  };
+
   // Apply filters and sort expenses
   const filteredAndSortedExpenses = useMemo(() => {
     let filtered = [...expenses];
@@ -261,6 +293,8 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
     const { dateStr, timeStr } = formatDateTime(expense.timestamp);
     const runningBalance = runningBalances[index].runningBalance;
     const isExpanded = expandedItems.has(expense.id);
+    const amountFontClass = getMobileFontClass(expense.amount, expense.id);
+    const balanceFontClass = getMobileFontClass(runningBalance, expense.id, true);
     
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-100">
@@ -278,7 +312,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
           
           {/* Amount Section - Fixed width */}
           <div className="flex-shrink-0 w-[33%] flex items-center justify-end">
-            <span className={`${expense.type === 'credit' ? 'text-green-600' : 'text-red-600'} font-medium text-sm whitespace-nowrap`}>
+            <span className={`${expense.type === 'credit' ? 'text-green-600' : 'text-red-600'} font-medium text-sm whitespace-nowrap ${amountFontClass}`}>
               {expense.type === 'credit' ? '+' : '-'}{currency.symbol}{formatAmount(expense.amount, currency)}
             </span>
           </div>
@@ -288,7 +322,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
           
           {/* Balance Section - Remaining space */}
           <div className="flex-1 flex items-center justify-end gap-1">
-            <span className={`${runningBalance >= 0 ? 'text-green-600' : 'text-red-600'} font-medium text-sm whitespace-nowrap`}>
+            <span className={`${runningBalance >= 0 ? 'text-green-600' : 'text-red-600'} font-medium text-sm whitespace-nowrap ${balanceFontClass}`}>
               {runningBalance >= 0 ? '+' : '-'}{currency.symbol}{formatAmount(runningBalance, currency)}
             </span>
             <svg 
