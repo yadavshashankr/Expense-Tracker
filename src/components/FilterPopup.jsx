@@ -38,7 +38,7 @@ export default function FilterPopup({ onClose, onApplyFilters, initialFilters, e
       userMap.set(expense.userEmail, {
         name: expense.name,
         email: expense.userEmail,
-        phone: expense.phone || '',
+        phone: String(expense.phone || ''),
         countryCode: expense.countryCode || '+91',
         lastUsed: expense.timestamp
       });

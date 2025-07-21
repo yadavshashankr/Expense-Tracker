@@ -27,7 +27,7 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
       userMap.set(expense.userEmail, {
         name: expense.name,
         email: expense.userEmail,
-        phone: expense.phone || '',
+        phone: String(expense.phone || ''),
         countryCode: expense.countryCode || '+91',
         lastUsed: expense.timestamp
       });
