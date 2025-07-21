@@ -350,15 +350,28 @@ function getExpenses(data) {
       return { error: 'Missing userEmail' };
     }
     
+    console.log(`Getting expenses for user: ${userEmail}`);
+    
     const sheetId = ensureUserSheetInternal(userEmail);
     if (!sheetId) {
       return { error: 'Failed to create user sheet' };
     }
     
+    console.log(`Using sheet ID: ${sheetId}`);
+    
     const sheet = SpreadsheetApp.openById(sheetId);
     const sheetData = sheet.getActiveSheet();
     
     const transactions = getAllTransactionsFromSheet(sheetData);
+    
+    console.log(`Retrieved ${transactions.length} transactions for ${userEmail}`);
+    console.log('Transaction details:', transactions.map(t => ({
+      id: t.id,
+      name: t.name,
+      userEmail: t.userEmail,
+      type: t.type,
+      amount: t.amount
+    })));
     
     return {
       success: true,
@@ -667,16 +680,22 @@ function getAllTransactionsFromSheet(sheetData) {
   try {
     const data = sheetData.getDataRange().getValues();
     
+    console.log(`Raw sheet data: ${data.length} rows`);
+    console.log('Raw data:', data);
+    
     // Skip header row
     if (data.length <= 1) {
+      console.log('No data rows found, returning empty array');
       return [];
     }
     
     const transactions = [];
     for (let i = 1; i < data.length; i++) {
       const row = data[i];
+      console.log(`Processing row ${i}:`, row);
+      
       if (row[0]) { // Check if ID exists
-        transactions.push({
+        const transaction = {
           id: row[0],
           timestamp: row[1],
           userEmail: row[2],
@@ -687,10 +706,15 @@ function getAllTransactionsFromSheet(sheetData) {
           balance: parseFloat(row[7] || 0),
           countryCode: String(row[8] || '+91').startsWith('+') ? String(row[8] || '+91') : '+' + String(row[8] || '91'),
           phone: row[9] || ''
-        });
+        };
+        transactions.push(transaction);
+        console.log(`Added transaction:`, transaction);
+      } else {
+        console.log(`Skipping row ${i} - no ID found`);
       }
     }
     
+    console.log(`Total transactions processed: ${transactions.length}`);
     return transactions;
     
   } catch (error) {
