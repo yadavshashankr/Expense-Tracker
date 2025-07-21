@@ -62,6 +62,26 @@ const getCountryFlag = (code) => {
   return partialMatch ? partialMatch.flag : '🌐';
 };
 
+// Function to format country code for display
+const formatCountryCode = (code) => {
+  if (!code) return '+91';
+  
+  // Convert to string and clean
+  let cleanCode = code.toString().trim();
+  
+  // If it's a number (like 91), add the + sign
+  if (!isNaN(cleanCode) && cleanCode !== '') {
+    cleanCode = '+' + cleanCode;
+  }
+  
+  // If it doesn't start with +, add it
+  if (!cleanCode.startsWith('+')) {
+    cleanCode = '+' + cleanCode;
+  }
+  
+  return cleanCode;
+};
+
 // Utility function for date formatting
 const formatDateTime = (timestamp) => {
   const date = new Date(timestamp);
@@ -400,7 +420,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
                 {expense.phone ? (
                   <>
                     <span className="text-lg mr-1">{getCountryFlag(expense.countryCode || '+91')}</span>
-                    <span className="whitespace-nowrap">{(expense.countryCode || '+91')}-{expense.phone}</span>
+                    <span className="whitespace-nowrap">{formatCountryCode(expense.countryCode || '+91')}-{expense.phone}</span>
                   </>
                 ) : (
                   'Not provided'
@@ -705,7 +725,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
                               {expense.phone ? (
                                 <>
                                   <span className="text-lg mr-1">{getCountryFlag(expense.countryCode || '+91')}</span>
-                                  <span className="whitespace-nowrap">{(expense.countryCode || '+91')}-{expense.phone}</span>
+                                  <span className="whitespace-nowrap">{formatCountryCode(expense.countryCode || '+91')}-{expense.phone}</span>
                                 </>
                               ) : (
                                 'Not provided'
