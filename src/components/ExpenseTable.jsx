@@ -164,18 +164,19 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
     if (activeFilters) {
       filtered = filtered.filter(expense => {
         // Name filter
-        if (activeFilters.name && !expense.name?.toLowerCase().includes(activeFilters.name.toLowerCase())) {
+        if (activeFilters.name && !String(expense.name || '').toLowerCase().includes(activeFilters.name.toLowerCase())) {
           return false;
         }
 
         // Email filter
-        if (activeFilters.email && !expense.userEmail?.toLowerCase().includes(activeFilters.email.toLowerCase())) {
+        if (activeFilters.email && !String(expense.userEmail || '').toLowerCase().includes(activeFilters.email.toLowerCase())) {
           return false;
         }
 
         // Phone filter
         if (activeFilters.phone) {
-          const expensePhone = (expense.phone || '').toString();
+          // Ensure phone is a string and handle null/undefined values
+          const expensePhone = String(expense.phone || '');
           if (!expensePhone.toLowerCase().includes(activeFilters.phone.toLowerCase())) {
             return false;
           }
@@ -216,7 +217,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
         }
 
         // Description filter
-        if (activeFilters.description && !expense.description?.toLowerCase().includes(activeFilters.description.toLowerCase())) {
+        if (activeFilters.description && !String(expense.description || '').toLowerCase().includes(activeFilters.description.toLowerCase())) {
           return false;
         }
 
@@ -420,7 +421,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
                 {expense.phone ? (
                   <>
                     <span className="text-lg mr-1">{getCountryFlag(expense.countryCode || '+91')}</span>
-                    <span className="whitespace-nowrap">{formatCountryCode(expense.countryCode || '+91')}-{expense.phone}</span>
+                    <span className="whitespace-nowrap">{formatCountryCode(expense.countryCode || '+91')}-{String(expense.phone || '')}</span>
                   </>
                 ) : (
                   'Not provided'
@@ -725,7 +726,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
                               {expense.phone ? (
                                 <>
                                   <span className="text-lg mr-1">{getCountryFlag(expense.countryCode || '+91')}</span>
-                                  <span className="whitespace-nowrap">{formatCountryCode(expense.countryCode || '+91')}-{expense.phone}</span>
+                                  <span className="whitespace-nowrap">{formatCountryCode(expense.countryCode || '+91')}-{String(expense.phone || '')}</span>
                                 </>
                               ) : (
                                 'Not provided'

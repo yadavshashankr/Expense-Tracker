@@ -64,7 +64,7 @@ export default function FilterPopup({ onClose, onApplyFilters, initialFilters, e
         } else if (field === 'email') {
           return user.email.toLowerCase().includes(searchTerm);
         } else if (field === 'phone') {
-          const userPhone = user.phone || '';
+          const userPhone = String(user.phone || '');
           return userPhone.toLowerCase().includes(searchTerm);
         }
         return false;
