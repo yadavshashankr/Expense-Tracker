@@ -183,8 +183,16 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
         }
 
         // Country code filter
-        if (activeFilters.countryCode && activeFilters.countryCode !== 'all' && expense.countryCode !== activeFilters.countryCode) {
-          return false;
+        if (activeFilters.countryCode && activeFilters.countryCode !== 'all') {
+          // Normalize country codes for comparison
+          const expenseCountryCode = String(expense.countryCode || '+91').trim();
+          const filterCountryCode = String(activeFilters.countryCode).trim();
+          
+          console.log(`Country code filter: expense="${expenseCountryCode}" vs filter="${filterCountryCode}"`);
+          
+          if (expenseCountryCode !== filterCountryCode) {
+            return false;
+          }
         }
 
         // Amount range filter

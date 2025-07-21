@@ -28,7 +28,7 @@ export default function ExpenseForm({ onSubmit, currentUserEmail, expenses }) {
         name: expense.name,
         email: expense.userEmail,
         phone: String(expense.phone || ''),
-        countryCode: expense.countryCode || '+91',
+        countryCode: String(expense.countryCode || '+91'),
         lastUsed: expense.timestamp
       });
     });

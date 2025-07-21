@@ -39,7 +39,7 @@ export default function FilterPopup({ onClose, onApplyFilters, initialFilters, e
         name: expense.name,
         email: expense.userEmail,
         phone: String(expense.phone || ''),
-        countryCode: expense.countryCode || '+91',
+        countryCode: String(expense.countryCode || '+91'),
         lastUsed: expense.timestamp
       });
     });
@@ -252,16 +252,26 @@ export default function FilterPopup({ onClose, onApplyFilters, initialFilters, e
               </div>
             </div>
 
-            {/* Description */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-              <input
-                type="text"
-                value={filters.description}
-                onChange={handleChange('description')}
-                placeholder="Search in description"
-                className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
-              />
+            {/* Country Code and Description */}
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Country Code</label>
+                <CountryCodeSelect
+                  value={filters.countryCode}
+                  onChange={(value) => setFilters(prev => ({ ...prev, countryCode: value }))}
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <input
+                  type="text"
+                  value={filters.description}
+                  onChange={handleChange('description')}
+                  placeholder="Search in description"
+                  className="w-full px-2 sm:px-3 py-1.5 sm:py-2 text-sm border border-gray-300 rounded-md shadow-sm focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500"
+                />
+              </div>
             </div>
           </div>
 
