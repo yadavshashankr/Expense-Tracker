@@ -289,7 +289,7 @@ function addExpense(data) {
       expense.amount,
       expense.description || '',
       balance,
-      expense.countryCode || '+91',
+      String(expense.countryCode || '+91').startsWith('+') ? String(expense.countryCode || '+91') : '+' + String(expense.countryCode || '91'),
       expense.phone || ''
     ];
     
@@ -378,7 +378,7 @@ function updateExpense(data) {
       expense.amount,
       expense.description || '',
       balance,
-      expense.countryCode || '+91',
+      String(expense.countryCode || '+91').startsWith('+') ? String(expense.countryCode || '+91') : '+' + String(expense.countryCode || '91'),
       expense.phone || ''
     ];
     
@@ -585,7 +585,7 @@ function getAllTransactionsFromSheet(sheetData) {
           amount: row[5],
           description: row[6],
           balance: parseFloat(row[7] || 0),
-          countryCode: row[8] || '+91',
+          countryCode: String(row[8] || '+91').startsWith('+') ? String(row[8] || '+91') : '+' + String(row[8] || '91'),
           phone: row[9] || ''
         });
       }

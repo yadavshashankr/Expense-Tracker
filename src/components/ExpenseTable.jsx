@@ -185,8 +185,14 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
         // Country code filter
         if (activeFilters.countryCode && activeFilters.countryCode !== 'all') {
           // Normalize country codes for comparison
-          const expenseCountryCode = String(expense.countryCode || '+91').trim();
+          let expenseCountryCode = String(expense.countryCode || '+91').trim();
           const filterCountryCode = String(activeFilters.countryCode).trim();
+          
+          // Handle different formats: "91" vs "+91", "1" vs "+1"
+          // If expense code doesn't start with +, add it
+          if (!expenseCountryCode.startsWith('+')) {
+            expenseCountryCode = '+' + expenseCountryCode;
+          }
           
           console.log(`Country code filter: expense="${expenseCountryCode}" vs filter="${filterCountryCode}"`);
           
