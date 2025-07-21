@@ -251,19 +251,33 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
     );
     
     // Calculate running balances
-    const balances = chronologicalExpenses.map((expense, index) => ({
-      ...expense,
-      runningBalance: calculateRunningBalance(chronologicalExpenses, currentUserEmail, expense.userEmail, index)
-    }));
+    const balances = chronologicalExpenses.map((expense, index) => {
+      const runningBalance = calculateRunningBalance(chronologicalExpenses, currentUserEmail, expense.userEmail, index);
+      console.log(`Calculated balance for ${expense.name}: ${runningBalance}`);
+      return {
+        ...expense,
+        runningBalance: runningBalance
+      };
+    });
 
     // Filter by balance range if specified
     if (activeFilters?.balanceMin || activeFilters?.balanceMax) {
+      console.log('Balance filter active:', { 
+        balanceMin: activeFilters.balanceMin, 
+        balanceMax: activeFilters.balanceMax,
+        totalBalances: balances.length 
+      });
+      
       return balances.filter(expense => {
         const balance = expense.runningBalance;
+        console.log(`Balance filter: expense balance=${balance}, min=${activeFilters.balanceMin}, max=${activeFilters.balanceMax}`);
+        
         if (activeFilters.balanceMin && balance < parseFloat(activeFilters.balanceMin)) {
+          console.log(`Filtered out: balance ${balance} < min ${activeFilters.balanceMin}`);
           return false;
         }
         if (activeFilters.balanceMax && balance > parseFloat(activeFilters.balanceMax)) {
+          console.log(`Filtered out: balance ${balance} > max ${activeFilters.balanceMax}`);
           return false;
         }
         return true;
