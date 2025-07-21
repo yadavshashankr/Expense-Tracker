@@ -318,7 +318,7 @@ function addExpense(data) {
             expense.id,
             expense.timestamp,
             userEmail, // Current user becomes the other user in mirrored transaction
-            expense.name,
+            expense.name, // Set to sender's name
             expense.type === 'credit' ? 'debit' : 'credit', // Reverse the transaction type
             expense.amount,
             expense.description || '',
