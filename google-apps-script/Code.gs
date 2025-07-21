@@ -5,9 +5,8 @@
 const APP_NAME = 'ExpenseTracker';
 const HEADERS = [['ID', 'Timestamp', 'User Email', 'Name', 'Type', 'Amount', 'Description', 'Balance', 'Country Code', 'Phone']];
 
-// Performance Optimization: Caching Configuration
-const CACHE_DURATION = 300; // 5 minutes
-const SHEET_CACHE = {};
+// Simple in-memory cache for sheet IDs (resets when script restarts)
+const SHEET_ID_CACHE = {};
 
 // CORS Configuration
 const ALLOWED_ORIGINS = [
@@ -15,44 +14,6 @@ const ALLOWED_ORIGINS = [
   'http://localhost:5173', // For local development
   'http://localhost:3000'  // Alternative local development port
 ];
-
-/**
- * Get cached sheet or fetch from Drive
- */
-function getCachedSheet(userEmail) {
-  const cacheKey = `sheet_${userEmail}`;
-  
-  // Check cache first
-  if (SHEET_CACHE[cacheKey] && SHEET_CACHE[cacheKey].timestamp > Date.now() - (CACHE_DURATION * 1000)) {
-    console.log(`Using cached sheet for ${userEmail}`);
-    return SHEET_CACHE[cacheKey].sheetId;
-  }
-  
-  // Fetch from Drive
-  const sheetId = ensureUserSheetInternal(userEmail);
-  
-  // Cache the result
-  if (sheetId) {
-    SHEET_CACHE[cacheKey] = {
-      sheetId: sheetId,
-      timestamp: Date.now()
-    };
-    console.log(`Cached sheet for ${userEmail}: ${sheetId}`);
-  }
-  
-  return sheetId;
-}
-
-/**
- * Clear cache for a specific user (when data changes)
- */
-function clearUserCache(userEmail) {
-  const cacheKey = `sheet_${userEmail}`;
-  if (SHEET_CACHE[cacheKey]) {
-    delete SHEET_CACHE[cacheKey];
-    console.log(`Cleared cache for ${userEmail}`);
-  }
-}
 
 /**
  * Set CORS headers for the response
@@ -304,8 +265,8 @@ function addExpense(data) {
       return { error: 'Missing required data: userEmail and expense' };
     }
     
-    // Ensure user's sheet exists (using cache)
-    const userSheetId = getCachedSheet(userEmail);
+    // Ensure user's sheet exists
+    const userSheetId = ensureUserSheetInternal(userEmail);
     if (!userSheetId) {
       return { error: 'Failed to create user sheet' };
     }
@@ -335,9 +296,6 @@ function addExpense(data) {
     // Add to user's sheet
     userSheetData.appendRow(rowData);
     
-    // Clear cache since data changed
-    clearUserCache(userEmail);
-    
     return { 
       success: true, 
       message: 'Expense added successfully',
@@ -361,7 +319,7 @@ function getExpenses(data) {
       return { error: 'Missing userEmail' };
     }
     
-    const sheetId = getCachedSheet(userEmail);
+    const sheetId = ensureUserSheetInternal(userEmail);
     if (!sheetId) {
       return { error: 'Failed to create user sheet' };
     }
@@ -394,7 +352,7 @@ function updateExpense(data) {
       return { error: 'Missing required data: userEmail, rowIndex, and expense' };
     }
     
-    const sheetId = getCachedSheet(userEmail);
+    const sheetId = ensureUserSheetInternal(userEmail);
     if (!sheetId) {
       return { error: 'Failed to create user sheet' };
     }
@@ -428,9 +386,6 @@ function updateExpense(data) {
     const range = sheetData.getRange(rowNumber, 1, 1, rowData.length);
     range.setValues([rowData]);
     
-    // Clear cache since data changed
-    clearUserCache(userEmail);
-    
     return { 
       success: true, 
       message: 'Expense updated successfully' 
@@ -453,7 +408,7 @@ function deleteExpense(data) {
       return { error: 'Missing required data: userEmail and rowIndex' };
     }
     
-    const sheetId = getCachedSheet(userEmail);
+    const sheetId = ensureUserSheetInternal(userEmail);
     if (!sheetId) {
       return { error: 'Failed to create user sheet' };
     }
@@ -464,9 +419,6 @@ function deleteExpense(data) {
     // Delete the specific row (rowIndex + 2 because of headers and 0-based index)
     const rowNumber = rowIndex + 2;
     sheetData.deleteRow(rowNumber);
-    
-    // Clear cache since data changed
-    clearUserCache(userEmail);
     
     return { 
       success: true, 
@@ -490,7 +442,7 @@ function ensureUserSheet(data) {
       return { error: 'Missing userEmail' };
     }
     
-    const sheetId = getCachedSheet(userEmail);
+    const sheetId = ensureUserSheetInternal(userEmail);
     
     if (sheetId) {
       return { 
@@ -508,77 +460,104 @@ function ensureUserSheet(data) {
 }
 
 /**
- * Internal function to ensure user sheet exists
+ * Internal function to ensure user sheet exists using direct access
+ * Much faster than searching through folders and files
  */
 function ensureUserSheetInternal(userEmail) {
   try {
     console.log(`Ensuring sheet exists for user: ${userEmail}`);
     
-    // Create or find the main folder
-    let folder;
-    try {
-      // Try to find existing folder first
-      const folders = DriveApp.getFoldersByName(APP_NAME);
-      if (folders.hasNext()) {
-        folder = folders.next();
-        console.log(`Found existing folder: ${folder.getName()}`);
-      } else {
-        // Create folder if it doesn't exist
-        folder = DriveApp.createFolder(APP_NAME);
-        console.log(`Created new folder: ${folder.getName()}`);
-      }
-    } catch (folderError) {
-      console.error('Error with folder creation:', folderError);
-      // Create folder directly if search fails
-      folder = DriveApp.createFolder(APP_NAME);
-      console.log(`Created folder after error: ${folder.getName()}`);
+    // Check cache first (fastest)
+    if (SHEET_ID_CACHE[userEmail]) {
+      console.log(`Using cached sheet ID for ${userEmail}: ${SHEET_ID_CACHE[userEmail]}`);
+      return SHEET_ID_CACHE[userEmail];
     }
     
-    // Create or find the user's sheet
+    // Use predictable naming convention: {userEmail}-transactions
     const sheetName = `${userEmail}-transactions`;
-    let sheet;
     
+    // First, try to open the sheet directly using the naming convention
     try {
-      // Try to find existing sheet
+      // Try to find the sheet by name directly
       const sheets = DriveApp.getFilesByName(sheetName);
       if (sheets.hasNext()) {
-        sheet = sheets.next();
-        console.log(`Found existing sheet: ${sheet.getName()}`);
-        return sheet.getId();
+        const sheet = sheets.next();
+        const sheetId = sheet.getId();
+        console.log(`Found existing sheet: ${sheet.getName()} with ID: ${sheetId}`);
+        
+        // Cache the sheet ID for future use
+        SHEET_ID_CACHE[userEmail] = sheetId;
+        return sheetId;
       }
-    } catch (searchError) {
-      console.log(`Search for existing sheet failed, will create new one: ${searchError}`);
+    } catch (directAccessError) {
+      console.log(`Direct access failed, will create new sheet: ${directAccessError}`);
     }
     
-    // Create new sheet if not found
+    // If sheet doesn't exist, create it with proper naming
     console.log(`Creating new sheet: ${sheetName}`);
-    sheet = SpreadsheetApp.create(sheetName);
-    const sheetFile = DriveApp.getFileById(sheet.getId());
+    const sheet = SpreadsheetApp.create(sheetName);
+    const sheetId = sheet.getId();
     
-    // Move sheet to the folder
-    try {
-      folder.addFile(sheetFile);
-      DriveApp.getRootFolder().removeFile(sheetFile);
-      console.log(`Moved sheet to folder: ${folder.getName()}`);
-    } catch (moveError) {
-      console.log(`Could not move sheet to folder, keeping in root: ${moveError}`);
-    }
-    
-    // Add headers
+    // Add headers immediately
     const sheetData = sheet.getActiveSheet();
     sheetData.getRange(1, 1, 1, HEADERS[0].length).setValues(HEADERS);
     
-    // Set text wrapping
+    // Set text wrapping for better readability
     sheetData.getRange(1, 1, 1000, HEADERS[0].length).setWrap(true);
     
-    console.log(`Successfully created sheet: ${sheetName} with ID: ${sheet.getId()}`);
-    return sheet.getId();
+    // Try to organize in folder if possible (but don't fail if it doesn't work)
+    try {
+      // Create or find the main folder
+      let folder;
+      const folders = DriveApp.getFoldersByName(APP_NAME);
+      if (folders.hasNext()) {
+        folder = folders.next();
+      } else {
+        folder = DriveApp.createFolder(APP_NAME);
+      }
+      
+      // Move sheet to folder
+      const sheetFile = DriveApp.getFileById(sheetId);
+      folder.addFile(sheetFile);
+      DriveApp.getRootFolder().removeFile(sheetFile);
+      console.log(`Organized sheet in folder: ${folder.getName()}`);
+    } catch (folderError) {
+      console.log(`Could not organize in folder, keeping in root: ${folderError}`);
+      // This is not critical - sheet will work fine in root
+    }
+    
+    // Cache the new sheet ID
+    SHEET_ID_CACHE[userEmail] = sheetId;
+    
+    console.log(`Successfully created sheet: ${sheetName} with ID: ${sheetId}`);
+    return sheetId;
     
   } catch (error) {
     console.error('Error in ensureUserSheetInternal:', error);
     console.error('Error details:', error.toString());
     return null;
   }
+}
+
+/**
+ * Clear sheet ID cache for a specific user (useful when sheet is deleted or moved)
+ */
+function clearSheetCache(userEmail) {
+  if (SHEET_ID_CACHE[userEmail]) {
+    delete SHEET_ID_CACHE[userEmail];
+    console.log(`Cleared sheet cache for ${userEmail}`);
+  }
+}
+
+/**
+ * Get cache statistics (useful for debugging)
+ */
+function getSheetCacheStats() {
+  return {
+    cacheSize: Object.keys(SHEET_ID_CACHE).length,
+    cachedUsers: Object.keys(SHEET_ID_CACHE),
+    cacheEntries: SHEET_ID_CACHE
+  };
 }
 
 /**
