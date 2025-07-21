@@ -105,6 +105,12 @@ function App() {
     } catch (err) {
       console.error('Error fetching expenses:', err);
       setError('Failed to fetch expenses: ' + err.message);
+      
+      // If we get a sheet-related error, clear the stored sheet ID
+      if (err.message.includes('sheet') || err.message.includes('not found')) {
+        localStorage.removeItem(`sheetId_${user.profile.email}`);
+        console.log('Cleared stored sheet ID due to error');
+      }
     } finally {
       setIsRefreshing(false);
     }
@@ -119,10 +125,31 @@ function App() {
         setIsLoading(true);
         setError(null);
         
+        // Check if we already have a valid sheet ID stored locally
+        const storedSheetId = localStorage.getItem(`sheetId_${user.profile.email}`);
+        
+        if (storedSheetId) {
+          console.log(`Using stored sheet ID: ${storedSheetId}`);
+          setSpreadsheetId(storedSheetId);
+          // Try to fetch expenses directly with stored sheet ID
+          try {
+            await fetchExpenses();
+            return; // Success, no need to ensure sheet
+          } catch (fetchError) {
+            console.log('Stored sheet ID failed, will ensure sheet exists:', fetchError);
+            // If fetch fails, clear stored ID and ensure sheet exists
+            localStorage.removeItem(`sheetId_${user.profile.email}`);
+          }
+        }
+        
         // Ensure user sheet exists (Apps Script will create it if needed)
+        console.log('Ensuring sheet exists for user:', user.profile.email);
         const result = await ensureUserSheet(user.profile.email);
         if (result.sheetId) {
           setSpreadsheetId(result.sheetId);
+          // Store the sheet ID locally for future use
+          localStorage.setItem(`sheetId_${user.profile.email}`, result.sheetId);
+          console.log(`Stored sheet ID locally: ${result.sheetId}`);
         }
         
         // Fetch initial data
@@ -293,7 +320,14 @@ function App() {
                     {isRefreshing ? 'Refreshing...' : 'Refresh'}
                   </button>
                   <button
-                    onClick={() => setUser(null)}
+                    onClick={() => {
+                      // Clear stored sheet ID when signing out
+                      if (user?.profile?.email) {
+                        localStorage.removeItem(`sheetId_${user.profile.email}`);
+                        console.log('Cleared stored sheet ID on sign out');
+                      }
+                      setUser(null);
+                    }}
                     className="text-gray-600 hover:text-gray-800 text-sm sm:text-base"
                   >
                     Sign Out
