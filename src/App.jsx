@@ -293,35 +293,50 @@ function App() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow flex items-center justify-between px-4 py-3">
-        {/* App Name */}
-        <div className="flex-1 text-left">
-          <span className="text-xl font-bold text-indigo-700">Expense Tracker</span>
-        </div>
-        {/* Centered Welcome */}
-        <div className="flex-1 text-center">
-          {user?.profile?.name && (
-            <span className="text-lg font-medium text-gray-700">Welcome {user.profile.name}</span>
-          )}
-        </div>
-        {/* Test Connection Button */}
-        <div className="flex-1 text-right">
-          <button
-            onClick={handleTestConnection}
-            className="inline-block px-4 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700 text-sm font-medium shadow"
-          >
-            Test Connection
-          </button>
-        </div>
-      </header>
-      {/* Main Content */}
       {!user ? (
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
+          <h1 className="text-3xl sm:text-4xl font-bold mb-8 text-center">Expense Tracker</h1>
           <LoginButton onLogin={setUser} />
         </div>
       ) : (
         <div className="flex flex-col h-screen">
+          {/* Fixed Header */}
+          <div className="flex-none bg-white border-b border-gray-200">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                <h1 className="text-xl sm:text-2xl font-bold">Expense Tracker</h1>
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={handleTestConnection}
+                    className="text-blue-600 hover:text-blue-800 text-sm sm:text-base"
+                  >
+                    Test Connection
+                  </button>
+                  <button
+                    onClick={fetchExpenses}
+                    disabled={isRefreshing}
+                    className="text-gray-600 hover:text-gray-800 disabled:opacity-50 text-sm sm:text-base"
+                  >
+                    {isRefreshing ? 'Refreshing...' : 'Refresh'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      // Clear stored sheet ID when signing out
+                      if (user?.profile?.email) {
+                        localStorage.removeItem(`sheetId_${user.profile.email}`);
+                        console.log('Cleared stored sheet ID on sign out');
+                      }
+                      setUser(null);
+                    }}
+                    className="text-gray-600 hover:text-gray-800 text-sm sm:text-base"
+                  >
+                    Sign Out
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Fixed Total Section */}
           <div className="flex-none bg-white border-b border-gray-200">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
