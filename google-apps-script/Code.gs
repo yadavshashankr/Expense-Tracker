@@ -271,15 +271,15 @@ function addExpense(data) {
       return { error: 'Failed to create user sheet' };
     }
     
-    // Add transaction to user's sheet
+    // Add transaction to current user's sheet
     const userSheet = SpreadsheetApp.openById(userSheetId);
     const userSheetData = userSheet.getActiveSheet();
     
-    // Calculate balance for user's sheet
+    // Calculate balance for current user's sheet
     const existingTransactions = getAllTransactionsFromSheet(userSheetData);
     const balance = calculateBalance(existingTransactions, userEmail, expense.userEmail);
     
-    // Prepare row data
+    // Prepare row data for current user
     const rowData = [
       expense.id,
       expense.timestamp,
@@ -293,8 +293,39 @@ function addExpense(data) {
       expense.phone || ''
     ];
     
-    // Add to user's sheet
+    // Add to current user's sheet
     userSheetData.appendRow(rowData);
+    
+    // Cross-user transaction mirroring
+    if (expense.userEmail && expense.userEmail !== userEmail) {
+      // Ensure the other user's sheet exists
+      const otherUserSheetId = ensureUserSheetInternal(expense.userEmail);
+      if (otherUserSheetId) {
+        const otherUserSheet = SpreadsheetApp.openById(otherUserSheetId);
+        const otherUserSheetData = otherUserSheet.getActiveSheet();
+        
+        // Calculate balance for the other user's sheet
+        const otherUserTransactions = getAllTransactionsFromSheet(otherUserSheetData);
+        const otherUserBalance = calculateBalance(otherUserTransactions, expense.userEmail, userEmail);
+        
+        // Prepare mirrored row data (with reversed transaction type)
+        const mirroredRowData = [
+          expense.id,
+          expense.timestamp,
+          userEmail, // Current user becomes the other user in mirrored transaction
+          expense.name,
+          expense.type === 'credit' ? 'debit' : 'credit', // Reverse the transaction type
+          expense.amount,
+          expense.description || '',
+          otherUserBalance,
+          String(expense.countryCode || '+91').startsWith('+') ? String(expense.countryCode || '+91') : '+' + String(expense.countryCode || '91'),
+          expense.phone || ''
+        ];
+        
+        // Add mirrored transaction to the other user's sheet
+        otherUserSheetData.appendRow(mirroredRowData);
+      }
+    }
     
     return { 
       success: true, 
@@ -386,6 +417,51 @@ function updateExpense(data) {
     const range = sheetData.getRange(rowNumber, 1, 1, rowData.length);
     range.setValues([rowData]);
     
+    // Cross-user transaction mirroring for updates
+    if (expense.userEmail && expense.userEmail !== userEmail) {
+      // Ensure the other user's sheet exists
+      const otherUserSheetId = ensureUserSheetInternal(expense.userEmail);
+      if (otherUserSheetId) {
+        const otherUserSheet = SpreadsheetApp.openById(otherUserSheetId);
+        const otherUserSheetData = otherUserSheet.getActiveSheet();
+        
+        // Find the mirrored transaction in the other user's sheet
+        const otherUserTransactions = getAllTransactionsFromSheet(otherUserSheetData);
+        const mirroredTransactionIndex = otherUserTransactions.findIndex(t => t.id === expense.id);
+        
+        if (mirroredTransactionIndex !== -1) {
+          // Calculate new balance for the other user's sheet
+          const otherUserAllTransactions = getAllTransactionsFromSheet(otherUserSheetData);
+          const mirroredExpense = {
+            ...expense,
+            userEmail: userEmail, // Swap the user emails for mirroring
+            type: expense.type === 'credit' ? 'debit' : 'credit' // Reverse the transaction type
+          };
+          otherUserAllTransactions[mirroredTransactionIndex] = mirroredExpense;
+          const otherUserBalance = calculateBalance(otherUserAllTransactions, expense.userEmail, userEmail);
+          
+          // Prepare mirrored updated row data
+          const mirroredRowData = [
+            expense.id,
+            expense.timestamp,
+            userEmail, // Current user becomes the other user in mirrored transaction
+            expense.name,
+            expense.type === 'credit' ? 'debit' : 'credit', // Reverse the transaction type
+            expense.amount,
+            expense.description || '',
+            otherUserBalance,
+            String(expense.countryCode || '+91').startsWith('+') ? String(expense.countryCode || '+91') : '+' + String(expense.countryCode || '91'),
+            expense.phone || ''
+          ];
+          
+          // Update the mirrored transaction in the other user's sheet
+          const mirroredRowNumber = mirroredTransactionIndex + 2;
+          const mirroredRange = otherUserSheetData.getRange(mirroredRowNumber, 1, 1, mirroredRowData.length);
+          mirroredRange.setValues([mirroredRowData]);
+        }
+      }
+    }
+    
     return { 
       success: true, 
       message: 'Expense updated successfully' 
@@ -416,9 +492,33 @@ function deleteExpense(data) {
     const sheet = SpreadsheetApp.openById(sheetId);
     const sheetData = sheet.getActiveSheet();
     
+    // Get the transaction details before deleting for cross-user mirroring
+    const transactions = getAllTransactionsFromSheet(sheetData);
+    const transactionToDelete = transactions[rowIndex];
+    
     // Delete the specific row (rowIndex + 2 because of headers and 0-based index)
     const rowNumber = rowIndex + 2;
     sheetData.deleteRow(rowNumber);
+    
+    // Cross-user transaction mirroring for deletion
+    if (transactionToDelete && transactionToDelete.userEmail && transactionToDelete.userEmail !== userEmail) {
+      // Ensure the other user's sheet exists
+      const otherUserSheetId = ensureUserSheetInternal(transactionToDelete.userEmail);
+      if (otherUserSheetId) {
+        const otherUserSheet = SpreadsheetApp.openById(otherUserSheetId);
+        const otherUserSheetData = otherUserSheet.getActiveSheet();
+        
+        // Find the mirrored transaction in the other user's sheet
+        const otherUserTransactions = getAllTransactionsFromSheet(otherUserSheetData);
+        const mirroredTransactionIndex = otherUserTransactions.findIndex(t => t.id === transactionToDelete.id);
+        
+        if (mirroredTransactionIndex !== -1) {
+          // Delete the mirrored transaction in the other user's sheet
+          const mirroredRowNumber = mirroredTransactionIndex + 2;
+          otherUserSheetData.deleteRow(mirroredRowNumber);
+        }
+      }
+    }
     
     return { 
       success: true, 
