@@ -298,33 +298,50 @@ function addExpense(data) {
     
     // Cross-user transaction mirroring
     if (expense.userEmail && expense.userEmail !== userEmail) {
+      console.log(`Starting cross-user mirroring: ${userEmail} -> ${expense.userEmail}`);
+      
       // Ensure the other user's sheet exists
       const otherUserSheetId = ensureUserSheetInternal(expense.userEmail);
       if (otherUserSheetId) {
-        const otherUserSheet = SpreadsheetApp.openById(otherUserSheetId);
-        const otherUserSheetData = otherUserSheet.getActiveSheet();
+        console.log(`Successfully got sheet for ${expense.userEmail}: ${otherUserSheetId}`);
         
-        // Calculate balance for the other user's sheet
-        const otherUserTransactions = getAllTransactionsFromSheet(otherUserSheetData);
-        const otherUserBalance = calculateBalance(otherUserTransactions, expense.userEmail, userEmail);
-        
-        // Prepare mirrored row data (with reversed transaction type)
-        const mirroredRowData = [
-          expense.id,
-          expense.timestamp,
-          userEmail, // Current user becomes the other user in mirrored transaction
-          expense.name,
-          expense.type === 'credit' ? 'debit' : 'credit', // Reverse the transaction type
-          expense.amount,
-          expense.description || '',
-          otherUserBalance,
-          String(expense.countryCode || '+91').startsWith('+') ? String(expense.countryCode || '+91') : '+' + String(expense.countryCode || '91'),
-          expense.phone || ''
-        ];
-        
-        // Add mirrored transaction to the other user's sheet
-        otherUserSheetData.appendRow(mirroredRowData);
+        try {
+          const otherUserSheet = SpreadsheetApp.openById(otherUserSheetId);
+          const otherUserSheetData = otherUserSheet.getActiveSheet();
+          
+          // Calculate balance for the other user's sheet
+          const otherUserTransactions = getAllTransactionsFromSheet(otherUserSheetData);
+          const otherUserBalance = calculateBalance(otherUserTransactions, expense.userEmail, userEmail);
+          
+          // Prepare mirrored row data (with reversed transaction type)
+          const mirroredRowData = [
+            expense.id,
+            expense.timestamp,
+            userEmail, // Current user becomes the other user in mirrored transaction
+            expense.name,
+            expense.type === 'credit' ? 'debit' : 'credit', // Reverse the transaction type
+            expense.amount,
+            expense.description || '',
+            otherUserBalance,
+            String(expense.countryCode || '+91').startsWith('+') ? String(expense.countryCode || '+91') : '+' + String(expense.countryCode || '91'),
+            expense.phone || ''
+          ];
+          
+          console.log(`Adding mirrored transaction to ${expense.userEmail}'s sheet:`, mirroredRowData);
+          
+          // Add mirrored transaction to the other user's sheet
+          otherUserSheetData.appendRow(mirroredRowData);
+          
+          console.log(`Successfully added mirrored transaction to ${expense.userEmail}'s sheet`);
+        } catch (mirrorError) {
+          console.error(`Error adding mirrored transaction to ${expense.userEmail}'s sheet:`, mirrorError);
+          // Don't fail the entire operation if mirroring fails
+        }
+      } else {
+        console.error(`Failed to create/get sheet for ${expense.userEmail}`);
       }
+    } else {
+      console.log(`No cross-user mirroring needed: expense.userEmail=${expense.userEmail}, userEmail=${userEmail}`);
     }
     
     return { 
@@ -350,15 +367,25 @@ function getExpenses(data) {
       return { error: 'Missing userEmail' };
     }
     
+    console.log(`Getting expenses for user: ${userEmail}`);
+    
     const sheetId = ensureUserSheetInternal(userEmail);
     if (!sheetId) {
+      console.error(`Failed to create/get sheet for ${userEmail}`);
       return { error: 'Failed to create user sheet' };
     }
+    
+    console.log(`Using sheet ID for ${userEmail}: ${sheetId}`);
     
     const sheet = SpreadsheetApp.openById(sheetId);
     const sheetData = sheet.getActiveSheet();
     
     const transactions = getAllTransactionsFromSheet(sheetData);
+    
+    console.log(`Retrieved ${transactions.length} transactions for ${userEmail}`);
+    if (transactions.length > 0) {
+      console.log('Sample transaction:', transactions[0]);
+    }
     
     return {
       success: true,
