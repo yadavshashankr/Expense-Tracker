@@ -188,7 +188,8 @@ function App() {
       // Add expense using Apps Script
       await addExpense(
         user.profile.email, // Current user's email
-        expense // Expense data
+        expense,           // Expense data
+        user.profile.name  // Sender's name
       );
       
       // Refresh expenses

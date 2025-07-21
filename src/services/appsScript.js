@@ -75,10 +75,11 @@ async function callAppsScript(action, data) {
 /**
  * Add expense to user's sheet
  */
-export async function addExpense(userEmail, expense) {
+export async function addExpense(userEmail, expense, senderName) {
   return callAppsScript('addExpense', {
     userEmail,
-    expense
+    expense,
+    senderName
   });
 }
 

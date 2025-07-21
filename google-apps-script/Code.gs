@@ -259,7 +259,7 @@ function testBackend() {
  */
 function addExpense(data) {
   try {
-    const { userEmail, expense } = data;
+    const { userEmail, expense, senderName } = data;
     
     if (!userEmail || !expense) {
       return { error: 'Missing required data: userEmail and expense' };
@@ -318,7 +318,7 @@ function addExpense(data) {
             expense.id,
             expense.timestamp,
             userEmail, // Current user becomes the other user in mirrored transaction
-            expense.name,
+            senderName || userEmail, // Set to sender's name
             expense.type === 'credit' ? 'debit' : 'credit', // Reverse the transaction type
             expense.amount,
             expense.description || '',
