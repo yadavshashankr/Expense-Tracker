@@ -4,6 +4,63 @@
 // Google Apps Script Web App URL
 const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw725GMxCP9n69T8lDt3NjuZDYoesYYqJoib9Zwu5iccxyHs0qxSauSZj4LshUyhTBVQg/exec';
 
+// Frontend Performance Optimization: Caching and Request Management
+const requestCache = new Map();
+const pendingRequests = new Map();
+const CACHE_DURATION = 30000; // 30 seconds
+
+/**
+ * Debounced request function to prevent duplicate requests
+ */
+function debounceRequest(key, requestFn, delay = 300) {
+  if (pendingRequests.has(key)) {
+    console.log(`Using pending request for key: ${key}`);
+    return pendingRequests.get(key);
+  }
+  
+  const promise = new Promise((resolve, reject) => {
+    setTimeout(async () => {
+      try {
+        const result = await requestFn();
+        requestCache.set(key, {
+          data: result,
+          timestamp: Date.now()
+        });
+        resolve(result);
+      } catch (error) {
+        reject(error);
+      } finally {
+        pendingRequests.delete(key);
+      }
+    }, delay);
+  });
+  
+  pendingRequests.set(key, promise);
+  return promise;
+}
+
+/**
+ * Get cached data if available and not expired
+ */
+function getCachedData(key) {
+  const cached = requestCache.get(key);
+  if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
+    console.log(`Using cached data for key: ${key}`);
+    return cached.data;
+  }
+  return null;
+}
+
+/**
+ * Clear cache for a specific key
+ */
+function clearCache(key) {
+  if (requestCache.has(key)) {
+    requestCache.delete(key);
+    console.log(`Cleared cache for key: ${key}`);
+  }
+}
+
 /**
  * Generic function to call Google Apps Script
  */
@@ -76,6 +133,9 @@ async function callAppsScript(action, data) {
  * Add expense to user's sheet
  */
 export async function addExpense(userEmail, expense) {
+  // Clear cache since we're adding new data
+  clearCache(`expenses_${userEmail}`);
+  
   return callAppsScript('addExpense', {
     userEmail,
     expense
@@ -83,46 +143,60 @@ export async function addExpense(userEmail, expense) {
 }
 
 /**
- * Get all expenses for a user
+ * Get all expenses for a user (with caching)
  */
 export async function getExpenses(userEmail) {
-  try {
-    console.log(`Getting expenses for user: ${userEmail}`);
-    
-    // Use GET request for read-only operations to avoid CORS preflight
-    const url = `${APPS_SCRIPT_URL}?action=getExpenses&userEmail=${encodeURIComponent(userEmail)}`;
-    const response = await fetch(url, {
-      method: 'GET',
-      mode: 'cors'
-    });
-    
-    console.log(`Get expenses response status: ${response.status}`);
-    console.log(`Get expenses response headers:`, Object.fromEntries(response.headers.entries()));
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Get expenses HTTP error response: ${errorText}`);
-      throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-    }
-    
-    const result = await response.json();
-    console.log('Get expenses successful:', result);
-    
-    if (result.error) {
-      throw new Error(result.error);
-    }
-    
-    return result;
-  } catch (error) {
-    console.error('Error getting expenses:', error);
-    throw new Error(`Get expenses failed: ${error.message}`);
+  const cacheKey = `expenses_${userEmail}`;
+  
+  // Check cache first
+  const cached = getCachedData(cacheKey);
+  if (cached) {
+    return cached;
   }
+  
+  // Use debounced request to prevent duplicate calls
+  return debounceRequest(cacheKey, async () => {
+    try {
+      console.log(`Getting expenses for user: ${userEmail}`);
+      
+      // Use GET request for read-only operations to avoid CORS preflight
+      const url = `${APPS_SCRIPT_URL}?action=getExpenses&userEmail=${encodeURIComponent(userEmail)}`;
+      const response = await fetch(url, {
+        method: 'GET',
+        mode: 'cors'
+      });
+      
+      console.log(`Get expenses response status: ${response.status}`);
+      console.log(`Get expenses response headers:`, Object.fromEntries(response.headers.entries()));
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Get expenses HTTP error response: ${errorText}`);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+      
+      const result = await response.json();
+      console.log('Get expenses successful:', result);
+      
+      if (result.error) {
+        throw new Error(result.error);
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Error getting expenses:', error);
+      throw new Error(`Get expenses failed: ${error.message}`);
+    }
+  });
 }
 
 /**
  * Update an existing expense
  */
 export async function updateExpense(userEmail, rowIndex, expense) {
+  // Clear cache since we're updating data
+  clearCache(`expenses_${userEmail}`);
+  
   return callAppsScript('updateExpense', {
     userEmail,
     rowIndex,
@@ -134,6 +208,9 @@ export async function updateExpense(userEmail, rowIndex, expense) {
  * Delete an expense
  */
 export async function deleteExpense(userEmail, rowIndex) {
+  // Clear cache since we're deleting data
+  clearCache(`expenses_${userEmail}`);
+  
   return callAppsScript('deleteExpense', {
     userEmail,
     rowIndex
@@ -141,40 +218,51 @@ export async function deleteExpense(userEmail, rowIndex) {
 }
 
 /**
- * Ensure user sheet exists
+ * Ensure user sheet exists (with caching)
  */
 export async function ensureUserSheet(userEmail) {
-  try {
-    console.log(`Ensuring sheet exists for user: ${userEmail}`);
-    
-    // Use GET request for read-only operations to avoid CORS preflight
-    const url = `${APPS_SCRIPT_URL}?action=ensureUserSheet&userEmail=${encodeURIComponent(userEmail)}`;
-    const response = await fetch(url, {
-      method: 'GET',
-      mode: 'cors'
-    });
-    
-    console.log(`Ensure sheet response status: ${response.status}`);
-    console.log(`Ensure sheet response headers:`, Object.fromEntries(response.headers.entries()));
-    
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Ensure sheet HTTP error response: ${errorText}`);
-      throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-    }
-    
-    const result = await response.json();
-    console.log('Ensure sheet successful:', result);
-    
-    if (result.error) {
-      throw new Error(result.error);
-    }
-    
-    return result;
-  } catch (error) {
-    console.error('Error ensuring user sheet:', error);
-    throw new Error(`Ensure user sheet failed: ${error.message}`);
+  const cacheKey = `sheet_${userEmail}`;
+  
+  // Check cache first
+  const cached = getCachedData(cacheKey);
+  if (cached) {
+    return cached;
   }
+  
+  // Use debounced request to prevent duplicate calls
+  return debounceRequest(cacheKey, async () => {
+    try {
+      console.log(`Ensuring sheet exists for user: ${userEmail}`);
+      
+      // Use GET request for read-only operations to avoid CORS preflight
+      const url = `${APPS_SCRIPT_URL}?action=ensureUserSheet&userEmail=${encodeURIComponent(userEmail)}`;
+      const response = await fetch(url, {
+        method: 'GET',
+        mode: 'cors'
+      });
+      
+      console.log(`Ensure sheet response status: ${response.status}`);
+      console.log(`Ensure sheet response headers:`, Object.fromEntries(response.headers.entries()));
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Ensure sheet HTTP error response: ${errorText}`);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+      }
+      
+      const result = await response.json();
+      console.log('Ensure sheet successful:', result);
+      
+      if (result.error) {
+        throw new Error(result.error);
+      }
+      
+      return result;
+    } catch (error) {
+      console.error('Error ensuring user sheet:', error);
+      throw new Error(`Ensure user sheet failed: ${error.message}`);
+    }
+  });
 }
 
 /**
@@ -215,4 +303,25 @@ export async function testConnection() {
     
     throw new Error(`Connection test failed: ${error.message}`);
   }
+}
+
+/**
+ * Clear all cache (useful for debugging or force refresh)
+ */
+export function clearAllCache() {
+  requestCache.clear();
+  pendingRequests.clear();
+  console.log('Cleared all cache and pending requests');
+}
+
+/**
+ * Get cache statistics (useful for debugging)
+ */
+export function getCacheStats() {
+  return {
+    cacheSize: requestCache.size,
+    pendingRequests: pendingRequests.size,
+    cacheKeys: Array.from(requestCache.keys()),
+    pendingKeys: Array.from(pendingRequests.keys())
+  };
 } 

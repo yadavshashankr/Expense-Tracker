@@ -5,12 +5,54 @@
 const APP_NAME = 'ExpenseTracker';
 const HEADERS = [['ID', 'Timestamp', 'User Email', 'Name', 'Type', 'Amount', 'Description', 'Balance', 'Country Code', 'Phone']];
 
+// Performance Optimization: Caching Configuration
+const CACHE_DURATION = 300; // 5 minutes
+const SHEET_CACHE = {};
+
 // CORS Configuration
 const ALLOWED_ORIGINS = [
   'https://yadavshashankr.github.io',
   'http://localhost:5173', // For local development
   'http://localhost:3000'  // Alternative local development port
 ];
+
+/**
+ * Get cached sheet or fetch from Drive
+ */
+function getCachedSheet(userEmail) {
+  const cacheKey = `sheet_${userEmail}`;
+  
+  // Check cache first
+  if (SHEET_CACHE[cacheKey] && SHEET_CACHE[cacheKey].timestamp > Date.now() - (CACHE_DURATION * 1000)) {
+    console.log(`Using cached sheet for ${userEmail}`);
+    return SHEET_CACHE[cacheKey].sheetId;
+  }
+  
+  // Fetch from Drive
+  const sheetId = ensureUserSheetInternal(userEmail);
+  
+  // Cache the result
+  if (sheetId) {
+    SHEET_CACHE[cacheKey] = {
+      sheetId: sheetId,
+      timestamp: Date.now()
+    };
+    console.log(`Cached sheet for ${userEmail}: ${sheetId}`);
+  }
+  
+  return sheetId;
+}
+
+/**
+ * Clear cache for a specific user (when data changes)
+ */
+function clearUserCache(userEmail) {
+  const cacheKey = `sheet_${userEmail}`;
+  if (SHEET_CACHE[cacheKey]) {
+    delete SHEET_CACHE[cacheKey];
+    console.log(`Cleared cache for ${userEmail}`);
+  }
+}
 
 /**
  * Set CORS headers for the response
@@ -262,8 +304,8 @@ function addExpense(data) {
       return { error: 'Missing required data: userEmail and expense' };
     }
     
-    // Ensure user's sheet exists
-    const userSheetId = ensureUserSheetInternal(userEmail);
+    // Ensure user's sheet exists (using cache)
+    const userSheetId = getCachedSheet(userEmail);
     if (!userSheetId) {
       return { error: 'Failed to create user sheet' };
     }
@@ -293,6 +335,9 @@ function addExpense(data) {
     // Add to user's sheet
     userSheetData.appendRow(rowData);
     
+    // Clear cache since data changed
+    clearUserCache(userEmail);
+    
     return { 
       success: true, 
       message: 'Expense added successfully',
@@ -316,7 +361,7 @@ function getExpenses(data) {
       return { error: 'Missing userEmail' };
     }
     
-    const sheetId = ensureUserSheetInternal(userEmail);
+    const sheetId = getCachedSheet(userEmail);
     if (!sheetId) {
       return { error: 'Failed to create user sheet' };
     }
@@ -349,7 +394,7 @@ function updateExpense(data) {
       return { error: 'Missing required data: userEmail, rowIndex, and expense' };
     }
     
-    const sheetId = ensureUserSheetInternal(userEmail);
+    const sheetId = getCachedSheet(userEmail);
     if (!sheetId) {
       return { error: 'Failed to create user sheet' };
     }
@@ -383,6 +428,9 @@ function updateExpense(data) {
     const range = sheetData.getRange(rowNumber, 1, 1, rowData.length);
     range.setValues([rowData]);
     
+    // Clear cache since data changed
+    clearUserCache(userEmail);
+    
     return { 
       success: true, 
       message: 'Expense updated successfully' 
@@ -405,7 +453,7 @@ function deleteExpense(data) {
       return { error: 'Missing required data: userEmail and rowIndex' };
     }
     
-    const sheetId = ensureUserSheetInternal(userEmail);
+    const sheetId = getCachedSheet(userEmail);
     if (!sheetId) {
       return { error: 'Failed to create user sheet' };
     }
@@ -416,6 +464,9 @@ function deleteExpense(data) {
     // Delete the specific row (rowIndex + 2 because of headers and 0-based index)
     const rowNumber = rowIndex + 2;
     sheetData.deleteRow(rowNumber);
+    
+    // Clear cache since data changed
+    clearUserCache(userEmail);
     
     return { 
       success: true, 
@@ -439,7 +490,7 @@ function ensureUserSheet(data) {
       return { error: 'Missing userEmail' };
     }
     
-    const sheetId = ensureUserSheetInternal(userEmail);
+    const sheetId = getCachedSheet(userEmail);
     
     if (sheetId) {
       return { 
