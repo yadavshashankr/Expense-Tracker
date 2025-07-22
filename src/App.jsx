@@ -29,15 +29,15 @@ function App() {
 
   // Handle click outside for menu
   useEffect(() => {
+    if (!isMenuOpen) return;
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
         setIsMenuOpen(false);
       }
     };
-
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
+  }, [isMenuOpen]);
 
   // Initialize currency state with default INR
   const [selectedCurrency, setSelectedCurrency] = useState(() => {
@@ -319,13 +319,14 @@ function App() {
                   Expense Tracker | Welcome, {getFirstName(user?.profile?.name)}
                 </h1>
                 <div className="flex items-center gap-4 relative">
-                  {/* User photo with dropdown for sign out, wrapped with menuRef for click outside */}
+                  {/* User photo with dropdown for sign out, robust click outside */}
                   <div className="relative" ref={menuRef}>
                     <img
                       src={user?.profile?.picture}
                       alt={user?.profile?.name || 'User'}
                       className="w-9 h-9 rounded-full border cursor-pointer hover:shadow"
                       onClick={() => setIsMenuOpen((open) => !open)}
+                      tabIndex={0}
                     />
                     {isMenuOpen && (
                       <div className="absolute right-0 mt-2 w-32 bg-white border rounded shadow-lg z-50">
@@ -338,6 +339,7 @@ function App() {
                             setIsMenuOpen(false);
                           }}
                           className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                          tabIndex={0}
                         >
                           Sign Out
                         </button>
