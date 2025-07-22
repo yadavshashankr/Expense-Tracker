@@ -8,6 +8,7 @@ import CurrencySelect, { currencies } from './components/CurrencySelect'
 import FilterPopup from './components/FilterPopup'
 import { addExpense, getExpenses, updateExpense, deleteExpense, ensureUserSheet, testConnection } from './services/firestore';
 import { onSnapshot, collection, query, orderBy } from 'firebase/firestore';
+import { v4 as uuidv4 } from 'uuid';
 import { db } from './services/firebase';
 
 function App() {
@@ -175,7 +176,26 @@ function App() {
     const expensesRef = collection(db, 'users', user.profile.email, 'expenses');
     const q = query(expensesRef, orderBy('timestamp', 'desc'));
     const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      setExpenses(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      // Use docChanges to only update local state for new/changed/removed transactions
+      setExpenses(prevExpenses => {
+        let updated = [...prevExpenses];
+        const changes = querySnapshot.docChanges();
+        changes.forEach(change => {
+          const docData = { id: change.doc.id, ...change.doc.data() };
+          if (change.type === 'added') {
+            // Only add if not already present (by id)
+            if (!updated.some(e => e.id === docData.id)) {
+              updated = [docData, ...updated];
+            }
+          } else if (change.type === 'modified') {
+            updated = updated.map(e => e.id === docData.id ? docData : e);
+          } else if (change.type === 'removed') {
+            updated = updated.filter(e => e.id !== docData.id);
+          }
+        });
+        // Optionally, sort by timestamp desc
+        return updated.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+      });
     });
     return () => unsubscribe();
   }, [user]);
@@ -187,24 +207,32 @@ function App() {
       }
 
       setError(null);
-      // Close form immediately
       setShowAddForm(false);
-      // Show loading state
       setIsSubmitting(true);
-      
+
+      // Optimistic UI: add locally with temp id
+      const tempId = 'temp-' + uuidv4();
+      const localExpense = {
+        ...expense,
+        id: tempId,
+        userEmail: user.profile.email,
+        name: user.profile.name,
+        timestamp: expense.timestamp || new Date().toISOString(),
+      };
+      setExpenses(prev => [localExpense, ...prev]);
+
       // Add expense using Firestore
       await addExpense(
-        user.profile.email, // Current user's email
-        expense,           // Expense data
-        user.profile.name, // Sender's name
-        '-',               // Sender's phone (always '-')
-        user.profile.email // Sender's email
+        user.profile.email,
+        expense,
+        user.profile.name,
+        '-',
+        user.profile.email
       );
-      
-      // Refresh expenses
-      await fetchExpenses();
+      // No need to fetch expenses; Firestore listener will update
     } catch (err) {
-      console.error('Error adding expense:', err);
+      // Remove the temp entry if error
+      setExpenses(prev => prev.filter(e => !e.id?.startsWith('temp-')));
       setError(err.message);
     } finally {
       setIsSubmitting(false);
