@@ -19,25 +19,27 @@ function App() {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [showAddForm, setShowAddForm] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false); // For floating menu (3 lines)
+  const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false); // For profile dropdown
   const [showFilters, setShowFilters] = useState(false);
-  const menuRef = useRef(null);
+  const menuRef = useRef(null); // For floating menu
+  const profileMenuRef = useRef(null); // For profile dropdown
   const [activeFilters, setActiveFilters] = useState(() => {
     const savedFilters = localStorage.getItem('expenseTrackerFilters');
     return savedFilters ? JSON.parse(savedFilters) : null;
   });
 
-  // Handle click outside for menu
+  // Click outside for profile dropdown only
   useEffect(() => {
-    if (!isMenuOpen) return;
+    if (!isProfileMenuOpen) return;
     const handleClickOutside = (event) => {
-      if (menuRef.current && !menuRef.current.contains(event.target)) {
-        setIsMenuOpen(false);
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setIsProfileMenuOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isMenuOpen]);
+  }, [isProfileMenuOpen]);
 
   // Initialize currency state with default INR
   const [selectedCurrency, setSelectedCurrency] = useState(() => {
@@ -320,15 +322,15 @@ function App() {
                 </h1>
                 <div className="flex items-center gap-4 relative">
                   {/* User photo with dropdown for sign out, robust click outside */}
-                  <div className="relative" ref={menuRef}>
+                  <div className="relative" ref={profileMenuRef}>
                     <img
                       src={user?.profile?.picture}
                       alt={user?.profile?.name || 'User'}
                       className="w-9 h-9 rounded-full border cursor-pointer hover:shadow"
-                      onClick={() => setIsMenuOpen((open) => !open)}
+                      onClick={() => setIsProfileMenuOpen((open) => !open)}
                       tabIndex={0}
                     />
-                    {isMenuOpen && (
+                    {isProfileMenuOpen && (
                       <div className="absolute right-0 mt-2 w-32 bg-white border rounded shadow-lg z-50">
                         <button
                           onClick={() => {
@@ -336,7 +338,7 @@ function App() {
                               localStorage.removeItem(`sheetId_${user.profile.email}`);
                             }
                             setUser(null);
-                            setIsMenuOpen(false);
+                            setIsProfileMenuOpen(false);
                           }}
                           className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
                           tabIndex={0}
