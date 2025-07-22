@@ -767,6 +767,25 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
                               <span className="ml-2 text-gray-900">{expense.description}</span>
                             </div>
                           )}
+                          {/* Show sender info for mirrored transactions */}
+                          {(expense.senderEmail || expense.senderPhone) && (
+                            <>
+                              <div className="flex justify-between items-center text-gray-600">
+                                <span>Sender Email:</span>
+                                <span className="font-medium text-gray-900 break-all">{expense.senderEmail || 'Not provided'}</span>
+                              </div>
+                              <div className="flex justify-between items-center text-gray-600 gap-2">
+                                <span className="min-w-[60px]">Sender Phone:</span>
+                                <div className="font-medium text-gray-900 inline-flex items-center justify-end flex-shrink-0">
+                                  {expense.senderPhone ? (
+                                    <span className="whitespace-nowrap">{expense.senderPhone}</span>
+                                  ) : (
+                                    'Not provided'
+                                  )}
+                                </div>
+                              </div>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>
