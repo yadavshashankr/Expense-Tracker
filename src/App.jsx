@@ -319,8 +319,8 @@ function App() {
                   Expense Tracker | Welcome, {getFirstName(user?.profile?.name)}
                 </h1>
                 <div className="flex items-center gap-4 relative">
-                  {/* User photo with dropdown for sign out */}
-                  <div className="relative">
+                  {/* User photo with dropdown for sign out, wrapped with menuRef for click outside */}
+                  <div className="relative" ref={menuRef}>
                     <img
                       src={user?.profile?.picture}
                       alt={user?.profile?.name || 'User'}
