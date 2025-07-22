@@ -252,8 +252,6 @@ function App() {
         expense
       );
       
-      // Refresh expenses
-      await fetchExpenses();
     } catch (err) {
       console.error('Error updating expense:', err);
       setError(err.message);
@@ -272,8 +270,6 @@ function App() {
         rowIndex
       );
       
-      // Refresh expenses
-      await fetchExpenses();
     } catch (err) {
       console.error('Error deleting expense:', err);
       setError(err.message);
