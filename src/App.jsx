@@ -185,11 +185,13 @@ function App() {
       // Show loading state
       setIsSubmitting(true);
       
-      // Add expense using Apps Script
+      // Add expense using Firestore
       await addExpense(
         user.profile.email, // Current user's email
         expense,           // Expense data
-        user.profile.name  // Sender's name
+        user.profile.name, // Sender's name
+        '-',               // Sender's phone (always '-')
+        user.profile.email // Sender's email
       );
       
       // Refresh expenses
