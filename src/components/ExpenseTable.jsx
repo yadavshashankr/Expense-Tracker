@@ -773,7 +773,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
                           {/* Email row with better alignment */}
                           <div className="flex items-center">
                             <span className="text-gray-500 min-w-[60px]">Email:</span>
-                            <span className="ml-2 font-medium text-gray-900 break-all">{expense.userEmail}</span>
+                            <span className="ml-2 text-gray-900 font-medium break-all">{expense.userEmail}</span>
                           </div>
                           {expense.description && (
                             <div className="col-span-1 sm:col-span-2">
@@ -801,12 +801,7 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
                             </>
                           )}
                           {/* Fallback: show transaction's own email/phone if not mirrored */}
-                          {!(expense.senderEmail || expense.senderPhone) && (
-                            <div className="flex justify-between items-center text-gray-600">
-                              <span>Email:</span>
-                              <span className="font-medium text-gray-900 break-all">{expense.userEmail}</span>
-                            </div>
-                          )}
+                          {!(expense.senderEmail || expense.senderPhone) && null}
                         </div>
                       </td>
                     </tr>
