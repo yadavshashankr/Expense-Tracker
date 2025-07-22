@@ -70,7 +70,7 @@ export default function LoginButton({ onLogin }) {
     setError(null);
     const clientId = '1031633259679-di32f4288k7vdh4juuhveeahoqd0ogvt.apps.googleusercontent.com';
     const redirectUri = getRedirectUri();
-    const scope = encodeURIComponent('openid https://www.googleapis.com/auth/spreadsheets https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email');
+    const scope = encodeURIComponent('openid https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email');
     
     const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
       `client_id=${clientId}` +
