@@ -316,11 +316,11 @@ function App() {
           {/* Fixed Header */}
           <div className="flex-none bg-white border-b border-gray-200">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-                <h1 className="text-base sm:text-2xl font-bold truncate max-w-[60vw] sm:max-w-none">
+              <div className="flex flex-row items-center justify-between gap-2 sm:gap-4">
+                <h1 className="text-xs xs:text-sm sm:text-2xl font-bold whitespace-nowrap">
                   Expense Tracker | Welcome, {getFirstName(user?.profile?.name)}
                 </h1>
-                <div className="flex items-center gap-4 relative">
+                <div className="flex items-center gap-2 sm:gap-4 relative">
                   {/* User photo with dropdown for sign out, robust click outside */}
                   <div className="relative" ref={profileMenuRef}>
                     <img
