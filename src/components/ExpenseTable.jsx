@@ -282,12 +282,17 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
         console.log(`Balance filter: expense balance=${balance}, min=${activeFilters.balanceMin}, max=${activeFilters.balanceMax}`);
         
         if (activeFilters.balanceMin && balance < parseFloat(activeFilters.balanceMin)) {
-          console.log(`Filtered out: balance ${balance} < min ${activeFilters.balanceMin}`);
           return false;
         }
         if (activeFilters.balanceMax && balance > parseFloat(activeFilters.balanceMax)) {
-          console.log(`Filtered out: balance ${balance} > max ${activeFilters.balanceMax}`);
           return false;
+        }
+        // Inclusive: allow exact match
+        if (activeFilters.balanceMin && balance === parseFloat(activeFilters.balanceMin)) {
+          return true;
+        }
+        if (activeFilters.balanceMax && balance === parseFloat(activeFilters.balanceMax)) {
+          return true;
         }
         return true;
       });
@@ -626,10 +631,18 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
     </div>
   );
 
+  // Show empty state if no filtered results
   if (!expenses?.length) {
     return (
       <div className="text-center py-8 bg-white shadow rounded-2xl">
         <p className="text-gray-500">No transactions yet. Add your first transaction above!</p>
+      </div>
+    );
+  }
+  if (runningBalances.length === 0) {
+    return (
+      <div className="text-center py-8 bg-white shadow rounded-2xl">
+        <p className="text-gray-500">No transactions available</p>
       </div>
     );
   }
