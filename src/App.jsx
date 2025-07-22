@@ -6,12 +6,7 @@ import ExpenseTable from './components/ExpenseTable'
 import TotalSection from './components/TotalSection'
 import CurrencySelect, { currencies } from './components/CurrencySelect'
 import FilterPopup from './components/FilterPopup'
-// Backend switch: 'firestore' or 'appsScript'
-const BACKEND = 'firestore'; // Change to 'appsScript' to use Google Apps Script
-
 import { addExpense, getExpenses, updateExpense, deleteExpense, ensureUserSheet, testConnection } from './services/firestore';
-
-// Remove the BACKEND switch and api indirection. Use Firestore functions directly in the app.
 
 function App() {
   const [user, setUser] = useState(null)
