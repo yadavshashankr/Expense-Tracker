@@ -7,6 +7,8 @@ import TotalSection from './components/TotalSection'
 import CurrencySelect, { currencies } from './components/CurrencySelect'
 import FilterPopup from './components/FilterPopup'
 import { addExpense, getExpenses, updateExpense, deleteExpense, ensureUserSheet, testConnection } from './services/firestore';
+import { onSnapshot, collection, query, orderBy } from 'firebase/firestore';
+import { db } from './services/firebase';
 
 function App() {
   const [user, setUser] = useState(null)
@@ -165,12 +167,15 @@ function App() {
     initializeSheet();
   }, [user]);
 
-  // Auto-refresh expenses every 30 seconds
+  // Remove the 30-second polling useEffect and add a real-time Firestore listener
   useEffect(() => {
     if (!user?.profile?.email) return;
-
-    const intervalId = setInterval(fetchExpenses, 30000);
-    return () => clearInterval(intervalId);
+    const expensesRef = collection(db, 'users', user.profile.email, 'expenses');
+    const q = query(expensesRef, orderBy('timestamp', 'desc'));
+    const unsubscribe = onSnapshot(q, (querySnapshot) => {
+      setExpenses(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    });
+    return () => unsubscribe();
   }, [user]);
 
   const handleAddExpense = async (expense) => {
