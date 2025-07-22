@@ -7,7 +7,7 @@ import TotalSection from './components/TotalSection'
 import CurrencySelect, { currencies } from './components/CurrencySelect'
 import FilterPopup from './components/FilterPopup'
 import { addExpense, getExpenses, updateExpense, deleteExpense, ensureUserSheet, testConnection } from './services/firestore';
-import { onSnapshot, collection, query, orderBy } from 'firebase/firestore';
+import { onSnapshot, collection, query, orderBy, doc, getDoc } from 'firebase/firestore';
 import { v4 as uuidv4 } from 'uuid';
 import { db } from './services/firebase';
 
@@ -173,31 +173,43 @@ function App() {
   // Remove the 30-second polling useEffect and add a real-time Firestore listener
   useEffect(() => {
     if (!user?.profile?.email) return;
-    const expensesRef = collection(db, 'users', user.profile.email, 'expenses');
-    const q = query(expensesRef, orderBy('timestamp', 'desc'));
-    const unsubscribe = onSnapshot(q, (querySnapshot) => {
-      // Use docChanges to only update local state for new/changed/removed transactions
-      setExpenses(prevExpenses => {
-        let updated = [...prevExpenses];
-        const changes = querySnapshot.docChanges();
-        changes.forEach(change => {
-          const docData = { id: change.doc.id, ...change.doc.data() };
-          if (change.type === 'added') {
-            // Only add if not already present (by id)
-            if (!updated.some(e => e.id === docData.id)) {
-              updated = [docData, ...updated];
+    let unsubscribe = null;
+    let cancelled = false;
+    (async () => {
+      // Check if user document exists
+      const userDocRef = doc(db, 'users', user.profile.email);
+      const userDocSnap = await getDoc(userDocRef);
+      if (!userDocSnap.exists()) {
+        setExpenses([]); // Show 'No transactions available'
+        return;
+      }
+      if (cancelled) return;
+      const expensesRef = collection(db, 'users', user.profile.email, 'expenses');
+      const q = query(expensesRef, orderBy('timestamp', 'desc'));
+      unsubscribe = onSnapshot(q, (querySnapshot) => {
+        setExpenses(prevExpenses => {
+          let updated = [...prevExpenses];
+          const changes = querySnapshot.docChanges();
+          changes.forEach(change => {
+            const docData = { id: change.doc.id, ...change.doc.data() };
+            if (change.type === 'added') {
+              if (!updated.some(e => e.id === docData.id)) {
+                updated = [docData, ...updated];
+              }
+            } else if (change.type === 'modified') {
+              updated = updated.map(e => e.id === docData.id ? docData : e);
+            } else if (change.type === 'removed') {
+              updated = updated.filter(e => e.id !== docData.id);
             }
-          } else if (change.type === 'modified') {
-            updated = updated.map(e => e.id === docData.id ? docData : e);
-          } else if (change.type === 'removed') {
-            updated = updated.filter(e => e.id !== docData.id);
-          }
+          });
+          return updated.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
         });
-        // Optionally, sort by timestamp desc
-        return updated.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
       });
-    });
-    return () => unsubscribe();
+    })();
+    return () => {
+      cancelled = true;
+      if (unsubscribe) unsubscribe();
+    };
   }, [user]);
 
   const handleAddExpense = async (expense) => {
