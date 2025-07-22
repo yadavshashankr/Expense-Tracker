@@ -446,13 +446,13 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
             <div className="flex justify-between items-center text-gray-600 gap-2">
               <span className="min-w-[60px]">Phone:</span>
               <div className="font-medium text-gray-900 inline-flex items-center justify-end flex-shrink-0">
-                {expense.phone ? (
+                {expense.phone && expense.phone !== '-' ? (
                   <>
                     <span className="text-lg mr-1">{getCountryFlag(expense.countryCode || '+91')}</span>
                     <span className="whitespace-nowrap">{formatCountryCode(expense.countryCode || '+91')}-{String(expense.phone || '')}</span>
                   </>
                 ) : (
-                  'Not provided'
+                  <span>-</span>
                 )}
               </div>
             </div>
@@ -751,13 +751,13 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
                           <div className="flex items-center">
                             <span className="text-gray-500 min-w-[60px]">Phone:</span>
                             <span className="ml-2 text-gray-900 inline-flex items-center">
-                              {expense.phone ? (
+                              {expense.phone && expense.phone !== '-' ? (
                                 <>
                                   <span className="text-lg mr-1">{getCountryFlag(expense.countryCode || '+91')}</span>
                                   <span className="whitespace-nowrap">{formatCountryCode(expense.countryCode || '+91')}-{String(expense.phone || '')}</span>
                                 </>
                               ) : (
-                                'Not provided'
+                                <span>-</span>
                               )}
                             </span>
                           </div>
@@ -796,10 +796,10 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
                               <div className="flex justify-between items-center text-gray-600 gap-2">
                                 <span className="min-w-[60px]">Phone:</span>
                                 <div className="font-medium text-gray-900 inline-flex items-center justify-end flex-shrink-0">
-                                  {expense.phone ? (
+                                  {expense.phone && expense.phone !== '-' ? (
                                     <span className="whitespace-nowrap">{expense.phone}</span>
                                   ) : (
-                                    'Not provided'
+                                    <span>-</span>
                                   )}
                                 </div>
                               </div>
