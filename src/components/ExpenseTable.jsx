@@ -82,6 +82,15 @@ const formatCountryCode = (code) => {
   return cleanCode;
 };
 
+// Fix phone formatting: only one '+' before country code
+const formatCountryCodeClean = (code) => {
+  if (!code) return '+91';
+  let cleanCode = code.toString().trim();
+  if (cleanCode.startsWith('++')) cleanCode = cleanCode.replace(/^\++/, '+');
+  if (!cleanCode.startsWith('+')) cleanCode = '+' + cleanCode;
+  return cleanCode;
+};
+
 // Utility function for date formatting
 const formatDateTime = (timestamp) => {
   const date = new Date(timestamp);
@@ -754,12 +763,17 @@ export default function ExpenseTable({ expenses, onEdit, onDelete, currentUserEm
                               {expense.phone && expense.phone !== '-' ? (
                                 <>
                                   <span className="text-lg mr-1">{getCountryFlag(expense.countryCode || '+91')}</span>
-                                  <span className="whitespace-nowrap">{formatCountryCode(expense.countryCode || '+91')}-{String(expense.phone || '')}</span>
+                                  <span className="whitespace-nowrap">{formatCountryCodeClean(expense.countryCode || '+91')}-{String(expense.phone || '')}</span>
                                 </>
                               ) : (
                                 <span>-</span>
                               )}
                             </span>
+                          </div>
+                          {/* Email row with better alignment */}
+                          <div className="flex items-center">
+                            <span className="text-gray-500 min-w-[60px]">Email:</span>
+                            <span className="ml-2 font-medium text-gray-900 break-all">{expense.userEmail}</span>
                           </div>
                           {expense.description && (
                             <div className="col-span-1 sm:col-span-2">
