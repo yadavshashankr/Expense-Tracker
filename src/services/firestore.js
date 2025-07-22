@@ -11,7 +11,7 @@ import {
 } from 'firebase/firestore';
 
 // Add expense for a user (and mirrored for counterparty)
-export async function addExpense(userEmail, expense, senderName) {
+export async function addExpense(userEmail, expense, senderName, senderPhone, senderEmail) {
   const senderRef = collection(db, 'users', userEmail, 'expenses');
   await addDoc(senderRef, expense);
 
@@ -19,8 +19,12 @@ export async function addExpense(userEmail, expense, senderName) {
     const receiverRef = collection(db, 'users', expense.userEmail, 'expenses');
     const mirroredExpense = {
       ...expense,
-      name: senderName || userEmail,
-      type: expense.type === 'credit' ? 'debit' : 'credit'
+      name: senderName || userEmail, // Sender's name
+      userEmail: senderEmail || userEmail, // Sender's email
+      phone: senderPhone || '-', // Always '-' for mirrored
+      type: expense.type === 'credit' ? 'debit' : 'credit',
+      senderPhone: senderPhone || '-',
+      senderEmail: senderEmail || ''
     };
     await addDoc(receiverRef, mirroredExpense);
   }
