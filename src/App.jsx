@@ -299,6 +299,9 @@ function App() {
     }
   };
 
+  // Helper to get first name
+  const getFirstName = (fullName) => (fullName ? fullName.split(' ')[0] : '');
+
   return (
     <div className="min-h-screen bg-gray-50">
       {!user ? (
@@ -312,34 +315,35 @@ function App() {
           <div className="flex-none bg-white border-b border-gray-200">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-                <h1 className="text-xl sm:text-2xl font-bold">Expense Tracker</h1>
-                <div className="flex items-center gap-4">
-                  <button
-                    onClick={handleTestConnection}
-                    className="text-blue-600 hover:text-blue-800 text-sm sm:text-base"
-                  >
-                    Test Connection
-                  </button>
-                  <button
-                    onClick={fetchExpenses}
-                    disabled={isRefreshing}
-                    className="text-gray-600 hover:text-gray-800 disabled:opacity-50 text-sm sm:text-base"
-                  >
-                    {isRefreshing ? 'Refreshing...' : 'Refresh'}
-                  </button>
-                  <button
-                    onClick={() => {
-                      // Clear stored sheet ID when signing out
-                      if (user?.profile?.email) {
-                        localStorage.removeItem(`sheetId_${user.profile.email}`);
-                        console.log('Cleared stored sheet ID on sign out');
-                      }
-                      setUser(null);
-                    }}
-                    className="text-gray-600 hover:text-gray-800 text-sm sm:text-base"
-                  >
-                    Sign Out
-                  </button>
+                <h1 className="text-xl sm:text-2xl font-bold">
+                  Expense Tracker | Welcome, {getFirstName(user?.profile?.name)}
+                </h1>
+                <div className="flex items-center gap-4 relative">
+                  {/* User photo with dropdown for sign out */}
+                  <div className="relative">
+                    <img
+                      src={user?.profile?.picture}
+                      alt={user?.profile?.name || 'User'}
+                      className="w-9 h-9 rounded-full border cursor-pointer hover:shadow"
+                      onClick={() => setIsMenuOpen((open) => !open)}
+                    />
+                    {isMenuOpen && (
+                      <div className="absolute right-0 mt-2 w-32 bg-white border rounded shadow-lg z-50">
+                        <button
+                          onClick={() => {
+                            if (user?.profile?.email) {
+                              localStorage.removeItem(`sheetId_${user.profile.email}`);
+                            }
+                            setUser(null);
+                            setIsMenuOpen(false);
+                          }}
+                          className="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100"
+                        >
+                          Sign Out
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
